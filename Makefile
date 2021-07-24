@@ -10,6 +10,7 @@ info:
 	@pwd
 	@echo $(GOPATH)
 	@echo $(GOBIN)
+	go env
 
 build:
 	@echo "Running build"
