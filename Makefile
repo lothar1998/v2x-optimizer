@@ -11,6 +11,7 @@ info:
 	@echo $(GOPATH)
 	@echo $(GOBIN)
 	go env
+	@export GOPATH=.
 
 build:
 	@echo "Running build"
