@@ -10,7 +10,7 @@ build:
 
 lint:
 	@echo "Running lint"
-	golint -set_exit_status $(SRC_DIRS)
+	go list ./... | grep -v /vendor/ | xargs -L1 golint -set_exit_status
 
 test:
 	@echo "Running test"
