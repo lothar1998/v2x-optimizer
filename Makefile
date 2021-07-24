@@ -1,8 +1,7 @@
 CGO_ENABLED = 0
-SRC_DIRS = ./cmd/... ./pkg/...
 
 .PHONY: all build lint test format
-all: build lint test
+all: lint test build
 
 build:
 	@echo "Running build"
