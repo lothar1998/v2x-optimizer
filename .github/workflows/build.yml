@@ -21,6 +21,9 @@ jobs:
       - name: Set up Linter
         run: go get -u golang.org/x/lint/golint
 
+      - name: Info
+        run: make info
+
       - name: Build
         run: make build
 

@@ -1,11 +1,15 @@
 CGO_ENABLED = 0
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOHOSTARCH)
-GOPATH ?= $(shell pwd)
 SRC_DIRS = ./cmd/... ./pkg/...
 
 .PHONY: all build lint test format
-all: build lint test
+all: info build lint test
+
+info:
+	@pwd
+	@echo $(GOPATH)
+	@echo $(GOBIN)
 
 build:
 	@echo "Running build"
