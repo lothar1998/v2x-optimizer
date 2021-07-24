@@ -22,10 +22,10 @@ jobs:
         run: go get -u golang.org/x/lint/golint
 
       - name: setup env
-          run: |
-            echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
-            echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
-          shell: bash
+        run: |
+          echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+          echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
 
       - name: Build
         run: make build
