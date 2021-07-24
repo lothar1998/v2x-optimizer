@@ -10,12 +10,12 @@ build:
 
 lint:
 	@echo "Running lint"
-	go list ./... | grep -v /vendor/ | xargs -L1 golint -set_exit_status
+	golint -set_exit_status ./...
 
 test:
 	@echo "Running test"
-	go test $(SRC_DIRS)
+	go test ./...
 
 format:
 	@echo "Running format"
-	go fmt $(SRC_DIRS)
+	go fmt ./...
