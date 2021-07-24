@@ -1,6 +1,4 @@
 CGO_ENABLED = 0
-GOOS ?= $(shell go env GOOS)
-GOARCH ?= $(shell go env GOHOSTARCH)
 SRC_DIRS = ./cmd/... ./pkg/...
 
 .PHONY: all build lint test format
@@ -8,7 +6,7 @@ all: build lint test
 
 build:
 	@echo "Running build"
-	go build -mod vendor ./...
+	go build ./...
 
 lint:
 	@echo "Running lint"
@@ -16,7 +14,7 @@ lint:
 
 test:
 	@echo "Running test"
-	go test -mod vendor $(SRC_DIRS)
+	go test $(SRC_DIRS)
 
 format:
 	@echo "Running format"
