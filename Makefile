@@ -4,14 +4,7 @@ GOARCH ?= $(shell go env GOHOSTARCH)
 SRC_DIRS = ./cmd/... ./pkg/...
 
 .PHONY: all build lint test format
-all: info build lint test
-
-info:
-	@pwd
-	@echo $(GOPATH)
-	@echo $(GOBIN)
-	go env
-	@export GOPATH=.
+all: build lint test
 
 build:
 	@echo "Running build"

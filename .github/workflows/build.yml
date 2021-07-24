@@ -21,8 +21,11 @@ jobs:
       - name: Set up Linter
         run: go get -u golang.org/x/lint/golint
 
-      - name: Info
-        run: make info
+      - name: setup env
+          run: |
+            echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+            echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
+          shell: bash
 
       - name: Build
         run: make build
