@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -245,5 +246,64 @@ func Test_joinInts(t *testing.T) {
 		t.Parallel()
 
 		assert.Equal(t, "5", joinInts([]int{5}, DefaultDelimiter))
+	})
+}
+
+func Test_splitIntString(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should split string into int slice using given delimiter", func(t *testing.T) {
+		t.Parallel()
+
+		str := "1,2,3,4,5"
+		expectedSlice := []int{1, 2, 3, 4, 5}
+
+		slice, err := splitIntString(str, ',')
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedSlice, slice)
+	})
+
+	t.Run("should split string into int slice using given delimiter - string ended with delimiter", func(t *testing.T) {
+		t.Parallel()
+
+		str := "1,2,3,4,5,"
+		expectedSlice := []int{1, 2, 3, 4, 5}
+
+		slice, err := splitIntString(str, ',')
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedSlice, slice)
+	})
+
+	t.Run("should return empty slice if string is empty", func(t *testing.T) {
+		t.Parallel()
+
+		slice, err := splitIntString("", ',')
+
+		assert.NoError(t, err)
+		assert.Empty(t, slice)
+	})
+
+	t.Run("should return error if string is malformed", func(t *testing.T) {
+		t.Parallel()
+
+		var expectedError *strconv.NumError
+
+		slice, err := splitIntString("1,2,a,b,3", ',')
+
+		assert.ErrorAs(t, err, &expectedError)
+		assert.Zero(t, slice)
+	})
+
+	t.Run("should return error if string has different delimiter than expected one", func(t *testing.T) {
+		t.Parallel()
+
+		var expectedError *strconv.NumError
+
+		slice, err := splitIntString("1,2,3,4,5", '.')
+
+		assert.ErrorAs(t, err, &expectedError)
+		assert.Zero(t, slice)
 	})
 }
