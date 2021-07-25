@@ -59,7 +59,7 @@ func (p PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 	line, err := lineReader.ReadString('\n')
 
 	if err == io.EOF && len(line) > 0 {
-		err := setMBRSlice(&data, line)
+		err := setMBR(&data, line)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func (p PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 		return nil, err
 	}
 
-	err = setMBRSlice(&data, line[:len(line)-1])
+	err = setMBR(&data, line[:len(line)-1])
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (p PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 		line, err := lineReader.ReadString('\n')
 
 		if err == io.EOF && len(line) > 0 {
-			err := appendRSlice(&data, line, mbrLen)
+			err := appendR(&data, line, mbrLen)
 			if err != nil {
 				return nil, err
 			}
@@ -92,14 +92,14 @@ func (p PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 			return nil, err
 		}
 
-		err = appendRSlice(&data, line[:len(line)-1], mbrLen)
+		err = appendR(&data, line[:len(line)-1], mbrLen)
 		if err != nil {
 			return nil, err
 		}
 	}
 }
 
-func setMBRSlice(data *Data, line string) error {
+func setMBR(data *Data, line string) error {
 	mbr, err := splitIntString(line, DefaultDelimiter)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func setMBRSlice(data *Data, line string) error {
 	return nil
 }
 
-func appendRSlice(data *Data, line string, mbrLen int) error {
+func appendR(data *Data, line string, mbrLen int) error {
 	rLine, err := splitIntString(line, DefaultDelimiter)
 	if err != nil {
 		return err
