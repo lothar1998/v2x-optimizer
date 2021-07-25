@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"io/fs"
+	"io/ioutil"
 	"path"
 	"testing"
 )
@@ -52,5 +53,44 @@ func TestLoad(t *testing.T) {
 
 		assert.ErrorAs(t, err, &expectedError)
 		assert.Zero(t, data)
+	})
+}
+
+func TestExport(t *testing.T) {
+	t.Parallel()
+
+	mbr := []int{1, 2, 3}
+	r := [][]int{
+		{11, 22, 33},
+		{11, 22, 33},
+		{11, 22, 33},
+		{11, 22, 33},
+		{11, 22, 33},
+	}
+	data := &Data{MBR: mbr, R: r}
+
+	t.Run("should export data to file", func(t *testing.T) {
+		t.Parallel()
+
+		dir, err := ioutil.TempDir("", "resource-optimization-in-v2x-networks-loader-test-*")
+		assert.NoError(t, err)
+
+		filename := "exported_data.json"
+		filepath := path.Join(dir, filename)
+
+		err = Export(filepath, data)
+
+		assert.NoError(t, err)
+		assert.FileExists(t, filepath)
+	})
+
+	t.Run("should return error due to non-existing directory", func(t *testing.T) {
+		t.Parallel()
+
+		var expectedError *fs.PathError
+
+		err := Export("/tmp/non-existing-dir/datafile.json", data)
+
+		assert.ErrorAs(t, err, &expectedError)
 	})
 }
