@@ -141,20 +141,20 @@ func toCPLEXArray(elems []int) string {
 	return sb.String()
 }
 
-func fromCPLEXArray(list string) (result []int, err error) {
-	list = list[1 : len(list)-1]
-	list = strings.Trim(list, " ")
+func fromCPLEXArray(array string) (result []int, err error) {
+	array = array[1 : len(array)-1]
+	array = strings.Trim(array, " ")
 
 	leftIndex := 0
 	length := 0
 	isPreviousSpace := false
 
-	for i, c := range list {
+	for i, c := range array {
 		if unicode.IsDigit(c) {
 			length++
 			isPreviousSpace = false
 		} else if unicode.IsSpace(c) && !isPreviousSpace {
-			parsedInt, err := strconv.ParseInt(list[leftIndex:leftIndex+length], 10, 32)
+			parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
 			if err != nil {
 				return nil, err
 			}
@@ -169,8 +169,8 @@ func fromCPLEXArray(list string) (result []int, err error) {
 		}
 	}
 
-	if leftIndex < len(list) {
-		parsedInt, err := strconv.ParseInt(list[leftIndex:leftIndex+length], 10, 32)
+	if leftIndex < len(array) {
+		parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
 		if err != nil {
 			return nil, err
 		}

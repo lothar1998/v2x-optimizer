@@ -40,15 +40,15 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 	t.Run("should decode data from CPLEX format", func(t *testing.T) {
 		t.Parallel()
 
-		cplexStr := `V = 4;
-					 N = 5;
-					 MBR = [1 2 3 4 5];
-					 R = [
-					 [11 12 13 14 15]
-					 [21 22 23 24 25]
-					 [31 32 33 34 35]
-					 [41 42 43 44 45]
-					 ];`
+		cplexStr := "V = 4;\n" +
+			"N = 5;\n" +
+			"MBR = [1 2 3 4 5];\n" +
+			"R = [\n" +
+			"[11 12 13 14 15]\n" +
+			"[21 22 23 24 25]\n" +
+			"[31 32 33 34 35]\n" +
+			"[41 42 43 44 45]\n" +
+			"];\n"
 
 		mbr := []int{1, 2, 3, 4, 5}
 		r := [][]int{
@@ -68,16 +68,16 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 	t.Run("should skin unknown variables", func(t *testing.T) {
 		t.Parallel()
 
-		cplexStr := `V = 4;
-					 N = 5;
-					 C = "abcd";
-					 MBR = [1 2 3 4 5];
-					 R = [
-					 [11 12 13 14 15]
-					 [21 22 23 24 25]
-					 [31 32 33 34 35]
-					 [41 42 43 44 45]
-					 ];`
+		cplexStr := "V = 4;\n" +
+			"N = 5;\n" +
+			"C = \"abcd\";\n" +
+			"MBR = [1 2 3 4 5];\n" +
+			"R = [\n" +
+			"[11 12 13 14 15]\n" +
+			"[21 22 23 24 25]\n" +
+			"[31 32 33 34 35]\n" +
+			"[41 42 43 44 45]\n" +
+			"];\n"
 
 		mbr := []int{1, 2, 3, 4, 5}
 		r := [][]int{
@@ -97,13 +97,13 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 	t.Run("should not decode incorrect data", func(t *testing.T) {
 		t.Parallel()
 
-		cplexStr := `V = 4;
-					 N = 5;
-					 MBR = [1 2 3 4 5];
-					 R = [
-					 [11 12 13 14 15]
-					 [21 22 24 25]
-					 ];`
+		cplexStr := "V = 4;\n" +
+			"N = 5;\n" +
+			"MBR = [1 2 3 4 5];\n" +
+			"R = [\n" +
+			"[11 12 13 14 15]\n" +
+			"[21 22 24 25]\n" +
+			"];\n"
 
 		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
 
@@ -114,12 +114,12 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 	t.Run("should not decode if one of size variables is skipped", func(t *testing.T) {
 		t.Parallel()
 
-		cplexStr := `V = 4;
-					 MBR = [1 2 3 4 5];
-					 R = [
-					 [11 12 13 14 15]
-					 [21 22 23 24 25]
-					 ];`
+		cplexStr := "V = 4;\n" +
+			"MBR = [1 2 3 4 5];\n" +
+			"R = [\n" +
+			"[11 12 13 14 15]\n" +
+			"[21 22 23 24 25]\n" +
+			"];\n"
 
 		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
 
