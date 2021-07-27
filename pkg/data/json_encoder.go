@@ -8,8 +8,14 @@ import (
 // JSONEncoder provide methods for encoding an decoding Data structure into/from json.
 type JSONEncoder struct{}
 
+// Encode facilitates encoding Data to json.
+func (e JSONEncoder) Encode(data *Data, w io.Writer) error {
+	encoder := json.NewEncoder(w)
+	return encoder.Encode(data)
+}
+
 // Decode allows for conveniently decoding data from json format to Data structure.
-func (j JSONEncoder) Decode(r io.Reader) (*Data, error) {
+func (e JSONEncoder) Decode(r io.Reader) (*Data, error) {
 	var data Data
 
 	decoder := json.NewDecoder(r)
@@ -19,10 +25,4 @@ func (j JSONEncoder) Decode(r io.Reader) (*Data, error) {
 	}
 
 	return &data, nil
-}
-
-// Encode facilitates encoding Data to json.
-func (j JSONEncoder) Encode(data *Data, w io.Writer) error {
-	encoder := json.NewEncoder(w)
-	return encoder.Encode(data)
 }

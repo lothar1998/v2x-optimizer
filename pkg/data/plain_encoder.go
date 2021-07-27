@@ -2,7 +2,6 @@ package data
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"strconv"
 	"strings"
@@ -21,7 +20,7 @@ type PlainEncoder struct{}
 // Encode allows for encoding data to writer into CSV-like format.
 // It returns an error if the lengths of R slices are not equal to MBR slice length.
 // It is possible to encode Data that consists only of MBR values.
-func (p PlainEncoder) Encode(data *Data, writer io.Writer) error {
+func (e PlainEncoder) Encode(data *Data, writer io.Writer) error {
 	if len(data.MBR) == 0 {
 		return ErrMalformedData
 	}
@@ -51,7 +50,7 @@ func (p PlainEncoder) Encode(data *Data, writer io.Writer) error {
 // It returns an error if the lengths of R slices are not equal to MBR slice length. It is possible to decode
 // data that consists only of MBR values. Input data line should be ended with newline '\n' character,
 // however, it is possible to do not use '\n' in the last line.
-func (p PlainEncoder) Decode(reader io.Reader) (*Data, error) {
+func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 	var data Data
 
 	lineReader := bufio.NewReader(reader)
@@ -177,6 +176,3 @@ func splitIntString(str string, sep rune) (result []int, err error) {
 
 	return
 }
-
-// ErrMalformedData is returned if some data in encoding/decoding are incorrect.
-var ErrMalformedData = errors.New("malformed data")

@@ -8,7 +8,9 @@ import (
 	"testing"
 )
 
-func TestEncodeDecodeCompatibility(t *testing.T) {
+func TestPlainEncoder_Encode_Decode_Compatibility(t *testing.T) {
+	t.Parallel()
+
 	mbr := []int{1, 2, 3, 4, 5}
 	r := [][]int{
 		{11, 12, 13, 14, 15},
