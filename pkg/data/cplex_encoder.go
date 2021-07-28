@@ -20,7 +20,7 @@ func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
 		return err
 	}
 
-	_, err = writer.Write([]byte("MBR = " + toCPLEXArray(data.MBR) + ";\n"))
+	_, err = writer.Write([]byte("MBR = " + toIntArray(data.MBR) + ";\n"))
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
 	}
 
 	for _, elems := range data.R {
-		_, err = writer.Write([]byte(toCPLEXArray(elems) + "\n"))
+		_, err = writer.Write([]byte(toIntArray(elems) + "\n"))
 		if err != nil {
 			return err
 		}
@@ -64,38 +64,38 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 		}
 
 		line = line[:len(line)-1]
-		line = strings.Trim(line, " \t\n")
+		line = strings.TrimLeft(line, " \t\n")
 
 		switch {
 		case strings.HasPrefix(line, "N"):
-			variable, err := parseSingleIntVariable(line)
+			integer, err := parseInt(line)
 			if err != nil {
 				return nil, err
 			}
-			n = variable
+			n = integer
 
 		case strings.HasPrefix(line, "V"):
-			variable, err := parseSingleIntVariable(line)
+			integer, err := parseInt(line)
 			if err != nil {
 				return nil, err
 			}
-			v = variable
+			v = integer
 
 		case strings.HasPrefix(line, "R"):
 			arrays := parseArrayOfArrays(line)
 			var r [][]int
 			for _, array := range arrays {
-				list, err := fromCPLEXArray(array)
+				intArray, err := parseIntArray(array)
 				if err != nil {
 					return nil, err
 				}
-				r = append(r, list)
+				r = append(r, intArray)
 			}
 			data.R = r
 
 		case strings.HasPrefix(line, "MBR"):
-			variable := parseValue(line)
-			mbr, err := fromCPLEXArray(variable)
+			variable := findValue(line)
+			mbr, err := parseIntArray(variable)
 			if err != nil {
 				return nil, err
 			}
@@ -118,7 +118,7 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 	return &data, nil
 }
 
-func toCPLEXArray(elems []int) string {
+func toIntArray(elems []int) string {
 	switch len(elems) {
 	case 0:
 		return "[]"
@@ -141,13 +141,12 @@ func toCPLEXArray(elems []int) string {
 	return sb.String()
 }
 
-func fromCPLEXArray(array string) (result []int, err error) {
+func parseIntArray(array string) (result []int, err error) {
 	array = array[1 : len(array)-1]
-	array = strings.Trim(array, " ")
 
 	leftIndex := 0
 	length := 0
-	isPreviousSpace := false
+	isPreviousSpace := true
 
 	for i, c := range array {
 		if unicode.IsDigit(c) {
@@ -182,26 +181,25 @@ func fromCPLEXArray(array string) (result []int, err error) {
 }
 
 func parseArrayOfArrays(str string) []string {
-	var stringArrays []string
+	var arrays []string
 
-	str = parseValue(str)
+	str = findValue(str)
 	str = str[1 : len(str)-1]
-	str = strings.Trim(str, " ")
 
 	startIndex := 0
 	for i, c := range str {
 		if c == '[' {
 			startIndex = i
 		} else if c == ']' {
-			stringArrays = append(stringArrays, str[startIndex:i+1])
+			arrays = append(arrays, str[startIndex:i+1])
 		}
 	}
 
-	return stringArrays
+	return arrays
 }
 
-func parseSingleIntVariable(str string) (int, error) {
-	value := parseValue(str)
+func parseInt(str string) (int, error) {
+	value := findValue(str)
 	parsedInt, err := strconv.ParseInt(value, 10, 32)
 	if err != nil {
 		return 0, err
@@ -209,7 +207,7 @@ func parseSingleIntVariable(str string) (int, error) {
 	return int(parsedInt), nil
 }
 
-func parseValue(str string) string {
+func findValue(str string) string {
 	index := strings.Index(str, "=")
 	str = str[index+1:]
 	str = strings.Trim(str, " \n\t")

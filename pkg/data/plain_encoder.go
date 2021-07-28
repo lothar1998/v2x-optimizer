@@ -18,7 +18,7 @@ var DefaultDelimiter = ','
 type PlainEncoder struct{}
 
 // Encode allows for encoding data to writer into CSV-like format.
-// It returns an error if the lengths of R slices are not equal to MBR slice length.
+// It returns ErrMalformedData if the lengths of R slices are not equal to MBR slice length.
 // It is possible to encode Data that consists only of MBR values.
 func (e PlainEncoder) Encode(data *Data, writer io.Writer) error {
 	if len(data.MBR) == 0 {
@@ -30,13 +30,7 @@ func (e PlainEncoder) Encode(data *Data, writer io.Writer) error {
 		return err
 	}
 
-	mbrLen := len(data.MBR)
-
 	for _, line := range data.R {
-		if len(line) != mbrLen {
-			return ErrMalformedData
-		}
-
 		_, err := writer.Write([]byte(joinInts(line, DefaultDelimiter) + "\n"))
 		if err != nil {
 			return err
@@ -98,6 +92,24 @@ func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 	}
 }
 
+func joinInts(elems []int, sep rune) string {
+	switch len(elems) {
+	case 0:
+		return ""
+	case 1:
+		return strconv.Itoa(elems[0])
+	}
+
+	var b strings.Builder
+
+	b.WriteString(strconv.Itoa(elems[0]))
+	for _, s := range elems[1:] {
+		b.WriteRune(sep)
+		b.WriteString(strconv.Itoa(s))
+	}
+	return b.String()
+}
+
 func setMBR(data *Data, line string) error {
 	mbr, err := splitIntString(line, DefaultDelimiter)
 	if err != nil {
@@ -122,24 +134,6 @@ func appendR(data *Data, line string, mbrLen int) error {
 	data.R = append(data.R, rLine)
 
 	return nil
-}
-
-func joinInts(elems []int, sep rune) string {
-	switch len(elems) {
-	case 0:
-		return ""
-	case 1:
-		return strconv.Itoa(elems[0])
-	}
-
-	var b strings.Builder
-
-	b.WriteString(strconv.Itoa(elems[0]))
-	for _, s := range elems[1:] {
-		b.WriteRune(sep)
-		b.WriteString(strconv.Itoa(s))
-	}
-	return b.String()
 }
 
 func splitIntString(str string, sep rune) (result []int, err error) {

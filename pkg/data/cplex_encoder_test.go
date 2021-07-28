@@ -65,7 +65,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		assert.Equal(t, data, decodeData)
 	})
 
-	t.Run("should skin unknown variables", func(t *testing.T) {
+	t.Run("should skip unknown variables", func(t *testing.T) {
 		t.Parallel()
 
 		cplexStr := "V = 4;\n" +
@@ -162,44 +162,44 @@ func TestCPLEXEncoder_Encode(t *testing.T) {
 	})
 }
 
-func Test_toCPLEXList(t *testing.T) {
+func Test_toIntArray(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should convert slice to CPLEX list", func(t *testing.T) {
+	t.Run("should convert slice to int list", func(t *testing.T) {
 		t.Parallel()
 
 		slice := []int{1, 2, 3, 4, 5}
 		expectedList := "[1 2 3 4 5]"
 
-		list := toCPLEXArray(slice)
+		list := toIntArray(slice)
 
 		assert.Equal(t, expectedList, list)
 	})
 
-	t.Run("should convert empty slice to empty CPLEX list", func(t *testing.T) {
+	t.Run("should convert empty slice to empty int list", func(t *testing.T) {
 		t.Parallel()
 
 		var slice []int
 		expectedList := "[]"
 
-		list := toCPLEXArray(slice)
+		list := toIntArray(slice)
 
 		assert.Equal(t, expectedList, list)
 	})
 
-	t.Run("should convert single item slice to single item CPLEX list", func(t *testing.T) {
+	t.Run("should convert single item slice to single item int list", func(t *testing.T) {
 		t.Parallel()
 
 		slice := []int{1}
 		expectedList := "[1]"
 
-		list := toCPLEXArray(slice)
+		list := toIntArray(slice)
 
 		assert.Equal(t, expectedList, list)
 	})
 }
 
-func Test_fromCPLEXList(t *testing.T) {
+func Test_parseIntArray(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should decode string array to int array", func(t *testing.T) {
@@ -207,17 +207,22 @@ func Test_fromCPLEXList(t *testing.T) {
 
 		expectedList := []int{2, 3, 5, 1, 5, 1, 22, 12123, 12}
 
-		str1 := "[2 3 5 1 5  1 22  12123 12]"
-		str2 := "[   2 3 5 1 5  1 22  12123   12   ]"
+		str1 := "[2 3 5 1 5 1 22 12123 12]"
+		str2 := "[2 3 5 1 5  1 22  12123 12]"
+		str3 := "[   2 3 5 1 5  1 22  12123   12   ]"
 
-		list1, err1 := fromCPLEXArray(str1)
-		list2, err2 := fromCPLEXArray(str2)
+		list1, err1 := parseIntArray(str1)
+		list2, err2 := parseIntArray(str2)
+		list3, err3 := parseIntArray(str3)
 
 		assert.NoError(t, err1)
 		assert.Equal(t, expectedList, list1)
 
 		assert.NoError(t, err2)
 		assert.Equal(t, expectedList, list2)
+
+		assert.NoError(t, err3)
+		assert.Equal(t, expectedList, list3)
 	})
 
 	t.Run("should decode one item array to int array", func(t *testing.T) {
@@ -228,8 +233,8 @@ func Test_fromCPLEXList(t *testing.T) {
 		str1 := "[22]"
 		str2 := "[    22   ]"
 
-		list1, err1 := fromCPLEXArray(str1)
-		list2, err2 := fromCPLEXArray(str2)
+		list1, err1 := parseIntArray(str1)
+		list2, err2 := parseIntArray(str2)
 
 		assert.NoError(t, err1)
 		assert.Equal(t, expectedList, list1)
@@ -246,8 +251,8 @@ func Test_fromCPLEXList(t *testing.T) {
 		str1 := "[]"
 		str2 := "[       ]"
 
-		list1, err1 := fromCPLEXArray(str1)
-		list2, err2 := fromCPLEXArray(str2)
+		list1, err1 := parseIntArray(str1)
+		list2, err2 := parseIntArray(str2)
 
 		assert.NoError(t, err1)
 		assert.Equal(t, expectedList, list1)
@@ -257,67 +262,39 @@ func Test_fromCPLEXList(t *testing.T) {
 	})
 }
 
-func Test_parseValue(t *testing.T) {
+func Test_parseArrayOfArrays(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should parse single value", func(t *testing.T) {
+	t.Run("should parse array of arrays", func(t *testing.T) {
 		t.Parallel()
 
-		str := "N = 32"
-
-		assert.Equal(t, "32", parseValue(str))
-	})
-
-	t.Run("should parse single value with whitespace chars", func(t *testing.T) {
-		t.Parallel()
-
-		str := " \t N   \n    = \n \t  32   \t  \n"
-
-		assert.Equal(t, "32", parseValue(str))
-	})
-
-	t.Run("should parse array value", func(t *testing.T) {
-		t.Parallel()
-
-		str := "MBR = [2 3 5 1 5 1 22 12123 12]"
-
-		assert.Equal(t, "[2 3 5 1 5 1 22 12123 12]", parseValue(str))
-	})
-
-	t.Run("should parse array value with whitespace chars", func(t *testing.T) {
-		t.Parallel()
-
-		str := " \t MBR   \n    = \t  [2 3 5 1 5\n 1   22\t 12123 12]    \t   \n   "
-
-		assert.Equal(t, "[2 3 5 1 5 1   22 12123 12]", parseValue(str))
-	})
-
-	t.Run("should parse multiline array", func(t *testing.T) {
-		t.Parallel()
+		expectedArrays := []string{"[2 3 5 1 5 1 22 12123 12]", "[8 7 5 3 8 1 99 21 37]"}
 
 		str := "R = [\n[2 3 5 1 5 1 22 12123 12]\n[8 7 5 3 8 1 99 21 37]\n]\n"
 
-		assert.Equal(t, "[[2 3 5 1 5 1 22 12123 12][8 7 5 3 8 1 99 21 37]]", parseValue(str))
+		assert.Equal(t, expectedArrays, parseArrayOfArrays(str))
 	})
 
-	t.Run("should parse multtiline array with whitespace chars", func(t *testing.T) {
+	t.Run("should parse array of arrays with whitespace chars", func(t *testing.T) {
 		t.Parallel()
 
-		str := "    \t  \n  R \t \n =  \n  [ \t \n[2 3\n   5 \t   1 5 1 22 12123 12]    \n    [8 7 5 3\n  8 1 99 21 37]   \n]  \n"
+		expectedArrays := []string{"[2 3   5    1 5 1 22 12123 12]", "[8 7 5 3  8 1 99 21 37]"}
 
-		assert.Equal(t, "[  [2 3   5    1 5 1 22 12123 12]        [8 7 5 3  8 1 99 21 37]   ]", parseValue(str))
+		str := "\t\n R \t \n =  \n  [ \t \n[2 3\n   5 \t   1 5 1 22 12123 12] \n   [8 7 5 3\n  8 1 99 21 37]   \n]  \n"
+
+		assert.Equal(t, expectedArrays, parseArrayOfArrays(str))
 	})
 }
 
-func Test_parseSingleIntVariable(t *testing.T) {
+func Test_parseInt(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should parse single int variable", func(t *testing.T) {
+	t.Run("should parse int variable", func(t *testing.T) {
 		t.Parallel()
 
 		str := "N = 32"
 
-		variable, err := parseSingleIntVariable(str)
+		variable, err := parseInt(str)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 32, variable)
@@ -330,33 +307,61 @@ func Test_parseSingleIntVariable(t *testing.T) {
 
 		str := "N = 32.3"
 
-		variable, err := parseSingleIntVariable(str)
+		variable, err := parseInt(str)
 
 		assert.ErrorAs(t, err, &expectedError)
 		assert.Zero(t, variable)
 	})
 }
 
-func Test_parseArrayOfArrays(t *testing.T) {
+func Test_findValue(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should split array of arrays", func(t *testing.T) {
+	t.Run("should parse single value", func(t *testing.T) {
 		t.Parallel()
 
-		expectedArrays := []string{"[2 3 5 1 5 1 22 12123 12]", "[8 7 5 3 8 1 99 21 37]"}
+		str := "N = 32"
+
+		assert.Equal(t, "32", findValue(str))
+	})
+
+	t.Run("should parse single value with whitespace chars", func(t *testing.T) {
+		t.Parallel()
+
+		str := " \t N   \n    = \n \t  32   \t  \n"
+
+		assert.Equal(t, "32", findValue(str))
+	})
+
+	t.Run("should parse array value", func(t *testing.T) {
+		t.Parallel()
+
+		str := "MBR = [2 3 5 1 5 1 22 12123 12]"
+
+		assert.Equal(t, "[2 3 5 1 5 1 22 12123 12]", findValue(str))
+	})
+
+	t.Run("should parse array value with whitespace chars", func(t *testing.T) {
+		t.Parallel()
+
+		str := " \t MBR   \n    = \t  [2 3 5 1 5\n 1   22\t 12123 12]    \t   \n   "
+
+		assert.Equal(t, "[2 3 5 1 5 1   22 12123 12]", findValue(str))
+	})
+
+	t.Run("should parse multiline array", func(t *testing.T) {
+		t.Parallel()
 
 		str := "R = [\n[2 3 5 1 5 1 22 12123 12]\n[8 7 5 3 8 1 99 21 37]\n]\n"
 
-		assert.Equal(t, expectedArrays, parseArrayOfArrays(str))
+		assert.Equal(t, "[[2 3 5 1 5 1 22 12123 12][8 7 5 3 8 1 99 21 37]]", findValue(str))
 	})
 
-	t.Run("should split array of arrays with whitespace chars", func(t *testing.T) {
+	t.Run("should parse multiline array with whitespace chars", func(t *testing.T) {
 		t.Parallel()
 
-		expectedArrays := []string{"[2 3   5    1 5 1 22 12123 12]", "[8 7 5 3  8 1 99 21 37]"}
+		str := "\t  \n  R \t \n =  \n  [ \t \n[2 3\n   5 \t   1 5 1 22 12123 12] \n [8 7 5 3\n  8 1 99 21 37]   \n]  \n"
 
-		str := "    \t  \n  R \t \n =  \n  [ \t \n[2 3\n   5 \t   1 5 1 22 12123 12]    \n    [8 7 5 3\n  8 1 99 21 37]   \n]  \n"
-
-		assert.Equal(t, expectedArrays, parseArrayOfArrays(str))
+		assert.Equal(t, "[  [2 3   5    1 5 1 22 12123 12]  [8 7 5 3  8 1 99 21 37]   ]", findValue(str))
 	})
 }

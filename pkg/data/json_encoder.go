@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// JSONEncoder provide methods for encoding an decoding Data structure into/from json.
+// JSONEncoder provide methods for encoding and decoding Data structure into/from json.
 type JSONEncoder struct{}
 
 // Encode facilitates encoding Data to json.
