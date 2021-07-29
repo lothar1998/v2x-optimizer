@@ -1,4 +1,4 @@
-package cmd
+package data
 
 import (
 	"fmt"
@@ -17,16 +17,18 @@ const (
 	convertOutputFileUsageMessage = "output file (required)"
 )
 
-var convertCmd = &cobra.Command{
-	Use:   "convert",
-	Short: "Convert data from one format to another",
-	Long:  `Allows for converting data from one format to another`,
-	Run: func(cmd *cobra.Command, args []string) {
-		_ = cmd.Help()
-	},
-}
+// ConvertCmd returns cobra.Command which is able to convert one type of data into another.
+// It should be registered in root command using AddCommand() method.
+func ConvertCmd() *cobra.Command {
+	convertCmd := &cobra.Command{
+		Use:   "convert",
+		Short: "Convert data from one format to another",
+		Long:  `Allows for converting data from one format to another`,
+		Run: func(cmd *cobra.Command, args []string) {
+			_ = cmd.Help()
+		},
+	}
 
-func init() {
 	for decodedFormat, decoderInfo := range formatsToEncodersInfo {
 		convertFromCmd := convertFrom(decodedFormat, decoderInfo)
 
@@ -42,7 +44,7 @@ func init() {
 		convertCmd.AddCommand(convertFromCmd)
 	}
 
-	rootCmd.AddCommand(convertCmd)
+	return convertCmd
 }
 
 func convertFrom(formatName string, encoderInfo formatEncoderInfo) *cobra.Command {

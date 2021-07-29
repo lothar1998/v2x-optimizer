@@ -1,4 +1,4 @@
-package cmd
+package data
 
 import (
 	"fmt"
@@ -21,22 +21,24 @@ const (
 	generateVehiclesUsageMessage = "vehicles count"
 )
 
-var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generate data in given format",
-	Long:  "Allows generating data in given format",
-	Run: func(cmd *cobra.Command, args []string) {
-		_ = cmd.Help()
-	},
-}
+// GenerateCmd returns cobra.Command which is able to generate data in specified format.
+// It should be registered in root command using AddCommand() method.
+func GenerateCmd() *cobra.Command {
+	generateCmd := &cobra.Command{
+		Use:   "generate",
+		Short: "Generate data in given format",
+		Long:  "Allows generating data in given format",
+		Run: func(cmd *cobra.Command, args []string) {
+			_ = cmd.Help()
+		},
+	}
 
-func init() {
 	for formatName, encoderInfo := range formatsToEncodersInfo {
 		generateToCmd := generateTo(formatName, encoderInfo)
 		generateCmd.AddCommand(generateToCmd)
 	}
 
-	rootCmd.AddCommand(generateCmd)
+	return generateCmd
 }
 
 func generateTo(formatName string, encoderInfo formatEncoderInfo) *cobra.Command {

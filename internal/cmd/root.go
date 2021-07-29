@@ -1,26 +1,8 @@
 package cmd
 
 import (
-	"github.com/lothar1998/resource-optimization-in-v2x-networks/pkg/data"
+	"github.com/lothar1998/resource-optimization-in-v2x-networks/internal/cmd/data"
 	"github.com/spf13/cobra"
-)
-
-const (
-	emptyStringFlag = ""
-	emptyIntFlag    = 0
-)
-
-type formatEncoderInfo struct {
-	FormatDisplayName string
-	Encoder           data.EncoderDecoder
-}
-
-var (
-	formatsToEncodersInfo = map[string]formatEncoderInfo{
-		"json":  {"json", data.JSONEncoder{}},
-		"plain": {"plain (CSV-like)", data.PlainEncoder{}},
-		"cplex": {"CPLEX", data.CPLEXEncoder{}},
-	}
 )
 
 var rootCmd = &cobra.Command{
@@ -32,5 +14,6 @@ var rootCmd = &cobra.Command{
 // Execute set up CLI application. Should be invoked in main.
 func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
+	rootCmd.AddCommand(data.GenerateCmd(), data.ConvertCmd())
 	cobra.CheckErr(rootCmd.Execute())
 }
