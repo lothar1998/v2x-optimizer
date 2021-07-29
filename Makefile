@@ -22,3 +22,7 @@ format:
 install:
 	@echo "Installing app"
 	go install ./...
+
+# CPLEX optimizer
+optimize:
+	$(MAKE) -C third_party/cplex
