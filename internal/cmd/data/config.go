@@ -2,7 +2,7 @@ package data
 
 import (
 	"errors"
-	"github.com/lothar1998/resource-optimization-in-v2x-networks/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
 const (
