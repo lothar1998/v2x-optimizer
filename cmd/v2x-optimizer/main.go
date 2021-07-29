@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/lothar1998/resource-optimization-in-v2x-networks/internal/cmd"
+	"github.com/lothar1998/v2x-optimizer/internal/cmd"
 )
 
 func main() {

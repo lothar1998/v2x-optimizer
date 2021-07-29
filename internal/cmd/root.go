@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/lothar1998/resource-optimization-in-v2x-networks/internal/cmd/data"
+	"github.com/lothar1998/v2x-optimizer/internal/cmd/data"
 	"github.com/spf13/cobra"
 )
 
