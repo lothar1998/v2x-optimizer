@@ -1,24 +1,12 @@
 package data
 
 import (
+	"errors"
 	"fmt"
 	"github.com/lothar1998/resource-optimization-in-v2x-networks/pkg/data"
 	"github.com/spf13/cobra"
 	"os"
-)
-
-const (
-	generateOutputFlag             = "output"
-	generateOutputFlagShortcut     = "o"
-	generateOutputFileUsageMessage = "output file"
-
-	generateMBRFlag         = "mbr"
-	generateMBRFlagShortcut = "n"
-	generateMBRUsageMessage = "mbr length"
-
-	generateVehiclesFlag         = "vehicles"
-	generateVehiclesFlagShortcut = "v"
-	generateVehiclesUsageMessage = "vehicles count"
+	"strconv"
 )
 
 // GenerateCmd returns cobra.Command which is able to generate data in specified format.
@@ -43,44 +31,44 @@ func GenerateCmd() *cobra.Command {
 
 func generateTo(formatName string, encoderInfo formatEncoderInfo) *cobra.Command {
 	command := &cobra.Command{
-		Use:   formatName,
+		Use:   fmt.Sprintf("%s {n} {v} {output_file}", formatName),
+		Args:  cobra.ExactArgs(3),
 		Short: fmt.Sprintf("Generate data in %s format", encoderInfo.FormatDisplayName),
 		Long:  fmt.Sprintf("Allows for generating data in %s format", encoderInfo.FormatDisplayName),
-		Run:   generateWith(encoderInfo.Encoder),
+		RunE:  generateWith(encoderInfo.Encoder),
 	}
-	setUpGenerateFlags(command)
 	return command
 }
 
-func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) {
-	return func(command *cobra.Command, _ []string) {
-		output, err := command.Flags().GetString(generateOutputFlag)
-		cobra.CheckErr(err)
+func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
+	return func(command *cobra.Command, args []string) error {
+		nArg, vArg, output := args[0], args[1], args[2]
 
-		n, err := command.Flags().GetInt(generateMBRFlag)
-		cobra.CheckErr(err)
+		n, err := strconv.ParseInt(nArg, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errParseInt, nArg)
+		}
 
-		v, err := command.Flags().GetInt(generateVehiclesFlag)
-		cobra.CheckErr(err)
-
-		if output == emptyStringFlag || n == emptyIntFlag || v == emptyIntFlag {
-			_ = command.Help()
-			os.Exit(0)
+		v, err := strconv.ParseInt(vArg, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errParseInt, vArg)
 		}
 
 		outputFile, err := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
-		cobra.CheckErr(err)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errCannotOpenFile, output)
+		}
 		defer outputFile.Close()
 
-		generatedData := data.Generate(v, n)
+		generatedData := data.Generate(int(v), int(n))
 
 		err = encoder.Encode(generatedData, outputFile)
-		cobra.CheckErr(err)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errCannotEncodeData, err.Error())
+		}
+
+		return nil
 	}
 }
 
-func setUpGenerateFlags(command *cobra.Command) {
-	command.Flags().StringP(generateOutputFlag, generateOutputFlagShortcut, emptyStringFlag, generateOutputFileUsageMessage)
-	command.Flags().IntP(generateMBRFlag, generateMBRFlagShortcut, emptyIntFlag, generateMBRUsageMessage)
-	command.Flags().IntP(generateVehiclesFlag, generateVehiclesFlagShortcut, emptyIntFlag, generateVehiclesUsageMessage)
-}
+var errParseInt = errors.New("cannot parse integer")

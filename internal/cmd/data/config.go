@@ -1,6 +1,9 @@
 package data
 
-import "github.com/lothar1998/resource-optimization-in-v2x-networks/pkg/data"
+import (
+	"errors"
+	"github.com/lothar1998/resource-optimization-in-v2x-networks/pkg/data"
+)
 
 const (
 	emptyStringFlag = ""
@@ -18,4 +21,10 @@ var (
 		"plain": {"plain (CSV-like)", data.PlainEncoder{}},
 		"cplex": {"CPLEX", data.CPLEXEncoder{}},
 	}
+)
+
+var (
+	errCannotOpenFile   = errors.New("cannot open file")
+	errCannotParseData  = errors.New("cannot parse data")
+	errCannotEncodeData = errors.New("cannot encode data")
 )

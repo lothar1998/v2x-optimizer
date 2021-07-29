@@ -150,7 +150,7 @@ func splitIntString(str string, sep rune) (result []int, err error) {
 
 		parsedInt, err := strconv.ParseInt(str[startIndex:i], 10, 32)
 		if err != nil {
-			return nil, err
+			return nil, ErrMalformedData
 		}
 
 		result = append(result, int(parsedInt))
@@ -163,7 +163,7 @@ func splitIntString(str string, sep rune) (result []int, err error) {
 
 	parsedInt, err := strconv.ParseInt(str[startIndex:], 10, 32)
 	if err != nil {
-		return nil, err
+		return nil, ErrMalformedData
 	}
 
 	result = append(result, int(parsedInt))

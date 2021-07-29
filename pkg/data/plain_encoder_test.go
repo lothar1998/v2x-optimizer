@@ -3,7 +3,6 @@ package data
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -273,22 +272,18 @@ func Test_splitIntString(t *testing.T) {
 	t.Run("should return error if string is malformed", func(t *testing.T) {
 		t.Parallel()
 
-		var expectedError *strconv.NumError
-
 		slice, err := splitIntString("1,2,a,b,3", ',')
 
-		assert.ErrorAs(t, err, &expectedError)
+		assert.ErrorIs(t, err, ErrMalformedData)
 		assert.Zero(t, slice)
 	})
 
 	t.Run("should return error if string has different delimiter than expected one", func(t *testing.T) {
 		t.Parallel()
 
-		var expectedError *strconv.NumError
-
 		slice, err := splitIntString("1,2,3,4,5", '.')
 
-		assert.ErrorAs(t, err, &expectedError)
+		assert.ErrorIs(t, err, ErrMalformedData)
 		assert.Zero(t, slice)
 	})
 }

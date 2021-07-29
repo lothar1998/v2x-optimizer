@@ -7,23 +7,13 @@ import (
 	"os"
 )
 
-const (
-	convertInputFlag             = "input"
-	convertInputFlagShortcut     = "i"
-	convertInputFileUsageMessage = "input file (required)"
-
-	convertOutputFlag             = "output"
-	convertOutputFlagShortcut     = "o"
-	convertOutputFileUsageMessage = "output file (required)"
-)
-
 // ConvertCmd returns cobra.Command which is able to convert one type of data into another.
 // It should be registered in root command using AddCommand() method.
 func ConvertCmd() *cobra.Command {
 	convertCmd := &cobra.Command{
 		Use:   "convert",
 		Short: "Convert data from one format to another",
-		Long:  `Allows for converting data from one format to another`,
+		Long:  "Allows for converting data from one format to another",
 		Run: func(cmd *cobra.Command, args []string) {
 			_ = cmd.Help()
 		},
@@ -60,44 +50,41 @@ func convertFrom(formatName string, encoderInfo formatEncoderInfo) *cobra.Comman
 
 func convertTo(formatName string, decoder, encoder formatEncoderInfo) *cobra.Command {
 	command := &cobra.Command{
-		Use:   formatName,
+		Use:   fmt.Sprintf("%s {input_file} {output_file}", formatName),
+		Args:  cobra.ExactArgs(2),
 		Short: fmt.Sprintf("Convert data to %s format", encoder.FormatDisplayName),
 		Long:  fmt.Sprintf("Allows for converting data to %s format", encoder.FormatDisplayName),
-		Run:   convertWith(decoder.Encoder, encoder.Encoder),
+		RunE:  convertWith(decoder.Encoder, encoder.Encoder),
 	}
-	setUpConvertFlags(command)
 	return command
 }
 
-func convertWith(decoder, encoder data.EncoderDecoder) func(*cobra.Command, []string) {
-	return func(command *cobra.Command, _ []string) {
-		input, err := command.Flags().GetString(convertInputFlag)
-		cobra.CheckErr(err)
-		output, err := command.Flags().GetString(convertOutputFlag)
-		cobra.CheckErr(err)
-
-		if input == emptyStringFlag || output == emptyStringFlag {
-			_ = command.Help()
-			os.Exit(0)
-		}
+func convertWith(decoder, encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
+	return func(command *cobra.Command, args []string) error {
+		input, output := args[0], args[1]
 
 		inputFile, err := os.Open(input)
-		cobra.CheckErr(err)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errCannotOpenFile, input)
+		}
 		defer inputFile.Close()
 
 		outputFile, err := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
-		cobra.CheckErr(err)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errCannotOpenFile, output)
+		}
 		defer outputFile.Close()
 
 		decodedData, err := decoder.Decode(inputFile)
-		cobra.CheckErr(err)
+		if err != nil {
+			return fmt.Errorf("%w: %s", errCannotParseData, err.Error())
+		}
 
 		err = encoder.Encode(decodedData, outputFile)
-		cobra.CheckErr(err)
-	}
-}
+		if err != nil {
+			return fmt.Errorf("%w: %s", errCannotEncodeData, err.Error())
+		}
 
-func setUpConvertFlags(command *cobra.Command) {
-	command.Flags().StringP(convertInputFlag, convertInputFlagShortcut, emptyStringFlag, convertInputFileUsageMessage)
-	command.Flags().StringP(convertOutputFlag, convertOutputFlagShortcut, emptyStringFlag, convertOutputFileUsageMessage)
+		return nil
+	}
 }
