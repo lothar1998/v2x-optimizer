@@ -10,14 +10,14 @@ import (
 func TestPlainEncoder_Encode_Decode_Compatibility(t *testing.T) {
 	t.Parallel()
 
-	mbr := []int{1, 2, 3, 4, 5}
+	mrb := []int{1, 2, 3, 4, 5}
 	r := [][]int{
 		{11, 12, 13, 14, 15},
 		{21, 22, 23, 24, 25},
 		{31, 32, 33, 34, 35},
 		{41, 42, 43, 44, 45},
 	}
-	data := &Data{MBR: mbr, R: r}
+	data := &Data{MRB: mrb, R: r}
 
 	encoder := PlainEncoder{}
 
@@ -44,14 +44,14 @@ func TestPlainEncoder_Encode(t *testing.T) {
 			"31,32,33,34,35\n" +
 			"41,42,43,44,45\n"
 
-		mbr := []int{1, 2, 3, 4, 5}
+		mrb := []int{1, 2, 3, 4, 5}
 		r := [][]int{
 			{11, 12, 13, 14, 15},
 			{21, 22, 23, 24, 25},
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MBR: mbr, R: r}
+		data := &Data{MRB: mrb, R: r}
 
 		var buffer bytes.Buffer
 
@@ -61,10 +61,10 @@ func TestPlainEncoder_Encode(t *testing.T) {
 		assert.Equal(t, expectedEncodedData, buffer.String())
 	})
 
-	t.Run("should encode only MBR", func(t *testing.T) {
+	t.Run("should encode only MRB", func(t *testing.T) {
 		t.Parallel()
 
-		data := &Data{MBR: []int{1, 2, 3}}
+		data := &Data{MRB: []int{1, 2, 3}}
 
 		var buffer bytes.Buffer
 
@@ -100,14 +100,14 @@ func TestPlainEncoder_Decode(t *testing.T) {
 			"31,32,33,34,35\n" +
 			"41,42,43,44,45\n"
 
-		mbr := []int{1, 2, 3, 4, 5}
+		mrb := []int{1, 2, 3, 4, 5}
 		r := [][]int{
 			{11, 12, 13, 14, 15},
 			{21, 22, 23, 24, 25},
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		expectedData := &Data{MBR: mbr, R: r}
+		expectedData := &Data{MRB: mrb, R: r}
 
 		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
 
@@ -124,14 +124,14 @@ func TestPlainEncoder_Decode(t *testing.T) {
 			"31,32,33,34,35\n" +
 			"41,42,43,44,45"
 
-		mbr := []int{1, 2, 3, 4, 5}
+		mrb := []int{1, 2, 3, 4, 5}
 		r := [][]int{
 			{11, 12, 13, 14, 15},
 			{21, 22, 23, 24, 25},
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		expectedData := &Data{MBR: mbr, R: r}
+		expectedData := &Data{MRB: mrb, R: r}
 
 		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
 
@@ -152,12 +152,12 @@ func TestPlainEncoder_Decode(t *testing.T) {
 		assert.Zero(t, data)
 	})
 
-	t.Run("should decode only one line that represents MBR", func(t *testing.T) {
+	t.Run("should decode only one line that represents MRB", func(t *testing.T) {
 		t.Parallel()
 
 		dataString := "1,2,3,4,5\n"
 
-		expectedData := &Data{MBR: []int{1, 2, 3, 4, 5}}
+		expectedData := &Data{MRB: []int{1, 2, 3, 4, 5}}
 
 		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
 
@@ -165,12 +165,12 @@ func TestPlainEncoder_Decode(t *testing.T) {
 		assert.Equal(t, expectedData, data)
 	})
 
-	t.Run("should decode only one line that represents MBR without new line at the end", func(t *testing.T) {
+	t.Run("should decode only one line that represents MRB without new line at the end", func(t *testing.T) {
 		t.Parallel()
 
 		dataString := "1,2,3,4,5"
 
-		expectedData := &Data{MBR: []int{1, 2, 3, 4, 5}}
+		expectedData := &Data{MRB: []int{1, 2, 3, 4, 5}}
 
 		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
 

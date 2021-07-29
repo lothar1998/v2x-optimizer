@@ -14,18 +14,18 @@ var DefaultDelimiter = ','
 // 1,2,3,4,5
 // 6,7,8,9,2
 // 9,4,2,1,0
-// where the first line is MBR values and further lines are R values.
+// where the first line is MRB values and further lines are R values.
 type PlainEncoder struct{}
 
 // Encode allows for encoding data to writer into CSV-like format.
-// It returns ErrMalformedData if the lengths of R slices are not equal to MBR slice length.
-// It is possible to encode Data that consists only of MBR values.
+// It returns ErrMalformedData if the lengths of R slices are not equal to MRB slice length.
+// It is possible to encode Data that consists only of MRB values.
 func (e PlainEncoder) Encode(data *Data, writer io.Writer) error {
-	if len(data.MBR) == 0 {
+	if len(data.MRB) == 0 {
 		return ErrMalformedData
 	}
 
-	_, err := writer.Write([]byte(joinInts(data.MBR, DefaultDelimiter) + "\n"))
+	_, err := writer.Write([]byte(joinInts(data.MRB, DefaultDelimiter) + "\n"))
 	if err != nil {
 		return err
 	}
@@ -41,8 +41,8 @@ func (e PlainEncoder) Encode(data *Data, writer io.Writer) error {
 }
 
 // Decode allows for decoding data from reader in CSV-like format.
-// It returns an error if the lengths of R slices are not equal to MBR slice length. It is possible to decode
-// data that consists only of MBR values. Input data line should be ended with newline '\n' character,
+// It returns an error if the lengths of R slices are not equal to MRB slice length. It is possible to decode
+// data that consists only of MRB values. Input data line should be ended with newline '\n' character,
 // however, it is possible to do not use '\n' in the last line.
 func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 	var data Data
@@ -52,7 +52,7 @@ func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 	line, err := lineReader.ReadString('\n')
 
 	if err == io.EOF && len(line) > 0 {
-		err := setMBR(&data, line)
+		err := setMRB(&data, line)
 		if err != nil {
 			return nil, err
 		}
@@ -63,18 +63,18 @@ func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 		return nil, err
 	}
 
-	err = setMBR(&data, line[:len(line)-1])
+	err = setMRB(&data, line[:len(line)-1])
 	if err != nil {
 		return nil, err
 	}
 
-	mbrLen := len(data.MBR)
+	mrbLen := len(data.MRB)
 
 	for {
 		line, err := lineReader.ReadString('\n')
 
 		if err == io.EOF && len(line) > 0 {
-			err := appendR(&data, line, mbrLen)
+			err := appendR(&data, line, mrbLen)
 			if err != nil {
 				return nil, err
 			}
@@ -85,7 +85,7 @@ func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 			return nil, err
 		}
 
-		err = appendR(&data, line[:len(line)-1], mbrLen)
+		err = appendR(&data, line[:len(line)-1], mrbLen)
 		if err != nil {
 			return nil, err
 		}
@@ -110,24 +110,24 @@ func joinInts(elems []int, sep rune) string {
 	return b.String()
 }
 
-func setMBR(data *Data, line string) error {
-	mbr, err := splitIntString(line, DefaultDelimiter)
+func setMRB(data *Data, line string) error {
+	mrb, err := splitIntString(line, DefaultDelimiter)
 	if err != nil {
 		return err
 	}
 
-	data.MBR = mbr
+	data.MRB = mrb
 
 	return nil
 }
 
-func appendR(data *Data, line string, mbrLen int) error {
+func appendR(data *Data, line string, mrbLen int) error {
 	rLine, err := splitIntString(line, DefaultDelimiter)
 	if err != nil {
 		return err
 	}
 
-	if len(rLine) != mbrLen {
+	if len(rLine) != mrbLen {
 		return ErrMalformedData
 	}
 

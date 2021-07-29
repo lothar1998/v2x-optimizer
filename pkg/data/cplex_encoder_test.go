@@ -11,14 +11,14 @@ import (
 func TestCPLEXEncoder_Encode_Decode_Compatibility(t *testing.T) {
 	t.Parallel()
 
-	mbr := []int{1, 2, 3, 4, 5}
+	mrb := []int{1, 2, 3, 4, 5}
 	r := [][]int{
 		{11, 12, 13, 14, 15},
 		{21, 22, 23, 24, 25},
 		{31, 32, 33, 34, 35},
 		{41, 42, 43, 44, 45},
 	}
-	data := &Data{MBR: mbr, R: r}
+	data := &Data{MRB: mrb, R: r}
 
 	encoder := CPLEXEncoder{}
 
@@ -42,7 +42,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 
 		cplexStr := "V = 4;\n" +
 			"N = 5;\n" +
-			"MBR = [1 2 3 4 5];\n" +
+			"MRB = [1 2 3 4 5];\n" +
 			"R = [\n" +
 			"[11 12 13 14 15]\n" +
 			"[21 22 23 24 25]\n" +
@@ -50,14 +50,14 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			"[41 42 43 44 45]\n" +
 			"];\n"
 
-		mbr := []int{1, 2, 3, 4, 5}
+		mrb := []int{1, 2, 3, 4, 5}
 		r := [][]int{
 			{11, 12, 13, 14, 15},
 			{21, 22, 23, 24, 25},
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MBR: mbr, R: r}
+		data := &Data{MRB: mrb, R: r}
 
 		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
 
@@ -71,7 +71,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		cplexStr := "V = 4;\n" +
 			"N = 5;\n" +
 			"C = \"abcd\";\n" +
-			"MBR = [1 2 3 4 5];\n" +
+			"MRB = [1 2 3 4 5];\n" +
 			"R = [\n" +
 			"[11 12 13 14 15]\n" +
 			"[21 22 23 24 25]\n" +
@@ -79,14 +79,14 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			"[41 42 43 44 45]\n" +
 			"];\n"
 
-		mbr := []int{1, 2, 3, 4, 5}
+		mrb := []int{1, 2, 3, 4, 5}
 		r := [][]int{
 			{11, 12, 13, 14, 15},
 			{21, 22, 23, 24, 25},
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MBR: mbr, R: r}
+		data := &Data{MRB: mrb, R: r}
 
 		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
 
@@ -99,7 +99,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 
 		cplexStr := "V = 4;\n" +
 			"N = 5;\n" +
-			"MBR = [1 2 3 4 5];\n" +
+			"MRB = [1 2 3 4 5];\n" +
 			"R = [\n" +
 			"[11 12 13 14 15]\n" +
 			"[21 22 24 25]\n" +
@@ -115,7 +115,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		t.Parallel()
 
 		cplexStr := "V = 4;\n" +
-			"MBR = [1 2 3 4 5];\n" +
+			"MRB = [1 2 3 4 5];\n" +
 			"R = [\n" +
 			"[11 12 13 14 15]\n" +
 			"[21 22 23 24 25]\n" +
@@ -131,7 +131,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		t.Parallel()
 
 		jsonString := `{
-			  "MBR": [1, 2, 3, 4, 5],
+			  "MRB": [1, 2, 3, 4, 5],
 			  "R": [
 				[11, 22, 33, 44, 55],
 				[11, 22, 33, 44, 55],
@@ -154,18 +154,18 @@ func TestCPLEXEncoder_Encode(t *testing.T) {
 	t.Run("should encode data to CPLEX format", func(t *testing.T) {
 		t.Parallel()
 
-		mbr := []int{1, 2, 3, 4, 5}
+		mrb := []int{1, 2, 3, 4, 5}
 		r := [][]int{
 			{11, 12, 13, 14, 15},
 			{21, 22, 23, 24, 25},
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MBR: mbr, R: r}
+		data := &Data{MRB: mrb, R: r}
 
 		expectedEncodedString := "V = 4;\n" +
 			"N = 5;\n" +
-			"MBR = [1 2 3 4 5];\n" +
+			"MRB = [1 2 3 4 5];\n" +
 			"R = [\n" +
 			"[11 12 13 14 15]\n" +
 			"[21 22 23 24 25]\n" +
@@ -356,7 +356,7 @@ func Test_findValue(t *testing.T) {
 	t.Run("should parse array value", func(t *testing.T) {
 		t.Parallel()
 
-		str := "MBR = [2 3 5 1 5 1 22 12123 12]"
+		str := "MRB = [2 3 5 1 5 1 22 12123 12]"
 
 		assert.Equal(t, "[2 3 5 1 5 1 22 12123 12]", findValue(str))
 	})
@@ -364,7 +364,7 @@ func Test_findValue(t *testing.T) {
 	t.Run("should parse array value with whitespace chars", func(t *testing.T) {
 		t.Parallel()
 
-		str := " \t MBR   \n    = \t  [2 3 5 1 5\n 1   22\t 12123 12]    \t   \n   "
+		str := " \t MRB   \n    = \t  [2 3 5 1 5\n 1   22\t 12123 12]    \t   \n   "
 
 		assert.Equal(t, "[2 3 5 1 5 1   22 12123 12]", findValue(str))
 	})
