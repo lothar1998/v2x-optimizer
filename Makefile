@@ -1,6 +1,6 @@
 CGO_ENABLED = 0
 
-.PHONY: all build lint test format
+.PHONY: all build lint test format install
 all: lint test build
 
 build:
@@ -18,3 +18,7 @@ test:
 format:
 	@echo "Running format"
 	go fmt ./...
+
+install:
+	@echo "Installing app"
+	go install ./...
