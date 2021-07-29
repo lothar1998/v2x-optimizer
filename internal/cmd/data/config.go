@@ -5,11 +5,6 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
-const (
-	emptyStringFlag = ""
-	emptyIntFlag    = 0
-)
-
 type formatEncoderInfo struct {
 	FormatDisplayName string
 	Encoder           data.EncoderDecoder
