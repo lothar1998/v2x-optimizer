@@ -126,6 +126,26 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		assert.ErrorIs(t, err, ErrMalformedData)
 		assert.Zero(t, decodeData)
 	})
+
+	t.Run("should return error if data is malformed", func(t *testing.T) {
+		t.Parallel()
+
+		jsonString := `{
+			  "MBR": [1, 2, 3, 4, 5],
+			  "R": [
+				[11, 22, 33, 44, 55],
+				[11, 22, 33, 44, 55],
+				[11, 22, 33, 44, 55],
+				[11, 22, 33, 44, 55],
+				[11, 22, 33, 44, 55]
+			  ]
+             }`
+
+		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(jsonString))
+
+		assert.ErrorIs(t, err, ErrMalformedData)
+		assert.Zero(t, decodeData)
+	})
 }
 
 func TestCPLEXEncoder_Encode(t *testing.T) {

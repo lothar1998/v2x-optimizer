@@ -21,7 +21,7 @@ func (e JSONEncoder) Decode(r io.Reader) (*Data, error) {
 	decoder := json.NewDecoder(r)
 	err := decoder.Decode(&data)
 	if err != nil {
-		return nil, err
+		return nil, ErrMalformedData
 	}
 
 	return &data, nil

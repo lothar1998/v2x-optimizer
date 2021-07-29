@@ -105,6 +105,10 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 		}
 	}
 
+	if data.MBR == nil || data.R == nil {
+		return nil, ErrMalformedData
+	}
+
 	if len(data.MBR) != n && len(data.R) != v {
 		return nil, ErrMalformedData
 	}
