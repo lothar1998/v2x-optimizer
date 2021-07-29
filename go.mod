@@ -1,4 +1,4 @@
-module github.com/lothar1998/resource-optimization-in-v2x-networks
+module github.com/lothar1998/v2x-optimizer
 
 go 1.16
 
