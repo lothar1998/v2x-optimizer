@@ -9,7 +9,7 @@ import (
 var RLimit = 100
 
 // Generate facilitates generating random data with Data.R values constraint to given RLimit.
-// Data.MBR values are bounded by the computed limit to provide data that create a solvable problem.
+// Data.MRB values are bounded by the computed limit to provide data that create a solvable problem.
 func Generate(v, n int) *Data {
 	r := make([][]int, v)
 
@@ -20,14 +20,14 @@ func Generate(v, n int) *Data {
 		}
 	}
 
-	mbr := make([]int, n)
-	mbrLimit := RLimit * v / n
+	mrb := make([]int, n)
+	mrbLimit := RLimit * v / n
 
 	for i := 0; i < n; i++ {
-		mbr[i] = rand.Intn(mbrLimit) + 1
+		mrb[i] = rand.Intn(mrbLimit) + 1
 	}
 
-	return &Data{R: r, MBR: mbr}
+	return &Data{R: r, MRB: mrb}
 }
 
 func init() {

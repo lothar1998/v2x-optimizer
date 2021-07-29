@@ -14,13 +14,13 @@ type CPLEXEncoder struct{}
 
 // Encode allows for encoding Data to CPLEX data format.
 func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
-	lengths := fmt.Sprintf("V = %d;\nN = %d;\n", len(data.R), len(data.MBR))
+	lengths := fmt.Sprintf("V = %d;\nN = %d;\n", len(data.R), len(data.MRB))
 	_, err := writer.Write([]byte(lengths))
 	if err != nil {
 		return err
 	}
 
-	_, err = writer.Write([]byte("MBR = " + toIntArray(data.MBR) + ";\n"))
+	_, err = writer.Write([]byte("MRB = " + toIntArray(data.MRB) + ";\n"))
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
 }
 
 // Decode allows for decoding CPLEX data format to Data.
-// It returns an error if the sizes of R and MBR are not equal to size variables [V, N].
+// It returns an error if the sizes of R and MRB are not equal to size variables [V, N].
 // It is possible to decode data with additional variables defined. In such a case Decode skips these values.
 func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 	var data Data
@@ -93,23 +93,23 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 			}
 			data.R = r
 
-		case strings.HasPrefix(line, "MBR"):
+		case strings.HasPrefix(line, "MRB"):
 			variable := findValue(line)
-			mbr, err := parseIntArray(variable)
+			mrb, err := parseIntArray(variable)
 			if err != nil {
 				return nil, err
 			}
-			data.MBR = mbr
+			data.MRB = mrb
 
 		default:
 		}
 	}
 
-	if data.MBR == nil || data.R == nil {
+	if data.MRB == nil || data.R == nil {
 		return nil, ErrMalformedData
 	}
 
-	if len(data.MBR) != n && len(data.R) != v {
+	if len(data.MRB) != n && len(data.R) != v {
 		return nil, ErrMalformedData
 	}
 

@@ -13,10 +13,10 @@ func TestGenerate(t *testing.T) {
 
 	data := Generate(v, n)
 
-	assert.Len(t, data.MBR, n)
+	assert.Len(t, data.MRB, n)
 	assert.Len(t, data.R, v)
 	assert.Len(t, data.R[0], n)
-	assert.Greater(t, sum(data.MBR), 0)
+	assert.Greater(t, sum(data.MRB), 0)
 	for _, s := range data.R {
 		assert.Greater(t, sum(s), 0)
 	}

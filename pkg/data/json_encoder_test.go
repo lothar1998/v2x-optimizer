@@ -10,7 +10,7 @@ import (
 func TestDecode(t *testing.T) {
 	t.Parallel()
 
-	mbr := []int{1, 2, 3, 4, 5}
+	mrb := []int{1, 2, 3, 4, 5}
 	r := [][]int{
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
@@ -18,10 +18,10 @@ func TestDecode(t *testing.T) {
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
 	}
-	data := &Data{MBR: mbr, R: r}
+	data := &Data{MRB: mrb, R: r}
 
 	jsonString := `{
-			  "MBR": [1, 2, 3, 4, 5],
+			  "MRB": [1, 2, 3, 4, 5],
 			  "R": [
 				[11, 22, 33, 44, 55],
 				[11, 22, 33, 44, 55],
@@ -40,7 +40,7 @@ func TestDecode(t *testing.T) {
 func TestEncode(t *testing.T) {
 	t.Parallel()
 
-	mbr := []int{1, 2, 3, 4, 5}
+	mrb := []int{1, 2, 3, 4, 5}
 	r := [][]int{
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
@@ -48,10 +48,10 @@ func TestEncode(t *testing.T) {
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
 	}
-	data := &Data{MBR: mbr, R: r}
+	data := &Data{MRB: mrb, R: r}
 
 	jsonString := `{
-			  "MBR": [1, 2, 3, 4, 5],
+			  "MRB": [1, 2, 3, 4, 5],
 			  "R": [
 				[11, 22, 33, 44, 55],
 				[11, 22, 33, 44, 55],
