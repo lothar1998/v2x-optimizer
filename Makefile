@@ -25,6 +25,6 @@ install:
 	@go install ./...
 
 # CPLEX optimizer
-optimize:
+optimize-cplex:
 	@echo "# Optimizing using CPLEX..."
 	@$(MAKE) --no-print-directory -C third_party/cplex
