@@ -25,5 +25,6 @@ subject to {
 }
 
 execute {
+  writeln("RRH_COUNT = ", cplex.getObjValue())
   writeln("RRH = ", x)
 }
