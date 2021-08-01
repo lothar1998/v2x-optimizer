@@ -1,4 +1,4 @@
-package data
+package cmd
 
 import (
 	"fmt"
@@ -49,14 +49,13 @@ func convertFrom(formatName string, encoderInfo formatEncoderInfo) *cobra.Comman
 }
 
 func convertTo(formatName string, decoder, encoder formatEncoderInfo) *cobra.Command {
-	command := &cobra.Command{
+	return &cobra.Command{
 		Use:   fmt.Sprintf("%s {input_file} {output_file}", formatName),
 		Args:  cobra.ExactArgs(2),
 		Short: fmt.Sprintf("Convert data to %s format", encoder.FormatDisplayName),
 		Long:  fmt.Sprintf("Allows for converting data to %s format", encoder.FormatDisplayName),
 		RunE:  convertWith(decoder.Encoder, encoder.Encoder),
 	}
-	return command
 }
 
 func convertWith(decoder, encoder data.EncoderDecoder) func(*cobra.Command, []string) error {

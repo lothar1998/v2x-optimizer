@@ -1,4 +1,4 @@
-package data
+package cmd
 
 import (
 	"errors"
@@ -30,14 +30,13 @@ func GenerateCmd() *cobra.Command {
 }
 
 func generateTo(formatName string, encoderInfo formatEncoderInfo) *cobra.Command {
-	command := &cobra.Command{
+	return &cobra.Command{
 		Use:   fmt.Sprintf("%s {n} {v} {output_file}", formatName),
 		Args:  cobra.ExactArgs(3),
 		Short: fmt.Sprintf("Generate data in %s format", encoderInfo.FormatDisplayName),
 		Long:  fmt.Sprintf("Allows for generating data in %s format", encoderInfo.FormatDisplayName),
 		RunE:  generateWith(encoderInfo.Encoder),
 	}
-	return command
 }
 
 func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
