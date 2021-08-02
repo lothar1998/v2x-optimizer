@@ -26,7 +26,9 @@ var (
 
 	availableFileFormats = getAvailableFileFormats()
 
-	namesToOptimizers = map[string]optimizer.Optimizer{}
+	namesToOptimizers = map[string]optimizer.Optimizer{
+		"first-fit": optimizer.FirstFit{},
+	}
 )
 
 var (
