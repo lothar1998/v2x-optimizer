@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizers"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 	"os"
 	"strconv"
@@ -30,7 +30,7 @@ func OptimizeCmd() *cobra.Command {
 	return optimizeCmd
 }
 
-func optimizeWith(optimizerName string, optimizer optimizers.Optimizer) *cobra.Command {
+func optimizeWith(optimizerName string, optimizer optimizer.Optimizer) *cobra.Command {
 	return &cobra.Command{
 		Use:   fmt.Sprintf("%s {data_file}", optimizerName),
 		Args:  cobra.ExactArgs(1),
@@ -40,7 +40,7 @@ func optimizeWith(optimizerName string, optimizer optimizers.Optimizer) *cobra.C
 	}
 }
 
-func optimizeUsing(optimizer optimizers.Optimizer) func(*cobra.Command, []string) error {
+func optimizeUsing(optimizer optimizer.Optimizer) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		input := args[0]
 
@@ -57,7 +57,7 @@ func optimizeUsing(optimizer optimizers.Optimizer) func(*cobra.Command, []string
 
 		encoderInfo, ok := formatsToEncodersInfo[format]
 		if !ok {
-			return fmt.Errorf("%w: %s", errIncorrectDataType, format)
+			return fmt.Errorf("%w: %s", errUnknownDataFormat, format)
 		}
 
 		data, err := encoderInfo.Encoder.Decode(file)
@@ -76,7 +76,7 @@ func optimizeUsing(optimizer optimizers.Optimizer) func(*cobra.Command, []string
 	}
 }
 
-func toCPLEXResultFormat(result *optimizers.Result) string {
+func toCPLEXResultFormat(result *optimizer.Result) string {
 	var sb strings.Builder
 
 	sb.WriteString("RRH_COUNT = " + strconv.Itoa(int(result.RRHCount)) + "\n")
@@ -105,5 +105,5 @@ func toCPLEXResultFormat(result *optimizers.Result) string {
 
 func setUpOptimizeFlags(command *cobra.Command) {
 	command.Flags().StringP("format", "f", plainFormat,
-		"defines input data file format [ plain | cplex | json ]")
+		"defines input data file format [ "+strings.Join(availableFileFormats, " | ")+" ]")
 }

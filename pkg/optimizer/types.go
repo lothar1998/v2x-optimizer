@@ -1,4 +1,4 @@
-package optimizers
+package optimizer
 
 import "github.com/lothar1998/v2x-optimizer/pkg/data"
 

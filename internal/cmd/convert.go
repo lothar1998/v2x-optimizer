@@ -37,7 +37,7 @@ func ConvertCmd() *cobra.Command {
 	return convertCmd
 }
 
-func convertFrom(formatName string, encoderInfo formatEncoderInfo) *cobra.Command {
+func convertFrom(formatName string, encoderInfo encoderInfo) *cobra.Command {
 	return &cobra.Command{
 		Use:   formatName,
 		Short: fmt.Sprintf("Convert data from %s format", encoderInfo.FormatDisplayName),
@@ -48,7 +48,7 @@ func convertFrom(formatName string, encoderInfo formatEncoderInfo) *cobra.Comman
 	}
 }
 
-func convertTo(formatName string, decoder, encoder formatEncoderInfo) *cobra.Command {
+func convertTo(formatName string, decoder, encoder encoderInfo) *cobra.Command {
 	return &cobra.Command{
 		Use:   fmt.Sprintf("%s {input_file} {output_file}", formatName),
 		Args:  cobra.ExactArgs(2),
