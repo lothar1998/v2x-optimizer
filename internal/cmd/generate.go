@@ -1,7 +1,6 @@
-package data
+package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/spf13/cobra"
@@ -29,15 +28,14 @@ func GenerateCmd() *cobra.Command {
 	return generateCmd
 }
 
-func generateTo(formatName string, encoderInfo formatEncoderInfo) *cobra.Command {
-	command := &cobra.Command{
+func generateTo(formatName string, encoderInfo encoderInfo) *cobra.Command {
+	return &cobra.Command{
 		Use:   fmt.Sprintf("%s {n} {v} {output_file}", formatName),
 		Args:  cobra.ExactArgs(3),
 		Short: fmt.Sprintf("Generate data in %s format", encoderInfo.FormatDisplayName),
 		Long:  fmt.Sprintf("Allows for generating data in %s format", encoderInfo.FormatDisplayName),
 		RunE:  generateWith(encoderInfo.Encoder),
 	}
-	return command
 }
 
 func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
@@ -70,5 +68,3 @@ func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) er
 		return nil
 	}
 }
-
-var errParseInt = errors.New("cannot parse integer")
