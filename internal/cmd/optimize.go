@@ -21,8 +21,8 @@ func OptimizeCmd() *cobra.Command {
 		},
 	}
 
-	for name, optimizer := range namesToOptimizers {
-		command := optimizeWith(name, optimizer)
+	for name, o := range namesToOptimizers {
+		command := optimizeWith(name, o)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
 	}
@@ -79,7 +79,7 @@ func optimizeUsing(optimizer optimizer.Optimizer) func(*cobra.Command, []string)
 func toCPLEXResultFormat(result *optimizer.Result) string {
 	var sb strings.Builder
 
-	sb.WriteString("RRH_COUNT = " + strconv.Itoa(int(result.RRHCount)) + "\n")
+	sb.WriteString("RRH_COUNT = " + strconv.Itoa(result.RRHCount) + "\n")
 	sb.WriteString("RRH = [")
 
 	if len(result.RRH) > 0 {
