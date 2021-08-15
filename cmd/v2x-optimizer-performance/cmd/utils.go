@@ -18,12 +18,12 @@ func outputToConsole(pathsToResults map[string]*resultForPath) {
 		titleString := "Root: " + rootPath
 		fmt.Println(strings.Repeat("-", utf8.RuneCountInString(titleString)+10))
 		fmt.Println(titleString)
-		fmt.Printf("Average approx error: %.3f", result.AverageApproxError)
+		fmt.Printf("Average approx error: %.3f", result.AverageRelativeError)
 		fmt.Println()
-		for subPath, approxErrorInfo := range result.PathToApproxErrors {
+		for subPath, approxErrorInfo := range result.PathToRelativeErrors {
 			fmt.Printf("%s\t->\tCustomResult: %d\t\tCPLEXResult: %d\t\tDiff: %d\t\tApproxError: %.3f\n",
 				filepath.Base(subPath), approxErrorInfo.CustomResult, approxErrorInfo.CPLEXResult,
-				approxErrorInfo.Diff, approxErrorInfo.ApproxError)
+				approxErrorInfo.AbsoluteError, approxErrorInfo.RelativeError)
 		}
 	}
 }
@@ -62,18 +62,18 @@ func outputToCSVFile(pathsToResults map[string]*resultForPath, outputFilepath st
 }
 
 func toSeparatedValues(resultForPath *resultForPath) [][]string {
-	result := make([][]string, len(resultForPath.PathToApproxErrors))
+	result := make([][]string, len(resultForPath.PathToRelativeErrors))
 
 	var i int
-	for currentPath, info := range resultForPath.PathToApproxErrors {
+	for currentPath, info := range resultForPath.PathToRelativeErrors {
 		result[i] = make([]string, 6)
 
 		result[i][0] = currentPath
 		result[i][1] = strconv.Itoa(info.CustomResult)
 		result[i][2] = strconv.Itoa(info.CPLEXResult)
-		result[i][3] = strconv.Itoa(info.Diff)
-		result[i][4] = strconv.FormatFloat(info.ApproxError, 'f', 3, 64)
-		result[i][5] = strconv.FormatFloat(resultForPath.AverageApproxError, 'f', 3, 64)
+		result[i][3] = strconv.Itoa(info.AbsoluteError)
+		result[i][4] = strconv.FormatFloat(info.RelativeError, 'f', 3, 64)
+		result[i][5] = strconv.FormatFloat(resultForPath.AverageRelativeError, 'f', 3, 64)
 
 		i++
 	}

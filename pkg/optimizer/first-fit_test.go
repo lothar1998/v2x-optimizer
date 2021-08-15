@@ -27,7 +27,7 @@ func TestFirstFit_Optimize(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, 3, result.RRHCount)
-		assert.Equal(t, []bool{true, true, true, false}, result.RRH)
+		assert.Equal(t, []bool{true, true, true, false}, result.RRHEnable)
 		assert.Equal(t, []int{0, 1, 2, 0, 2}, result.VehiclesToRRHAssignment)
 	})
 

@@ -10,14 +10,17 @@ import (
 	"syscall"
 )
 
-type ApproxErrorCalculator struct {
+// ErrorCalculator allows for simple computation of error between optimal and heuristic solutions.
+type ErrorCalculator struct {
 	Filepath        string
 	CustomOptimizer optimizer.Optimizer
 	CPLEXProcess    CPLEXProcess
 	ParseOutputFunc func(string) (*optimizer.Result, error)
 }
 
-func (c ApproxErrorCalculator) Compute(ctx context.Context) (*ApproxErrorInfo, error) {
+// Compute runs computation of error. It returns ErrorInfo that consists of
+// ErrorInfo.RelativeError along with more specific results.
+func (c ErrorCalculator) Compute(ctx context.Context) (*ErrorInfo, error) {
 	var wg sync.WaitGroup
 
 	wg.Add(2)
@@ -39,17 +42,17 @@ func (c ApproxErrorCalculator) Compute(ctx context.Context) (*ApproxErrorInfo, e
 
 	diff := int(math.Abs(float64(customValue - cplexValue)))
 
-	info := ApproxErrorInfo{
-		CustomResult: customValue,
-		CPLEXResult:  cplexValue,
-		Diff:         diff,
-		ApproxError:  float64(diff) / float64(cplexValue),
+	info := ErrorInfo{
+		CustomResult:  customValue,
+		CPLEXResult:   cplexValue,
+		AbsoluteError: diff,
+		RelativeError: float64(diff) / float64(cplexValue),
 	}
 
 	return &info, nil
 }
 
-func (c ApproxErrorCalculator) optimizeUsingCustom(ctx context.Context, wg *sync.WaitGroup) (chan int, chan error) {
+func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context, wg *sync.WaitGroup) (chan int, chan error) {
 
 	resultChannel := make(chan int, 1)
 	errorChannel := make(chan error, 2)
@@ -96,7 +99,7 @@ func (c ApproxErrorCalculator) optimizeUsingCustom(ctx context.Context, wg *sync
 	return resultChannel, errorChannel
 }
 
-func (c ApproxErrorCalculator) optimizeUsingCPLEX(ctx context.Context, wg *sync.WaitGroup) (chan int, chan error) {
+func (c ErrorCalculator) optimizeUsingCPLEX(ctx context.Context, wg *sync.WaitGroup) (chan int, chan error) {
 
 	resultChannel := make(chan int, 1)
 	errorChannel := make(chan error, 2)
@@ -115,6 +118,7 @@ func (c ApproxErrorCalculator) optimizeUsingCPLEX(ctx context.Context, wg *sync.
 		}
 
 		cplexResult, err := c.ParseOutputFunc(string(bytes))
+		print(string(bytes))
 		if err != nil {
 			errorChannel <- err
 			return

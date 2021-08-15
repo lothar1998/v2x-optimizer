@@ -30,7 +30,7 @@ func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
 		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(&optimizer.Result{RRHCount: expectedResult}, nil)
-		calculator := ApproxErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
+		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
 		var wg sync.WaitGroup
 
@@ -55,7 +55,7 @@ func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
 
-		calculator := ApproxErrorCalculator{Filepath: "", CustomOptimizer: optimizerMock}
+		calculator := ErrorCalculator{Filepath: "", CustomOptimizer: optimizerMock}
 
 		var wg sync.WaitGroup
 
@@ -81,7 +81,7 @@ func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
 
-		calculator := ApproxErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
+		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
 		var wg sync.WaitGroup
 
@@ -110,7 +110,7 @@ func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
 		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(nil, expectedError)
 
-		calculator := ApproxErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
+		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
 		var wg sync.WaitGroup
 
@@ -147,7 +147,7 @@ func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
 				return nil, nil
 			})
 
-		calculator := ApproxErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
+		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
 		var wg sync.WaitGroup
 
@@ -184,7 +184,7 @@ func TestApproxErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 			return &optimizer.Result{RRHCount: 10}, nil
 		}
 
-		calculator := ApproxErrorCalculator{CPLEXProcess: cplexProcessMock, ParseOutputFunc: parseOutput}
+		calculator := ErrorCalculator{CPLEXProcess: cplexProcessMock, ParseOutputFunc: parseOutput}
 
 		var wg sync.WaitGroup
 
@@ -210,7 +210,7 @@ func TestApproxErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 		cplexProcessMock := mocks.NewMockCPLEXProcess(gomock.NewController(t))
 		cplexProcessMock.EXPECT().Output().Return(nil, expectedError)
 
-		calculator := ApproxErrorCalculator{
+		calculator := ErrorCalculator{
 			CPLEXProcess:    cplexProcessMock,
 			ParseOutputFunc: func(s string) (*optimizer.Result, error) { return nil, nil },
 		}
@@ -239,7 +239,7 @@ func TestApproxErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 		cplexProcessMock := mocks.NewMockCPLEXProcess(gomock.NewController(t))
 		cplexProcessMock.EXPECT().Output().Return([]byte{}, nil)
 
-		calculator := ApproxErrorCalculator{
+		calculator := ErrorCalculator{
 			CPLEXProcess:    cplexProcessMock,
 			ParseOutputFunc: func(s string) (*optimizer.Result, error) { return nil, expectedError },
 		}
@@ -276,7 +276,7 @@ func TestApproxErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 			return nil, nil
 		})
 
-		calculator := ApproxErrorCalculator{
+		calculator := ErrorCalculator{
 			CPLEXProcess:    cplexProcessMock,
 			ParseOutputFunc: func(s string) (*optimizer.Result, error) { return nil, nil },
 		}
@@ -324,15 +324,15 @@ func TestApproxErrorCalculator_Compute(t *testing.T) {
 			return &optimizer.Result{RRHCount: cplexResult}, nil
 		}
 
-		calculator := ApproxErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
+		calculator := ErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
 
 		approxErr, err := calculator.Compute(context.TODO())
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedResult, approxErr.ApproxError)
+		assert.Equal(t, expectedResult, approxErr.RelativeError)
 		assert.Equal(t, customResult, approxErr.CustomResult)
 		assert.Equal(t, cplexResult, approxErr.CPLEXResult)
-		assert.Equal(t, cplexResult-customResult, approxErr.Diff)
+		assert.Equal(t, cplexResult-customResult, approxErr.AbsoluteError)
 	})
 
 	t.Run("should handle custom optimization error", func(t *testing.T) {
@@ -353,7 +353,7 @@ func TestApproxErrorCalculator_Compute(t *testing.T) {
 			return &optimizer.Result{RRHCount: 123}, nil
 		}
 
-		calculator := ApproxErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
+		calculator := ErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
 
 		approxErr, err := calculator.Compute(context.TODO())
 
@@ -379,7 +379,7 @@ func TestApproxErrorCalculator_Compute(t *testing.T) {
 			return &optimizer.Result{RRHCount: 123}, nil
 		}
 
-		calculator := ApproxErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
+		calculator := ErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
 
 		approxErr, err := calculator.Compute(context.TODO())
 

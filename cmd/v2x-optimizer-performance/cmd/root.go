@@ -110,7 +110,7 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 			return nil
 		}
 
-		errorCalculator := calculator.ApproxErrorCalculator{
+		errorCalculator := calculator.ErrorCalculator{
 			Filepath:        path,
 			CustomOptimizer: optimizer,
 			CPLEXProcess:    calculator.NewCommand(cplexCommand, modelFile, path),
@@ -122,7 +122,7 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 			return err
 		}
 
-		result.PathToApproxErrors[path] = approxError
+		result.PathToRelativeErrors[path] = approxError
 
 		return nil
 	})
@@ -131,17 +131,17 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 		return nil, err
 	}
 
-	if len(result.PathToApproxErrors) == 0 {
+	if len(result.PathToRelativeErrors) == 0 {
 		return nil, errors.New("empty data path")
 	}
 
 	var approxErrSum float64
 
-	for _, v := range result.PathToApproxErrors {
-		approxErrSum += v.ApproxError
+	for _, v := range result.PathToRelativeErrors {
+		approxErrSum += v.RelativeError
 	}
 
-	result.AverageApproxError = approxErrSum / float64(len(result.PathToApproxErrors))
+	result.AverageRelativeError = approxErrSum / float64(len(result.PathToRelativeErrors))
 
 	return result, nil
 }

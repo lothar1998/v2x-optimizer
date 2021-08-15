@@ -10,6 +10,6 @@ type Optimizer interface {
 // Result represents result of optimization. Should be returned by Optimizer.
 type Result struct {
 	RRHCount                int
-	RRH                     []bool
+	RRHEnable               []bool
 	VehiclesToRRHAssignment []int
 }

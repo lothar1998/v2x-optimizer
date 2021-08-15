@@ -14,24 +14,24 @@ func Test_outputToFile(t *testing.T) {
 
 	results := map[string]*resultForPath{
 		"/path1/subpath1/subsubpath1": {
-			AverageApproxError: 0.5,
-			PathToApproxErrors: map[string]*calculator.ApproxErrorInfo{
+			AverageRelativeError: 0.5,
+			PathToRelativeErrors: map[string]*calculator.ErrorInfo{
 				"/example1": {
-					CustomResult: 5,
-					CPLEXResult:  2,
-					Diff:         1,
-					ApproxError:  0.5,
+					CustomResult:  5,
+					CPLEXResult:   2,
+					AbsoluteError: 1,
+					RelativeError: 0.5,
 				},
 			},
 		},
 		"path2/subpath2/": {
-			AverageApproxError: 1.5,
-			PathToApproxErrors: map[string]*calculator.ApproxErrorInfo{
+			AverageRelativeError: 1.5,
+			PathToRelativeErrors: map[string]*calculator.ErrorInfo{
 				"/example2": {
-					CustomResult: 10,
-					CPLEXResult:  4,
-					Diff:         6,
-					ApproxError:  1.5,
+					CustomResult:  10,
+					CPLEXResult:   4,
+					AbsoluteError: 6,
+					RelativeError: 1.5,
 				},
 			},
 		},
@@ -73,19 +73,19 @@ func Test_toSeparatedValues(t *testing.T) {
 		t.Parallel()
 
 		results := &resultForPath{
-			AverageApproxError: 2.25,
-			PathToApproxErrors: map[string]*calculator.ApproxErrorInfo{
+			AverageRelativeError: 2.25,
+			PathToRelativeErrors: map[string]*calculator.ErrorInfo{
 				"path1": {
-					CustomResult: 5,
-					CPLEXResult:  2,
-					Diff:         1,
-					ApproxError:  0.5,
+					CustomResult:  5,
+					CPLEXResult:   2,
+					AbsoluteError: 1,
+					RelativeError: 0.5,
 				},
 				"path2": {
-					CustomResult: 10,
-					CPLEXResult:  2,
-					Diff:         8,
-					ApproxError:  4,
+					CustomResult:  10,
+					CPLEXResult:   2,
+					AbsoluteError: 8,
+					RelativeError: 4,
 				},
 			}}
 
