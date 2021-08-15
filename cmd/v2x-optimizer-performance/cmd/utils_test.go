@@ -91,7 +91,8 @@ func Test_toSeparatedValues(t *testing.T) {
 
 		separatedValues := toSeparatedValues(results)
 
-		assert.Equal(t, []string{"path1", "5", "2", "1", "0.500", "2.250"}, separatedValues[0])
-		assert.Equal(t, []string{"path2", "10", "2", "8", "4.000", "2.250"}, separatedValues[1])
+		assert.Len(t, separatedValues, 2)
+		assert.Contains(t, separatedValues, []string{"path1", "5", "2", "1", "0.500", "2.250"})
+		assert.Contains(t, separatedValues, []string{"path2", "10", "2", "8", "4.000", "2.250"})
 	})
 }
