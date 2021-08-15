@@ -11,24 +11,24 @@ import (
 	"unicode/utf8"
 )
 
-var csvHeaders = []string{"path", "custom_result", "cplex_result", "diff", "approx_error", "average_approx_error"}
+var csvHeaders = []string{"path", "custom_result", "cplex_result", "absolute_error", "relative_error", "average_relative_error"}
 
-func outputToConsole(pathsToResults map[string]*resultForPath) {
+func outputToConsole(pathsToResults map[string]*pathsToErrors) {
 	for rootPath, result := range pathsToResults {
 		titleString := "Root: " + rootPath
 		fmt.Println(strings.Repeat("-", utf8.RuneCountInString(titleString)+10))
 		fmt.Println(titleString)
-		fmt.Printf("Average approx error: %.3f", result.AverageRelativeError)
+		fmt.Printf("Average relative error: %.3f", result.AverageRelativeError)
 		fmt.Println()
-		for subPath, approxErrorInfo := range result.PathToRelativeErrors {
-			fmt.Printf("%s\t->\tCustomResult: %d\t\tCPLEXResult: %d\t\tDiff: %d\t\tApproxError: %.3f\n",
-				filepath.Base(subPath), approxErrorInfo.CustomResult, approxErrorInfo.CPLEXResult,
-				approxErrorInfo.AbsoluteError, approxErrorInfo.RelativeError)
+		for subPath, errorInfo := range result.PathToErrors {
+			fmt.Printf("%s\t->\tCustomResult: %d\t\tCPLEXResult: %d\t\tAbsoluteError: %d\t\tRelativeError: %.3f\n",
+				filepath.Base(subPath), errorInfo.CustomResult, errorInfo.CPLEXResult,
+				errorInfo.AbsoluteError, errorInfo.RelativeError)
 		}
 	}
 }
 
-func outputToCSVFile(pathsToResults map[string]*resultForPath, outputFilepath string) error {
+func outputToCSVFile(pathsToResults map[string]*pathsToErrors, outputFilepath string) error {
 	for rootPath, result := range pathsToResults {
 		err := os.MkdirAll(outputFilepath, 0755)
 		if err != nil {
@@ -61,11 +61,11 @@ func outputToCSVFile(pathsToResults map[string]*resultForPath, outputFilepath st
 	return nil
 }
 
-func toSeparatedValues(resultForPath *resultForPath) [][]string {
-	result := make([][]string, len(resultForPath.PathToRelativeErrors))
+func toSeparatedValues(resultForPath *pathsToErrors) [][]string {
+	result := make([][]string, len(resultForPath.PathToErrors))
 
 	var i int
-	for currentPath, info := range resultForPath.PathToRelativeErrors {
+	for currentPath, info := range resultForPath.PathToErrors {
 		result[i] = make([]string, 6)
 
 		result[i][0] = currentPath

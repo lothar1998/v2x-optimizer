@@ -67,15 +67,15 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 
 		ctx := command.Context()
 
-		pathsToResults := make(map[string]*resultForPath)
+		pathsToErrors := make(map[string]*pathsToErrors)
 
 		for _, path := range args {
-			approxErrors, err := errorsForPath(ctx, path, optimizer, cplexCommand, modelFile)
+			computedErrors, err := errorsForPath(ctx, path, optimizer, cplexCommand, modelFile)
 			if err != nil {
 				return err
 			}
 
-			pathsToResults[path] = approxErrors
+			pathsToErrors[path] = computedErrors
 		}
 
 		outputFile, err := command.Flags().GetString(outputCSVFileFlag)
@@ -84,11 +84,11 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 		}
 
 		if outputFile == "" {
-			outputToConsole(pathsToResults)
+			outputToConsole(pathsToErrors)
 			return nil
 		}
 
-		if err := outputToCSVFile(pathsToResults, outputFile); err != nil {
+		if err := outputToCSVFile(pathsToErrors, outputFile); err != nil {
 			return err
 		}
 		return nil
@@ -96,7 +96,7 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 }
 
 func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer.Optimizer,
-	cplexCommand, modelFile string) (*resultForPath, error) {
+	cplexCommand, modelFile string) (*pathsToErrors, error) {
 
 	_, err := os.Stat(dataFilepath)
 	if os.IsNotExist(err) {
@@ -117,12 +117,12 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 			ParseOutputFunc: utils.FromConsoleOutput,
 		}
 
-		approxError, err := errorCalculator.Compute(ctx)
+		computedErrors, err := errorCalculator.Compute(ctx)
 		if err != nil {
 			return err
 		}
 
-		result.PathToRelativeErrors[path] = approxError
+		result.PathToErrors[path] = computedErrors
 
 		return nil
 	})
@@ -131,17 +131,17 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 		return nil, err
 	}
 
-	if len(result.PathToRelativeErrors) == 0 {
+	if len(result.PathToErrors) == 0 {
 		return nil, errors.New("empty data path")
 	}
 
-	var approxErrSum float64
+	var relativeErrorSum float64
 
-	for _, v := range result.PathToRelativeErrors {
-		approxErrSum += v.RelativeError
+	for _, v := range result.PathToErrors {
+		relativeErrorSum += v.RelativeError
 	}
 
-	result.AverageRelativeError = approxErrSum / float64(len(result.PathToRelativeErrors))
+	result.AverageRelativeError = relativeErrorSum / float64(len(result.PathToErrors))
 
 	return result, nil
 }

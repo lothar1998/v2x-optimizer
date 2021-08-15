@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
+func TestErrorCalculator_optimizeUsingCustom(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should return appropriate value", func(t *testing.T) {
@@ -169,7 +169,7 @@ func TestApproxErrorCalculator_optimizeUsingCustom(t *testing.T) {
 	})
 }
 
-func TestApproxErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
+func TestErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should return appropriate value", func(t *testing.T) {
@@ -301,10 +301,10 @@ func TestApproxErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 	})
 }
 
-func TestApproxErrorCalculator_Compute(t *testing.T) {
+func TestErrorCalculator_Compute(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should compute approx error", func(t *testing.T) {
+	t.Run("should compute errors", func(t *testing.T) {
 		t.Parallel()
 
 		customResult := 20
@@ -326,13 +326,13 @@ func TestApproxErrorCalculator_Compute(t *testing.T) {
 
 		calculator := ErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
 
-		approxErr, err := calculator.Compute(context.TODO())
+		computedErrors, err := calculator.Compute(context.TODO())
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedResult, approxErr.RelativeError)
-		assert.Equal(t, customResult, approxErr.CustomResult)
-		assert.Equal(t, cplexResult, approxErr.CPLEXResult)
-		assert.Equal(t, cplexResult-customResult, approxErr.AbsoluteError)
+		assert.Equal(t, expectedResult, computedErrors.RelativeError)
+		assert.Equal(t, customResult, computedErrors.CustomResult)
+		assert.Equal(t, cplexResult, computedErrors.CPLEXResult)
+		assert.Equal(t, cplexResult-customResult, computedErrors.AbsoluteError)
 	})
 
 	t.Run("should handle custom optimization error", func(t *testing.T) {
@@ -355,10 +355,10 @@ func TestApproxErrorCalculator_Compute(t *testing.T) {
 
 		calculator := ErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
 
-		approxErr, err := calculator.Compute(context.TODO())
+		computedErrors, err := calculator.Compute(context.TODO())
 
 		assert.ErrorIs(t, err, expectedError)
-		assert.Zero(t, approxErr)
+		assert.Zero(t, computedErrors)
 	})
 
 	t.Run("should handle cplex optimization error", func(t *testing.T) {
@@ -381,10 +381,10 @@ func TestApproxErrorCalculator_Compute(t *testing.T) {
 
 		calculator := ErrorCalculator{filepath, optimizerMock, cplexProcessMock, parseOutput}
 
-		approxErr, err := calculator.Compute(context.TODO())
+		computedErrors, err := calculator.Compute(context.TODO())
 
 		assert.ErrorIs(t, err, expectedError)
-		assert.Zero(t, approxErr)
+		assert.Zero(t, computedErrors)
 	})
 }
 

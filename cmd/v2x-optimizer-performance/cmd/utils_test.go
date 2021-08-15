@@ -12,10 +12,10 @@ import (
 func Test_outputToFile(t *testing.T) {
 	t.Parallel()
 
-	results := map[string]*resultForPath{
+	results := map[string]*pathsToErrors{
 		"/path1/subpath1/subsubpath1": {
 			AverageRelativeError: 0.5,
-			PathToRelativeErrors: map[string]*calculator.ErrorInfo{
+			PathToErrors: map[string]*calculator.ErrorInfo{
 				"/example1": {
 					CustomResult:  5,
 					CPLEXResult:   2,
@@ -26,7 +26,7 @@ func Test_outputToFile(t *testing.T) {
 		},
 		"path2/subpath2/": {
 			AverageRelativeError: 1.5,
-			PathToRelativeErrors: map[string]*calculator.ErrorInfo{
+			PathToErrors: map[string]*calculator.ErrorInfo{
 				"/example2": {
 					CustomResult:  10,
 					CPLEXResult:   4,
@@ -69,12 +69,12 @@ func Test_outputToFile(t *testing.T) {
 func Test_toSeparatedValues(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should transform resultForPath into separated values", func(t *testing.T) {
+	t.Run("should transform pathsToErrors into separated values", func(t *testing.T) {
 		t.Parallel()
 
-		results := &resultForPath{
+		results := &pathsToErrors{
 			AverageRelativeError: 2.25,
-			PathToRelativeErrors: map[string]*calculator.ErrorInfo{
+			PathToErrors: map[string]*calculator.ErrorInfo{
 				"path1": {
 					CustomResult:  5,
 					CPLEXResult:   2,
