@@ -38,6 +38,8 @@ func generateTo(formatName string, encoderInfo encoderInfo) *cobra.Command {
 	}
 }
 
+// TODO make n and v optional parameters (flags)
+// TODO enable generating multiple data in one run
 func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		nArg, vArg, output := args[0], args[1], args[2]
