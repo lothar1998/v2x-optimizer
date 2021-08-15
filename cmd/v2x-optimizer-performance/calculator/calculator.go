@@ -118,7 +118,6 @@ func (c ErrorCalculator) optimizeUsingCPLEX(ctx context.Context, wg *sync.WaitGr
 		}
 
 		cplexResult, err := c.ParseOutputFunc(string(bytes))
-		print(string(bytes))
 		if err != nil {
 			errorChannel <- err
 			return
