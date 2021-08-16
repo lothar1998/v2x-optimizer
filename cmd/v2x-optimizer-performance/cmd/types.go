@@ -7,6 +7,6 @@ type pathsToErrors struct {
 	PathToErrors         map[string]*calculator.ErrorInfo
 }
 
-func newEmptyResultForPath() *pathsToErrors {
+func newEmptyPathsToErrors() *pathsToErrors {
 	return &pathsToErrors{PathToErrors: make(map[string]*calculator.ErrorInfo)}
 }

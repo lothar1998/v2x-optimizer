@@ -36,9 +36,7 @@ func Execute() {
 
 	for name, currOptimizer := range config.NamesToOptimizers {
 		performanceOfCmd := performanceOf(name, currOptimizer)
-		performanceOfCmd.Flags().StringP(cplexCommandFlag, "c", defaultCPLEXOptimizationCommand,
-			"cplex optimization command")
-		performanceOfCmd.Flags().StringP(outputCSVFileFlag, "o", "", "path to output CSV file")
+		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
 
@@ -65,9 +63,9 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 		modelFile := args[0]
 		args = args[1:]
 
-		ctx := command.Context()
-
 		pathsToErrors := make(map[string]*pathsToErrors)
+
+		ctx := command.Context()
 
 		for _, path := range args {
 			computedErrors, err := errorsForPath(ctx, path, optimizer, cplexCommand, modelFile)
@@ -100,10 +98,10 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 
 	_, err := os.Stat(dataFilepath)
 	if os.IsNotExist(err) {
-		return nil, err
+		return nil, errors.New("path does not exists")
 	}
 
-	result := newEmptyResultForPath()
+	result := newEmptyPathsToErrors()
 
 	err = filepath.WalkDir(dataFilepath, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
@@ -144,4 +142,9 @@ func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer
 	result.AverageRelativeError = relativeErrorSum / float64(len(result.PathToErrors))
 
 	return result, nil
+}
+
+func setUpFlags(c *cobra.Command) {
+	c.Flags().StringP(cplexCommandFlag, "c", defaultCPLEXOptimizationCommand, "cplex optimization command")
+	c.Flags().StringP(outputCSVFileFlag, "o", "", "path to output CSV file")
 }

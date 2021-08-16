@@ -10,7 +10,7 @@ import (
 // It also provides a more deep view into optimization statistics such as:
 // CustomResult - heuristic optimization result,
 // CPLEXResult - the result of CPLEX optimizer (optimal value),
-// AbsoluteError - the difference between CustomResult and CPLEXResult (relative error).
+// AbsoluteError - the difference between CustomResult and CPLEXResult.
 type ErrorInfo struct {
 	CustomResult  int
 	CPLEXResult   int
