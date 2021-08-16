@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
 type encoderInfo struct {
@@ -25,10 +24,6 @@ var (
 	}
 
 	availableFileFormats = getAvailableFileFormats()
-
-	namesToOptimizers = map[string]optimizer.Optimizer{
-		"first-fit": optimizer.FirstFit{},
-	}
 )
 
 var (

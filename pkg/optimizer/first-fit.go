@@ -30,20 +30,5 @@ func (f FirstFit) Optimize(data *data.Data) (*Result, error) {
 		}
 	}
 
-	var result Result
-	result.RRH = make([]bool, n)
-
-	var count int
-	for _, e := range sequence {
-		if result.RRH[e] == false {
-			result.RRH[e] = true
-			count++
-		}
-
-	}
-
-	result.RRHCount = count
-	result.VehiclesToRRHAssignment = sequence
-
-	return &result, nil
+	return toResult(sequence, n), nil
 }

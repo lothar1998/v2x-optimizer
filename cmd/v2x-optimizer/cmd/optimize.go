@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/lothar1998/v2x-optimizer/internal/config"
+	"github.com/lothar1998/v2x-optimizer/internal/utils"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -21,7 +22,7 @@ func OptimizeCmd() *cobra.Command {
 		},
 	}
 
-	for name, o := range namesToOptimizers {
+	for name, o := range config.NamesToOptimizers {
 		command := optimizeWith(name, o)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
@@ -70,37 +71,10 @@ func optimizeUsing(optimizer optimizer.Optimizer) func(*cobra.Command, []string)
 			return err
 		}
 
-		fmt.Println(toCPLEXResultFormat(result))
+		fmt.Println(utils.ToConsoleOutput(result))
 
 		return nil
 	}
-}
-
-func toCPLEXResultFormat(result *optimizer.Result) string {
-	var sb strings.Builder
-
-	sb.WriteString("RRH_COUNT = " + strconv.Itoa(result.RRHCount) + "\n")
-	sb.WriteString("RRH = [")
-
-	if len(result.RRH) > 0 {
-		if result.RRH[0] {
-			sb.WriteRune('1')
-		} else {
-			sb.WriteRune('0')
-		}
-
-		for _, e := range result.RRH[1:] {
-			sb.WriteRune(' ')
-			if e {
-				sb.WriteRune('1')
-			} else {
-				sb.WriteRune('0')
-			}
-		}
-	}
-
-	sb.WriteString("]\n")
-	return sb.String()
 }
 
 func setUpOptimizeFlags(command *cobra.Command) {
