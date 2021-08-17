@@ -106,5 +106,5 @@ func toMultipleFilesFilepath(path string, i int) string {
 func setUpGenerateFlags(command *cobra.Command) {
 	command.Flags().UintP(nValue, "n", 10, "amount of RRHs")
 	command.Flags().UintP(vValue, "v", 30, "amount of vehicles")
-	command.Flags().UintP(timesValue, "t", 1, "specify how many times should the files be generated")
+	command.Flags().UintP(timesValue, "t", 1, "specify how many files should be generated")
 }
