@@ -21,7 +21,7 @@ func Generate(v, n int) *Data {
 	}
 
 	mrb := make([]int, n)
-	mrbLimit := RLimit * v / n
+	mrbLimit := RLimit * v / n * 2
 
 	for i := 0; i < n; i++ {
 		mrb[i] = rand.Intn(mrbLimit) + 1

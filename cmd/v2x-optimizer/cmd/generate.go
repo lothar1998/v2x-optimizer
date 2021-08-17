@@ -5,7 +5,14 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/spf13/cobra"
 	"os"
+	"path/filepath"
 	"strconv"
+)
+
+const (
+	nValue     = "rrhs"
+	vValue     = "vehicles"
+	timesValue = "times"
 )
 
 // GenerateCmd returns cobra.Command which is able to generate data in specified format.
@@ -22,6 +29,7 @@ func GenerateCmd() *cobra.Command {
 
 	for formatName, encoderInfo := range formatsToEncodersInfo {
 		generateToCmd := generateTo(formatName, encoderInfo)
+		setUpGenerateFlags(generateToCmd)
 		generateCmd.AddCommand(generateToCmd)
 	}
 
@@ -30,8 +38,8 @@ func GenerateCmd() *cobra.Command {
 
 func generateTo(formatName string, encoderInfo encoderInfo) *cobra.Command {
 	return &cobra.Command{
-		Use:   fmt.Sprintf("%s {n} {v} {output_file}", formatName),
-		Args:  cobra.ExactArgs(3),
+		Use:   fmt.Sprintf("%s {output_file}", formatName),
+		Args:  cobra.ExactArgs(1),
 		Short: fmt.Sprintf("Generate data in %s format", encoderInfo.FormatDisplayName),
 		Long:  fmt.Sprintf("Allows for generating data in %s format", encoderInfo.FormatDisplayName),
 		RunE:  generateWith(encoderInfo.Encoder),
@@ -40,31 +48,63 @@ func generateTo(formatName string, encoderInfo encoderInfo) *cobra.Command {
 
 func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
-		nArg, vArg, output := args[0], args[1], args[2]
+		output := args[0]
 
-		n, err := strconv.ParseInt(nArg, 10, 32)
+		n, err := command.Flags().GetUint(nValue)
 		if err != nil {
-			return fmt.Errorf("%w: %s", errParseInt, nArg)
+			return err
 		}
 
-		v, err := strconv.ParseInt(vArg, 10, 32)
+		v, err := command.Flags().GetUint(vValue)
 		if err != nil {
-			return fmt.Errorf("%w: %s", errParseInt, vArg)
+			return err
 		}
 
-		outputFile, err := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
+		count, err := command.Flags().GetUint(timesValue)
 		if err != nil {
-			return fmt.Errorf("%w: %s", errCannotOpenFile, output)
+			return err
 		}
-		defer outputFile.Close()
 
-		generatedData := data.Generate(int(v), int(n))
+		if count == 1 {
+			return generateDataFile(output, encoder, n, v)
+		}
 
-		err = encoder.Encode(generatedData, outputFile)
-		if err != nil {
-			return fmt.Errorf("%w: %s", errCannotEncodeData, err.Error())
+		for i := uint(0); i < count; i++ {
+			err := generateDataFile(toMultipleFilesFilepath(output, int(i)), encoder, n, v)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
 	}
+}
+
+func generateDataFile(path string, encoder data.EncoderDecoder, n, v uint) error {
+	outputFile, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return fmt.Errorf("%w: %s", errCannotOpenFile, path)
+	}
+	defer outputFile.Close()
+
+	generatedData := data.Generate(int(v), int(n))
+
+	err = encoder.Encode(generatedData, outputFile)
+	if err != nil {
+		return fmt.Errorf("%w: %s", errCannotEncodeData, err.Error())
+	}
+
+	return nil
+}
+
+func toMultipleFilesFilepath(path string, i int) string {
+	ext := filepath.Ext(path)
+	filename := path[:len(path)-len(ext)]
+	return filename + "_" + strconv.Itoa(i) + ext
+}
+
+func setUpGenerateFlags(command *cobra.Command) {
+	command.Flags().UintP(nValue, "n", 10, "amount of RRHs")
+	command.Flags().UintP(vValue, "v", 30, "amount of vehicles")
+	command.Flags().UintP(timesValue, "t", 1, "specify how many files should be generated")
 }
