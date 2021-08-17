@@ -46,7 +46,6 @@ func generateTo(formatName string, encoderInfo encoderInfo) *cobra.Command {
 	}
 }
 
-// TODO enable generating multiple data in one run
 func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		output := args[0]
