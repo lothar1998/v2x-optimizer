@@ -1,4 +1,4 @@
-package utils
+package console
 
 import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"

@@ -2,11 +2,11 @@ package calculator
 
 import (
 	"context"
+	"github.com/lothar1998/v2x-optimizer/internal/concurrency"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"math"
 	"os"
-	"sync"
 	"syscall"
 )
 
@@ -21,20 +21,13 @@ type ErrorCalculator struct {
 // Compute runs computation of error. It returns ErrorInfo that consists of
 // ErrorInfo.RelativeError along with more specific results.
 func (c ErrorCalculator) Compute(ctx context.Context) (*ErrorInfo, error) {
-	var wg sync.WaitGroup
+	customResult, customError := c.optimizeUsingCustom(ctx)
+	cplexResult, cplexError := c.optimizeUsingCPLEX(ctx)
 
-	wg.Add(2)
-	customResult, customError := c.optimizeUsingCustom(ctx, &wg)
-	cplexResult, cplexError := c.optimizeUsingCPLEX(ctx, &wg)
+	errorChannel := concurrency.JoinErrorChannels(customError, cplexError)
 
-	wg.Wait()
-
-	select {
-	case err := <-customError:
+	if err := <-errorChannel; err != nil {
 		return nil, err
-	case err := <-cplexError:
-		return nil, err
-	default:
 	}
 
 	customValue := <-customResult
@@ -52,16 +45,14 @@ func (c ErrorCalculator) Compute(ctx context.Context) (*ErrorInfo, error) {
 	return &info, nil
 }
 
-func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context, wg *sync.WaitGroup) (chan int, chan error) {
-
+func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context) (chan int, chan error) {
 	resultChannel := make(chan int, 1)
-	errorChannel := make(chan error, 2)
-
-	finished := make(chan struct{}, 1)
+	errorChannel := make(chan error, 1)
 
 	go func() {
 		defer func() {
-			finished <- struct{}{}
+			close(resultChannel)
+			close(errorChannel)
 		}()
 
 		file, err := os.Open(c.Filepath)
@@ -77,7 +68,7 @@ func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context, wg *sync.WaitG
 			return
 		}
 
-		r, err := c.CustomOptimizer.Optimize(decodedData)
+		r, err := c.CustomOptimizer.Optimize(ctx, decodedData)
 		if err != nil {
 			errorChannel <- err
 			return
@@ -86,40 +77,34 @@ func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context, wg *sync.WaitG
 		resultChannel <- r.RRHCount
 	}()
 
-	go func() {
-		defer wg.Done()
-
-		select {
-		case <-ctx.Done():
-			errorChannel <- ctx.Err()
-		case <-finished:
-		}
-	}()
-
 	return resultChannel, errorChannel
 }
 
-func (c ErrorCalculator) optimizeUsingCPLEX(ctx context.Context, wg *sync.WaitGroup) (chan int, chan error) {
-
+func (c ErrorCalculator) optimizeUsingCPLEX(ctx context.Context) (chan int, chan error) {
 	resultChannel := make(chan int, 1)
-	errorChannel := make(chan error, 2)
+	errorChannel := make(chan error, 1)
 
-	finished := make(chan struct{}, 1)
+	errWorker := make(chan error, 1)
+	errObserver := make(chan error, 1)
+
+	done := make(chan struct{}, 1)
 
 	go func() {
 		defer func() {
-			finished <- struct{}{}
+			close(errWorker)
+			close(resultChannel)
+			done <- struct{}{}
 		}()
 
 		bytes, err := c.CPLEXProcess.Output()
 		if err != nil {
-			errorChannel <- err
+			errWorker <- err
 			return
 		}
 
 		cplexResult, err := c.ParseOutputFunc(string(bytes))
 		if err != nil {
-			errorChannel <- err
+			errWorker <- err
 			return
 		}
 
@@ -127,13 +112,27 @@ func (c ErrorCalculator) optimizeUsingCPLEX(ctx context.Context, wg *sync.WaitGr
 	}()
 
 	go func() {
-		defer wg.Done()
+		defer close(errObserver)
 
 		select {
 		case <-ctx.Done():
 			_ = c.CPLEXProcess.Signal(syscall.SIGTERM)
-			errorChannel <- ctx.Err()
-		case <-finished:
+			errObserver <- ctx.Err()
+		case <-done:
+		}
+	}()
+
+	go func() {
+		defer close(errorChannel)
+
+		if err, ok := <-errObserver; ok {
+			errorChannel <- err
+			return
+		}
+
+		if err, ok := <-errWorker; ok {
+			errorChannel <- err
+			return
 		}
 	}()
 

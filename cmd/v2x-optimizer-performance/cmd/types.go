@@ -10,3 +10,13 @@ type pathsToErrors struct {
 func newEmptyPathsToErrors() *pathsToErrors {
 	return &pathsToErrors{PathToErrors: make(map[string]*calculator.ErrorInfo)}
 }
+
+type pathErrorInfoChannelPair struct {
+	Path             string
+	ErrorInfoChannel chan *calculator.ErrorInfo
+}
+
+type pathPathsToErrorsChannelPair struct {
+	Path                 string
+	PathsToErrorsChannel chan *pathsToErrors
+}

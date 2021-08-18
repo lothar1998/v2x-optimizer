@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lothar1998/v2x-optimizer/cmd/v2x-optimizer-performance/calculator"
+	"github.com/lothar1998/v2x-optimizer/internal/concurrency"
 	"github.com/lothar1998/v2x-optimizer/internal/config"
-	"github.com/lothar1998/v2x-optimizer/internal/utils"
+	"github.com/lothar1998/v2x-optimizer/internal/console"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 	"io/fs"
@@ -63,17 +64,26 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 		modelFile := args[0]
 		args = args[1:]
 
-		pathsToErrors := make(map[string]*pathsToErrors)
-
-		ctx := command.Context()
+		var results []*pathPathsToErrorsChannelPair
+		var errs []chan error
 
 		for _, path := range args {
-			computedErrors, err := errorsForPath(ctx, path, optimizer, cplexCommand, modelFile)
-			if err != nil {
-				return err
-			}
+			resultChannel, errorChannel := computeErrors(command.Context(), path, optimizer, cplexCommand, modelFile)
 
-			pathsToErrors[path] = computedErrors
+			results = append(results, &pathPathsToErrorsChannelPair{path, resultChannel})
+			errs = append(errs, errorChannel)
+		}
+
+		errorChannel := concurrency.JoinErrorChannels(errs...)
+
+		if err := <-errorChannel; err != nil {
+			return err
+		}
+
+		result := make(map[string]*pathsToErrors)
+
+		for i := range results {
+			result[results[i].Path] = <-results[i].PathsToErrorsChannel
 		}
 
 		outputFile, err := command.Flags().GetString(outputCSVFileFlag)
@@ -82,53 +92,120 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 		}
 
 		if outputFile == "" {
-			outputToConsole(pathsToErrors)
+			outputToConsole(result)
 			return nil
 		}
 
-		if err := outputToCSVFile(pathsToErrors, outputFile); err != nil {
+		if err := outputToCSVFile(result, outputFile); err != nil {
 			return err
 		}
 		return nil
 	}
 }
 
-func errorsForPath(ctx context.Context, dataFilepath string, optimizer optimizer.Optimizer,
-	cplexCommand, modelFile string) (*pathsToErrors, error) {
+func computeErrors(ctx context.Context, path string, optimizer optimizer.Optimizer,
+	cplexCommand, modelFile string) (chan *pathsToErrors, chan error) {
 
-	_, err := os.Stat(dataFilepath)
-	if os.IsNotExist(err) {
-		return nil, errors.New("path does not exists")
-	}
+	resultChannel := make(chan *pathsToErrors, 1)
+	errorChannel := make(chan error, 1)
 
-	result := newEmptyPathsToErrors()
+	go func() {
+		defer func() {
+			close(resultChannel)
+			close(errorChannel)
+		}()
 
-	err = filepath.WalkDir(dataFilepath, func(path string, d fs.DirEntry, err error) error {
+		_, err := os.Stat(path)
+		if os.IsNotExist(err) {
+			errorChannel <- errors.New("path does not exists")
+			return
+		}
+
+		errorsForPath, err := computeErrorsForPath(ctx, path, cplexCommand, modelFile, optimizer)
+
+		if err != nil {
+			errorChannel <- err
+			return
+		}
+
+		results, err := toErrorResults(errorsForPath)
+		if err != nil {
+			errorChannel <- err
+			return
+		}
+
+		resultChannel <- results
+	}()
+
+	return resultChannel, errorChannel
+}
+
+func computeErrorsForPath(ctx context.Context, path, cplexCommand, modelFile string,
+	optimizer optimizer.Optimizer) (*pathsToErrors, error) {
+
+	var results []*pathErrorInfoChannelPair
+	var errs []chan error
+
+	_ = filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			return nil
 		}
 
-		errorCalculator := calculator.ErrorCalculator{
-			Filepath:        path,
-			CustomOptimizer: optimizer,
-			CPLEXProcess:    calculator.NewCommand(cplexCommand, modelFile, path),
-			ParseOutputFunc: utils.FromConsoleOutput,
-		}
+		resultChannel, errorChannel := computeErrorForSingleFile(ctx, path, cplexCommand, modelFile, optimizer)
 
-		computedErrors, err := errorCalculator.Compute(ctx)
-		if err != nil {
-			return err
-		}
-
-		result.PathToErrors[path] = computedErrors
+		results = append(results, &pathErrorInfoChannelPair{path, resultChannel})
+		errs = append(errs, errorChannel)
 
 		return nil
 	})
 
-	if err != nil {
+	errorChannel := concurrency.JoinErrorChannels(errs...)
+
+	if err := <-errorChannel; err != nil {
 		return nil, err
 	}
 
+	result := newEmptyPathsToErrors()
+
+	for i := range results {
+		result.PathToErrors[results[i].Path] = <-results[i].ErrorInfoChannel
+	}
+
+	return result, nil
+}
+
+func computeErrorForSingleFile(ctx context.Context, path, cplexCommand, modelFile string,
+	optimizer optimizer.Optimizer) (chan *calculator.ErrorInfo, chan error) {
+
+	resultChannel := make(chan *calculator.ErrorInfo, 1)
+	errorChannel := make(chan error, 1)
+
+	go func() {
+		defer func() {
+			close(resultChannel)
+			close(errorChannel)
+		}()
+
+		c := &calculator.ErrorCalculator{
+			Filepath:        path,
+			CustomOptimizer: optimizer,
+			CPLEXProcess:    calculator.NewCommand(cplexCommand, modelFile, path),
+			ParseOutputFunc: console.FromConsoleOutput,
+		}
+
+		result, err := c.Compute(ctx)
+		if err != nil {
+			errorChannel <- err
+			return
+		}
+
+		resultChannel <- result
+	}()
+
+	return resultChannel, errorChannel
+}
+
+func toErrorResults(result *pathsToErrors) (*pathsToErrors, error) {
 	if len(result.PathToErrors) == 0 {
 		return nil, errors.New("empty data path")
 	}

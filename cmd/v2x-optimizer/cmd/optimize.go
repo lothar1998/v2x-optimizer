@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/lothar1998/v2x-optimizer/internal/config"
-	"github.com/lothar1998/v2x-optimizer/internal/utils"
+	"github.com/lothar1998/v2x-optimizer/internal/console"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 	"os"
@@ -66,12 +66,12 @@ func optimizeUsing(optimizer optimizer.Optimizer) func(*cobra.Command, []string)
 			return fmt.Errorf("%w: %s", errCannotParseData, err.Error())
 		}
 
-		result, err := optimizer.Optimize(data)
+		result, err := optimizer.Optimize(command.Context(), data)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(utils.ToConsoleOutput(result))
+		fmt.Println(console.ToConsoleOutput(result))
 
 		return nil
 	}

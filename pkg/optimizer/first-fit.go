@@ -1,6 +1,7 @@
 package optimizer
 
 import (
+	"context"
 	"errors"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -10,7 +11,7 @@ import (
 type FirstFit struct{}
 
 // Optimize runs firs-fit algorithm on the given data.
-func (f FirstFit) Optimize(data *data.Data) (*Result, error) {
+func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
 	v := len(data.R)
 	n := len(data.MRB)
 	sequence := make([]int, v)
@@ -19,6 +20,12 @@ func (f FirstFit) Optimize(data *data.Data) (*Result, error) {
 	for i := 0; i < v; i++ {
 		j := 0
 		for ; j < n; j++ {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+			}
+
 			if data.R[i][j] <= leftSpace[j] {
 				sequence[i] = j
 				leftSpace[j] -= data.R[i][j]
