@@ -67,8 +67,11 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 		var results []*pathPathsToErrorsChannelPair
 		var errs []chan error
 
+		cancelCtx, cancelFunc := context.WithCancel(command.Context())
+		defer cancelFunc()
+
 		for _, path := range args {
-			resultChannel, errorChannel := computeErrors(command.Context(), path, optimizer, cplexCommand, modelFile)
+			resultChannel, errorChannel := computeErrors(cancelCtx, path, optimizer, cplexCommand, modelFile)
 
 			results = append(results, &pathPathsToErrorsChannelPair{path, resultChannel})
 			errs = append(errs, errorChannel)
