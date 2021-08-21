@@ -71,7 +71,7 @@ func optimizeUsing(optimizer optimizer.Optimizer) func(*cobra.Command, []string)
 			return err
 		}
 
-		fmt.Println(console.ToConsoleOutput(result))
+		fmt.Println(console.ToOutput(result))
 
 		return nil
 	}

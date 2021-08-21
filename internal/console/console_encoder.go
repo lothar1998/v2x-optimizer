@@ -16,9 +16,9 @@ const (
 	vehicleAssignment = "VEHICLE_ASSIGNMENT"
 )
 
-// FromConsoleOutput parses result in console format.
-// The optimizer.Result can be encoded into console format using ToConsoleOutput.
-func FromConsoleOutput(output string) (*optimizer.Result, error) {
+// FromOutput parses result in console format.
+// The optimizer.Result can be encoded into console format using ToOutput.
+func FromOutput(output string) (*optimizer.Result, error) {
 	result := &optimizer.Result{}
 
 	reader := bufio.NewReader(strings.NewReader(output))
@@ -70,8 +70,8 @@ func FromConsoleOutput(output string) (*optimizer.Result, error) {
 	}
 }
 
-// ToConsoleOutput encodes optimizer.Result into a user-readable string. It can be parsed using FromConsoleOutput.
-func ToConsoleOutput(result *optimizer.Result) string {
+// ToOutput encodes optimizer.Result into a user-readable string. It can be parsed using FromOutput.
+func ToOutput(result *optimizer.Result) string {
 	var sb strings.Builder
 
 	sb.WriteString(nValue + " = " + strconv.Itoa(len(result.RRHEnable)) + "\n")

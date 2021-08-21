@@ -79,7 +79,7 @@ func computePerformanceOf(optimizer optimizer.Optimizer) func(*cobra.Command, []
 
 		errorChannel := concurrency.JoinErrorChannels(errs...)
 
-		if err := <-errorChannel; err != nil {
+		if err, ok := <-errorChannel; ok && err != nil {
 			return err
 		}
 
@@ -164,7 +164,7 @@ func computeErrorsForPath(ctx context.Context, path, cplexCommand, modelFile str
 
 	errorChannel := concurrency.JoinErrorChannels(errs...)
 
-	if err := <-errorChannel; err != nil {
+	if err, ok := <-errorChannel; ok && err != nil {
 		return nil, err
 	}
 
@@ -193,7 +193,7 @@ func computeErrorForSingleFile(ctx context.Context, path, cplexCommand, modelFil
 			Filepath:        path,
 			CustomOptimizer: optimizer,
 			CPLEXProcess:    calculator.NewCommand(cplexCommand, modelFile, path),
-			ParseOutputFunc: console.FromConsoleOutput,
+			ParseOutputFunc: console.FromOutput,
 		}
 
 		result, err := c.Compute(ctx)
