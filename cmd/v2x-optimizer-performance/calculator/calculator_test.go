@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
-	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -29,23 +28,17 @@ func TestErrorCalculator_optimizeUsingCustom(t *testing.T) {
 		assert.NoError(t, err)
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
-		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(&optimizer.Result{RRHCount: expectedResult}, nil)
+		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(&optimizer.Result{RRHCount: expectedResult}, nil)
 		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO(), &wg)
+		result := <-resultChannel
+		assert.Equal(t, expectedResult, result)
+		assert.Empty(t, errChannel)
 
-		wg.Wait()
-
-		select {
-		case result := <-resultChannel:
-			assert.Equal(t, expectedResult, result)
-			assert.Empty(t, errChannel)
-		case err := <-errChannel:
-			assert.NoError(t, err)
-		}
+		err = <-errChannel
+		assert.NoError(t, err)
 	})
 
 	t.Run("should handle file error", func(t *testing.T) {
@@ -57,20 +50,11 @@ func TestErrorCalculator_optimizeUsingCustom(t *testing.T) {
 
 		calculator := ErrorCalculator{Filepath: "", CustomOptimizer: optimizerMock}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO(), &wg)
-
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorAs(t, err, &expectedError)
-			assert.Empty(t, resultChannel)
-		}
+		err := <-errChannel
+		assert.ErrorAs(t, err, &expectedError)
+		assert.Empty(t, resultChannel)
 	})
 
 	t.Run("should handle decoding error", func(t *testing.T) {
@@ -83,20 +67,11 @@ func TestErrorCalculator_optimizeUsingCustom(t *testing.T) {
 
 		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO(), &wg)
-
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorIs(t, err, data.ErrMalformedData)
-			assert.Empty(t, resultChannel)
-		}
+		err = <-errChannel
+		assert.ErrorIs(t, err, data.ErrMalformedData)
+		assert.Empty(t, resultChannel)
 	})
 
 	t.Run("should handle optimization error", func(t *testing.T) {
@@ -108,24 +83,15 @@ func TestErrorCalculator_optimizeUsingCustom(t *testing.T) {
 		assert.NoError(t, err)
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
-		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(nil, expectedError)
+		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(nil, expectedError)
 
 		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCustom(context.TODO(), &wg)
-
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorIs(t, err, expectedError)
-			assert.Empty(t, resultChannel)
-		}
+		err = <-errChannel
+		assert.ErrorIs(t, err, expectedError)
+		assert.Empty(t, resultChannel)
 	})
 
 	t.Run("should handle context cancellation", func(t *testing.T) {
@@ -140,32 +106,23 @@ func TestErrorCalculator_optimizeUsingCustom(t *testing.T) {
 		defer cancelFunc()
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
-		optimizerMock.EXPECT().Optimize(gomock.Any()).DoAndReturn(
-			func(_ *data.Data) (*optimizer.Result, error) {
+		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).DoAndReturn(
+			func(ctx context.Context, _ *data.Data) (*optimizer.Result, error) {
 				waitForOptimization <- struct{}{}
-				<-time.After(10 * time.Second)
-				return nil, nil
+				<-ctx.Done()
+				return nil, ctx.Err()
 			})
 
 		calculator := ErrorCalculator{Filepath: filepath, CustomOptimizer: optimizerMock}
 
-		var wg sync.WaitGroup
-
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCustom(ctx, &wg)
+		resultChannel, errChannel := calculator.optimizeUsingCustom(ctx)
 
 		<-waitForOptimization
 		cancelFunc()
 
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorIs(t, err, context.Canceled)
-			assert.Empty(t, resultChannel)
-		}
+		err = <-errChannel
+		assert.ErrorIs(t, err, context.Canceled)
+		assert.Empty(t, resultChannel)
 	})
 }
 
@@ -186,20 +143,14 @@ func TestErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 
 		calculator := ErrorCalculator{CPLEXProcess: cplexProcessMock, ParseOutputFunc: parseOutput}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCPLEX(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCPLEX(context.TODO(), &wg)
+		result := <-resultChannel
+		assert.Equal(t, expectedResult, result)
+		assert.Empty(t, errChannel)
 
-		wg.Wait()
-
-		select {
-		case result := <-resultChannel:
-			assert.Equal(t, expectedResult, result)
-			assert.Empty(t, errChannel)
-		case err := <-errChannel:
-			assert.NoError(t, err)
-		}
+		err := <-errChannel
+		assert.NoError(t, err)
 	})
 
 	t.Run("should handle process output error", func(t *testing.T) {
@@ -215,20 +166,11 @@ func TestErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 			ParseOutputFunc: func(s string) (*optimizer.Result, error) { return nil, nil },
 		}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCPLEX(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCPLEX(context.TODO(), &wg)
-
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorAs(t, err, &expectedError)
-			assert.Empty(t, resultChannel)
-		}
+		err := <-errChannel
+		assert.ErrorAs(t, err, &expectedError)
+		assert.Empty(t, resultChannel)
 	})
 
 	t.Run("should handle parsing output error", func(t *testing.T) {
@@ -244,20 +186,11 @@ func TestErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 			ParseOutputFunc: func(s string) (*optimizer.Result, error) { return nil, expectedError },
 		}
 
-		var wg sync.WaitGroup
+		resultChannel, errChannel := calculator.optimizeUsingCPLEX(context.TODO())
 
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCPLEX(context.TODO(), &wg)
-
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorAs(t, err, &expectedError)
-			assert.Empty(t, resultChannel)
-		}
+		err := <-errChannel
+		assert.ErrorAs(t, err, &expectedError)
+		assert.Empty(t, resultChannel)
 	})
 
 	t.Run("should handle context cancellation", func(t *testing.T) {
@@ -281,23 +214,14 @@ func TestErrorCalculator_optimizeUsingCPLEX(t *testing.T) {
 			ParseOutputFunc: func(s string) (*optimizer.Result, error) { return nil, nil },
 		}
 
-		var wg sync.WaitGroup
-
-		wg.Add(1)
-		resultChannel, errChannel := calculator.optimizeUsingCPLEX(ctx, &wg)
+		resultChannel, errChannel := calculator.optimizeUsingCPLEX(ctx)
 
 		<-waitForOptimization
 		cancelFunc()
 
-		wg.Wait()
-
-		select {
-		case <-resultChannel:
-			assert.Fail(t, "shouldn't return any value")
-		case err := <-errChannel:
-			assert.ErrorIs(t, err, context.Canceled)
-			assert.Empty(t, resultChannel)
-		}
+		err := <-errChannel
+		assert.ErrorIs(t, err, context.Canceled)
+		assert.Empty(t, resultChannel)
 	})
 }
 
@@ -315,7 +239,7 @@ func TestErrorCalculator_Compute(t *testing.T) {
 		assert.NoError(t, err)
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
-		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(&optimizer.Result{RRHCount: customResult}, nil)
+		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(&optimizer.Result{RRHCount: customResult}, nil)
 
 		cplexProcessMock := mocks.NewMockCPLEXProcess(gomock.NewController(t))
 		cplexProcessMock.EXPECT().Output().Return([]byte{}, nil)
@@ -344,10 +268,10 @@ func TestErrorCalculator_Compute(t *testing.T) {
 		assert.NoError(t, err)
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
-		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(nil, expectedError)
+		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(nil, expectedError)
 
 		cplexProcessMock := mocks.NewMockCPLEXProcess(gomock.NewController(t))
-		cplexProcessMock.EXPECT().Output().Return([]byte{}, nil)
+		cplexProcessMock.EXPECT().Output().Return([]byte{}, nil).MaxTimes(1)
 
 		parseOutput := func(output string) (*optimizer.Result, error) {
 			return &optimizer.Result{RRHCount: 123}, nil
@@ -370,7 +294,7 @@ func TestErrorCalculator_Compute(t *testing.T) {
 		assert.NoError(t, err)
 
 		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
-		optimizerMock.EXPECT().Optimize(gomock.Any()).Return(&optimizer.Result{RRHCount: 515}, nil)
+		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(&optimizer.Result{RRHCount: 515}, nil).MaxTimes(1)
 
 		cplexProcessMock := mocks.NewMockCPLEXProcess(gomock.NewController(t))
 		cplexProcessMock.EXPECT().Output().Return(nil, expectedError)

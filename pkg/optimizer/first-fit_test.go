@@ -1,6 +1,7 @@
 package optimizer
 
 import (
+	"context"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -23,7 +24,7 @@ func TestFirstFit_Optimize(t *testing.T) {
 			},
 		}
 
-		result, err := FirstFit{}.Optimize(d)
+		result, err := FirstFit{}.Optimize(context.TODO(), d)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 3, result.RRHCount)
@@ -45,7 +46,7 @@ func TestFirstFit_Optimize(t *testing.T) {
 			},
 		}
 
-		result, err := FirstFit{}.Optimize(d)
+		result, err := FirstFit{}.Optimize(context.TODO(), d)
 
 		assert.Error(t, err)
 		assert.Zero(t, result)

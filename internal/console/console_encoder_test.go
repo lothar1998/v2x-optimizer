@@ -1,4 +1,4 @@
-package utils
+package console
 
 import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
@@ -15,14 +15,14 @@ func TestCompatibility(t *testing.T) {
 		VehiclesToRRHAssignment: []int{0, 0, 0, 2, 2, 3, 3, 3, 5, 8},
 	}
 
-	consoleOutput := ToConsoleOutput(expectedResult)
-	result, err := FromConsoleOutput(consoleOutput)
+	consoleOutput := ToOutput(expectedResult)
+	result, err := FromOutput(consoleOutput)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResult, result)
 }
 
-func TestFromConsoleOutput(t *testing.T) {
+func TestFromOutput(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should decode console output to result structure", func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestFromConsoleOutput(t *testing.T) {
 			"RRH_ENABLE = [1 0 1 1 0 1 0 0 1 0]\n" +
 			"VEHICLE_ASSIGNMENT = [0 0 0 2 2 3 3 3 5 8]\n"
 
-		result, err := FromConsoleOutput(consoleOutput)
+		result, err := FromOutput(consoleOutput)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedResult, result)
@@ -66,14 +66,14 @@ func TestFromConsoleOutput(t *testing.T) {
 			"<<< post process\n\n\n" +
 			"<<< done\n"
 
-		result, err := FromConsoleOutput(consoleOutput)
+		result, err := FromOutput(consoleOutput)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedResult, result)
 	})
 }
 
-func TestToConsoleOutput(t *testing.T) {
+func TestToOutput(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should encode result to console string", func(t *testing.T) {
@@ -91,7 +91,7 @@ func TestToConsoleOutput(t *testing.T) {
 			VehiclesToRRHAssignment: []int{0, 0, 0, 2, 2, 3, 3, 3, 5, 8},
 		}
 
-		output := ToConsoleOutput(result)
+		output := ToOutput(result)
 
 		assert.Equal(t, expectedOutput, output)
 	})
