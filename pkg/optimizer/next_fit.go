@@ -32,6 +32,7 @@ func (nf NextFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 			leftSpace[currIndex] -= data.R[i][currIndex]
 			continue
 		}
+
 		i--
 		currIndex++
 	}
