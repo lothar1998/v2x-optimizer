@@ -20,4 +20,4 @@ type Result struct {
 
 // ErrCannotAssignToBucket should be returned if there is no possibility
 // to assign items to buckets using the given algorithm.
-var ErrCannotAssignToBucket = errors.New("cannot assign vehicles to RRHs")
+var ErrCannotAssignToBucket = errors.New("cannot assign items to buckets")
