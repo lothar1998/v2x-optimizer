@@ -20,7 +20,7 @@ type ErrorCalculator struct {
 
 // Compute runs computation of error. It returns ErrorInfo that consists of
 // ErrorInfo.RelativeError along with more specific results.
-func (c ErrorCalculator) Compute(ctx context.Context) (*ErrorInfo, error) {
+func (c *ErrorCalculator) Compute(ctx context.Context) (*ErrorInfo, error) {
 	customResult, customError := c.optimizeUsingCustom(ctx)
 	cplexResult, cplexError := c.optimizeUsingCPLEX(ctx)
 
@@ -45,7 +45,7 @@ func (c ErrorCalculator) Compute(ctx context.Context) (*ErrorInfo, error) {
 	return &info, nil
 }
 
-func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context) (chan int, chan error) {
+func (c *ErrorCalculator) optimizeUsingCustom(ctx context.Context) (chan int, chan error) {
 	resultChannel := make(chan int, 1)
 	errorChannel := make(chan error, 1)
 
@@ -80,7 +80,7 @@ func (c ErrorCalculator) optimizeUsingCustom(ctx context.Context) (chan int, cha
 	return resultChannel, errorChannel
 }
 
-func (c ErrorCalculator) optimizeUsingCPLEX(ctx context.Context) (chan int, chan error) {
+func (c *ErrorCalculator) optimizeUsingCPLEX(ctx context.Context) (chan int, chan error) {
 	resultChannel := make(chan int, 1)
 	errorChannel := make(chan error, 1)
 
