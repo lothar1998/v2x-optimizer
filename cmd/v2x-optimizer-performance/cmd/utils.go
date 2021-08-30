@@ -1,82 +1,180 @@
 package cmd
 
 import (
-	"encoding/csv"
 	"fmt"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"os"
-	"path"
-	"path/filepath"
-	"strconv"
 	"strings"
-	"unicode/utf8"
+	"text/tabwriter"
 )
 
 var csvHeaders = []string{"path", "custom_result", "cplex_result", "absolute_error", "relative_error", "average_relative_error"}
 
-func outputToConsole(pathsToResults map[string]*pathsToErrors) {
-	for rootPath, result := range pathsToResults {
-		titleString := "Root: " + rootPath
-		fmt.Println(strings.Repeat("-", utf8.RuneCountInString(titleString)+10))
-		fmt.Println(titleString)
-		fmt.Printf("Average relative error: %.3f", result.AverageRelativeError)
-		fmt.Println()
-		for subPath, errorInfo := range result.PathToErrors {
-			fmt.Printf("%s\t->\tCustomResult: %d\t\tCPLEXResult: %d\t\tAbsoluteError: %d\t\tRelativeError: %.3f\n",
-				filepath.Base(subPath), errorInfo.CustomResult, errorInfo.CPLEXResult,
-				errorInfo.AbsoluteError, errorInfo.RelativeError)
-		}
-	}
+type PathsToErrors map[string]FilesToErrors
+
+type FilesToErrors map[string]OptimizersToErrors
+
+type OptimizersToErrors map[string]errors.Info
+
+type PathsToAvgErrors map[string]OptimizersToAvgErrors
+
+type OptimizersToAvgErrors map[string]AvgErrors
+
+type AvgErrors struct {
+	AvgRelativeError float64
+	AvgAbsolutError  float64
 }
 
-func outputToCSVFile(pathsToResults map[string]*pathsToErrors, outputFilepath string) error {
-	for rootPath, result := range pathsToResults {
-		err := os.MkdirAll(outputFilepath, 0755)
-		if err != nil {
-			return err
+func toErrors(results runner.PathsToResults) PathsToErrors {
+	pathsToErrors := make(PathsToErrors)
+
+	for path, filesToResults := range results {
+		pathsToErrors[path] = make(FilesToErrors)
+
+		for file, optimizersToResults := range filesToResults {
+			pathsToErrors[path][file] = make(OptimizersToErrors)
+
+			cplexValue := optimizersToResults[executor.CPLEXName]
+
+			for opt, value := range optimizersToResults {
+				if opt != executor.CPLEXName {
+					pathsToErrors[path][file][opt] = *errors.Calculate(cplexValue, value)
+				}
+			}
 		}
-
-		csvFilepath := path.Join(outputFilepath,
-			strings.Trim(strings.ReplaceAll(rootPath, "/", "_"), "_")+".csv")
-
-		file, err := os.OpenFile(csvFilepath, os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
-
-		writer := csv.NewWriter(file)
-
-		err = writer.Write(csvHeaders)
-		if err != nil {
-			return err
-		}
-
-		err = writer.WriteAll(toSeparatedValues(result))
-		if err != nil {
-			return err
-		}
-
-		_ = file.Close()
 	}
 
-	return nil
+	return pathsToErrors
 }
 
-func toSeparatedValues(resultForPath *pathsToErrors) [][]string {
-	result := make([][]string, len(resultForPath.PathToErrors))
+func toAverageErrors(pathsToErrors PathsToErrors) PathsToAvgErrors {
+	pathsToAvgErrors := make(PathsToAvgErrors)
 
-	var i int
-	for currentPath, info := range resultForPath.PathToErrors {
-		result[i] = make([]string, 6)
+	for path, filesToErrors := range pathsToErrors {
+		optimizersToTotalRelativeError := make(map[string]float64)
+		optimizersToTotalAbsolutError := make(map[string]int)
+		optimizersToTotalCount := make(map[string]int)
 
-		result[i][0] = currentPath
-		result[i][1] = strconv.Itoa(info.CustomResult)
-		result[i][2] = strconv.Itoa(info.CPLEXResult)
-		result[i][3] = strconv.Itoa(info.AbsoluteError)
-		result[i][4] = strconv.FormatFloat(info.RelativeError, 'f', 3, 64)
-		result[i][5] = strconv.FormatFloat(resultForPath.AverageRelativeError, 'f', 3, 64)
+		for _, optimizersToErrors := range filesToErrors {
+			for opt, errorInfo := range optimizersToErrors {
+				if _, ok := optimizersToTotalRelativeError[opt]; !ok {
+					optimizersToTotalRelativeError[opt] = errorInfo.RelativeError
+					optimizersToTotalAbsolutError[opt] = errorInfo.AbsoluteError
+					optimizersToTotalCount[opt] = 1
+					continue
+				}
 
-		i++
+				optimizersToTotalRelativeError[opt] += errorInfo.RelativeError
+				optimizersToTotalAbsolutError[opt] += errorInfo.AbsoluteError
+				optimizersToTotalCount[opt]++
+			}
+		}
+
+		pathsToAvgErrors[path] = make(OptimizersToAvgErrors)
+
+		for opt, _ := range optimizersToTotalRelativeError {
+			totalCount := float64(optimizersToTotalCount[opt])
+			pathsToAvgErrors[path][opt] = AvgErrors{
+				AvgRelativeError: optimizersToTotalRelativeError[opt] / totalCount,
+				AvgAbsolutError:  float64(optimizersToTotalAbsolutError[opt]) / totalCount,
+			}
+		}
 	}
 
-	return result
+	return pathsToAvgErrors
 }
+
+func outputToConsole(errs PathsToErrors, avgErrs PathsToAvgErrors, isVerbose bool) {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 5, ' ', 0)
+
+	for path := range errs {
+		_, _ = fmt.Fprintf(w, "Path: "+path)
+		_, _ = fmt.Fprint(w, "\n\n")
+
+		_, _ = fmt.Fprintf(w, "\t%s\t%s\t%s\n",
+			"Optimizer", "Average relative error", "Average absolute error")
+
+		for opt, avgValues := range avgErrs[path] {
+			_, _ = fmt.Fprintf(w, "\t%s\t%.3f\t%.3f\n",
+				opt, avgValues.AvgRelativeError, avgValues.AvgAbsolutError)
+		}
+
+		if isVerbose {
+			_, _ = fmt.Fprint(w, "\n\n")
+
+			for file, optimizersToErrors := range errs[path] {
+				_, _ = fmt.Fprintln(w, "\tFile: "+file)
+				_, _ = fmt.Fprintf(w, "\t\t%s\t%s\t%s\t%s\t%s\n",
+					"Optimizer", "Value", "Optimal Value", "Relative Error", "Absolute Error")
+
+				for opt, v := range optimizersToErrors {
+					_, _ = fmt.Fprintf(w, "\t\t%s\t%d\t%d\t%.3f\t%d\n",
+						opt, v.Value, v.ReferenceValue, v.RelativeError, v.AbsoluteError)
+				}
+
+				_, _ = fmt.Fprint(w, "\n")
+			}
+		}
+
+		_, _ = fmt.Fprint(w, "\n")
+		_, _ = fmt.Fprintln(w, strings.Repeat("-", 100))
+	}
+
+	_ = w.Flush()
+}
+
+//
+//func outputToCSVFile(pathsToResults map[string]*pathsToErrors, outputFilepath string) error {
+//	for rootPath, result := range pathsToResults {
+//		err := os.MkdirAll(outputFilepath, 0755)
+//		if err != nil {
+//			return err
+//		}
+//
+//		csvFilepath := path.Join(outputFilepath,
+//			strings.Trim(strings.ReplaceAll(rootPath, "/", "_"), "_")+".csv")
+//
+//		file, err := os.OpenFile(csvFilepath, os.O_CREATE|os.O_WRONLY, 0644)
+//		if err != nil {
+//			return err
+//		}
+//
+//		writer := csv.NewWriter(file)
+//
+//		err = writer.Write(csvHeaders)
+//		if err != nil {
+//			return err
+//		}
+//
+//		err = writer.WriteAll(toSeparatedValues(result))
+//		if err != nil {
+//			return err
+//		}
+//
+//		_ = file.Close()
+//	}
+//
+//	return nil
+//}
+//
+//func toSeparatedValues(resultForPath *pathsToErrors) [][]string {
+//	result := make([][]string, len(resultForPath.PathToErrors))
+//
+//	var i int
+//	for currentPath, info := range resultForPath.PathToErrors {
+//		result[i] = make([]string, 6)
+//
+//		result[i][0] = currentPath
+//		result[i][1] = strconv.Itoa(info.CustomResult)
+//		result[i][2] = strconv.Itoa(info.CPLEXResult)
+//		result[i][3] = strconv.Itoa(info.AbsoluteError)
+//		result[i][4] = strconv.FormatFloat(info.RelativeError, 'f', 3, 64)
+//		result[i][5] = strconv.FormatFloat(resultForPath.AverageRelativeError, 'f', 3, 64)
+//
+//		i++
+//	}
+//
+//	return result
+//}

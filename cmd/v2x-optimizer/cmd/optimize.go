@@ -22,8 +22,8 @@ func OptimizeCmd() *cobra.Command {
 		},
 	}
 
-	for name, o := range config.NamesToOptimizers {
-		command := optimizeWith(name, o)
+	for _, o := range config.RegisteredOptimizers {
+		command := optimizeWith(o.Name(), o)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
 	}
