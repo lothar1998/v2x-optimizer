@@ -6,8 +6,6 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
-const name = "first-fit"
-
 // FirstFit is an optimizer which implements first fit algorithm expanded
 // to solve heterogeneous bin with different weight problem.
 type FirstFit struct{}
@@ -43,5 +41,5 @@ func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 }
 
 func (f FirstFit) Name() string {
-	return name
+	return "first-fit"
 }
