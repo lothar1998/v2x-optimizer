@@ -2,6 +2,7 @@ package runner
 
 import (
 	"github.com/golang/mock/gomock"
+	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
@@ -81,7 +82,7 @@ func Test_cacheable_getNotCachedExecutors(t *testing.T) {
 			Hash: "example_hash",
 			Results: cache.OptimizersToResults{
 				"opt2":             3,
-				executor.CPLEXName: 12,
+				config.CPLEXOptimizerName: 12,
 			},
 		}
 
@@ -167,17 +168,17 @@ func Test_cacheable_toFilesToResults(t *testing.T) {
 		optimizers := []optimizer.Optimizer{optimizer1, optimizer2}
 
 		localCache := cache.Data{
-			file1: cache.FileInfo{Results: cache.OptimizersToResults{executor.CPLEXName: 2, "opt1": 3, "opt4": 13}},
-			file2: cache.FileInfo{Results: cache.OptimizersToResults{executor.CPLEXName: 4, "opt1": 5, "opt2": 6, "opt4": 12}},
-			file3: cache.FileInfo{Results: cache.OptimizersToResults{executor.CPLEXName: 5, "opt1": 12, "opt3": 4, "opt4": 32}},
+			file1: cache.FileInfo{Results: cache.OptimizersToResults{config.CPLEXOptimizerName: 2, "opt1": 3, "opt4": 13}},
+			file2: cache.FileInfo{Results: cache.OptimizersToResults{config.CPLEXOptimizerName: 4, "opt1": 5, "opt2": 6, "opt4": 12}},
+			file3: cache.FileInfo{Results: cache.OptimizersToResults{config.CPLEXOptimizerName: 5, "opt1": 12, "opt3": 4, "opt4": 32}},
 		}
 
 		c := cacheable{Optimizers: optimizers}
 		results := c.toFilesToResults(localCache, files)
 
 		assert.Len(t, results, 3)
-		assert.Equal(t, OptimizersToResults{executor.CPLEXName: 2, "opt1": 3, "opt4": 13}, results[file1])
-		assert.Equal(t, OptimizersToResults{executor.CPLEXName: 4, "opt1": 5, "opt4": 12}, results[file2])
-		assert.Equal(t, OptimizersToResults{executor.CPLEXName: 5, "opt1": 12, "opt4": 32}, results[file3])
+		assert.Equal(t, OptimizersToResults{config.CPLEXOptimizerName: 2, "opt1": 3, "opt4": 13}, results[file1])
+		assert.Equal(t, OptimizersToResults{config.CPLEXOptimizerName: 4, "opt1": 5, "opt4": 12}, results[file2])
+		assert.Equal(t, OptimizersToResults{config.CPLEXOptimizerName: 5, "opt1": 12, "opt4": 32}, results[file3])
 	})
 }

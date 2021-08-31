@@ -7,11 +7,13 @@ import (
 	"os"
 )
 
+// Custom is an Executor that allows for running optimization using the custom, self-written optimizer.
 type Custom struct {
 	Path      string
 	Optimizer optimizer.Optimizer
 }
 
+// Execute runs optimization using custom optimizer and waits for results or context cancellation.
 func (c *Custom) Execute(ctx context.Context) (int, error) {
 	file, err := os.Open(c.Path)
 	if err != nil {
@@ -32,6 +34,7 @@ func (c *Custom) Execute(ctx context.Context) (int, error) {
 	return result.RRHCount, nil
 }
 
+// Name returns the name of the executor, which in this case is also the name of the underlying optimizer.
 func (c *Custom) Name() string {
 	return c.Optimizer.Name()
 }

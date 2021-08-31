@@ -2,30 +2,32 @@ package executor
 
 import (
 	"context"
+	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/console"
 	"os"
 	"os/exec"
 	"syscall"
 )
 
-const (
-	CPLEXName           = "cplex"
-	cplexCommandDefault = "oplrun"
-)
+const cplexCommandDefault = "oplrun"
 
 type cplex struct {
 	CPLEXProcess    Process
 	ParseOutputFunc func(string) (int, error)
 }
 
+// NewCplex returns Executor which is able to run cplex optimization process and obtain results from it.
 func NewCplex(modelFilepath, dataFilepath string) *cplex {
 	return NewCplexWithCommandName(cplexCommandDefault, modelFilepath, dataFilepath)
 }
 
+// NewCplexWithCommandName facilitates using cplex CLI command without enforcing
+// any particular CLI command name. It may be helpful to use it with aliases.
 func NewCplexWithCommandName(cplexCommandName, modelFilepath, dataFilepath string) *cplex {
 	return &cplex{NewCPLEXCommand(cplexCommandName, modelFilepath, dataFilepath), parseOutputFunc}
 }
 
+// Execute runs cplex optimization process in the background and waits for its results or context cancellation.
 func (c *cplex) Execute(ctx context.Context) (int, error) {
 	resultChannel := make(chan int, 1)
 	errWorker := make(chan error, 1)
@@ -77,8 +79,9 @@ func (c *cplex) Execute(ctx context.Context) (int, error) {
 	return <-resultChannel, nil
 }
 
+// Name returns the name of cplex executor, which in this case is also the name of the underlying optimizer.
 func (c *cplex) Name() string {
-	return CPLEXName
+	return config.CPLEXOptimizerName
 }
 
 // Process represents an external process.

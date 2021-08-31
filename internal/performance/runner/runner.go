@@ -7,11 +7,12 @@ import (
 	"os"
 )
 
+// Runner is something that can be run to obtain the mapping between paths and results.
 type Runner interface {
 	Run(ctx context.Context) (PathsToResults, error)
 }
 
-type handleWithFilterFunc func(ctx context.Context, view view.DirectoryView) (FilesToResults, error)
+type handleFunc func(ctx context.Context, view view.DirectoryView) (FilesToResults, error)
 
 type pathToResult struct {
 	path   string
@@ -20,9 +21,10 @@ type pathToResult struct {
 
 type runner struct {
 	DataPaths []string
-	handler   handleWithFilterFunc
+	handler   handleFunc
 }
 
+// Run concurrently runs handleFunc for specified DataPaths with appropriate view.DirectoryView.
 func (r *runner) Run(ctx context.Context) (PathsToResults, error) {
 	cancelCtx, cancelFunc := context.WithCancel(ctx)
 	defer cancelFunc()

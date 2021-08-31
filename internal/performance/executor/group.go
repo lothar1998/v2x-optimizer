@@ -6,6 +6,14 @@ import (
 	"github.com/lothar1998/v2x-optimizer/internal/concurrency"
 )
 
+type nameToExecutorResult struct {
+	Name   string
+	Result chan int
+}
+
+// GroupExecutor concurrently executes underlying executors and waits for results or context cancellation.
+// In case of returned errors, GroupExecutor cancels its context to stop all executors - in other words,
+// it waits only for the first error or for all results.
 type GroupExecutor struct {
 	Executors []Executor
 }
@@ -68,9 +76,5 @@ func execute(ctx context.Context, executor Executor) (chan int, chan error) {
 	return resultCh, errCh
 }
 
-type nameToExecutorResult struct {
-	Name   string
-	Result chan int
-}
-
+// ErrUndefinedExecutors is returned by GroupExecutor in case of passing nil list of executors.
 var ErrUndefinedExecutors = errors.New("executors undefined")

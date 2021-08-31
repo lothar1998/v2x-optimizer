@@ -3,7 +3,7 @@ package runner
 import (
 	"context"
 	"errors"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
+	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -33,15 +33,15 @@ func Test_runner_Run(t *testing.T) {
 		expectedResult := PathsToResults{
 			subDir: FilesToResults{
 				"file1.dat": OptimizersToResults{
-					executor.CPLEXName: 3,
+					config.CPLEXOptimizerName: 3,
 					"opt1":             10},
 				"file2.dat": OptimizersToResults{
-					executor.CPLEXName: 12,
+					config.CPLEXOptimizerName: 12,
 					"opt1":             18},
 			},
 			filePath: FilesToResults{
 				filepath.Base(filePath): OptimizersToResults{
-					executor.CPLEXName: 3,
+					config.CPLEXOptimizerName: 3,
 					"opt1":             10},
 			},
 		}

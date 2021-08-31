@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"os"
 	"strings"
@@ -12,16 +12,22 @@ import (
 
 var csvHeaders = []string{"path", "custom_result", "cplex_result", "absolute_error", "relative_error", "average_relative_error"}
 
+// PathsToErrors represents mapping between paths and errors mapping.
 type PathsToErrors map[string]FilesToErrors
 
+// FilesToErrors represents mapping between files and errors mapping.
 type FilesToErrors map[string]OptimizersToErrors
 
+// OptimizersToErrors represents mapping between optimizers' names and error infos.
 type OptimizersToErrors map[string]errors.Info
 
+// PathsToAvgErrors represents mapping between paths and average errors mapping.
 type PathsToAvgErrors map[string]OptimizersToAvgErrors
 
+// OptimizersToAvgErrors represents mapping between optimizers' names and average errors.
 type OptimizersToAvgErrors map[string]AvgErrors
 
+// AvgErrors consists of two average error - relative and absolute.
 type AvgErrors struct {
 	AvgRelativeError float64
 	AvgAbsolutError  float64
@@ -36,10 +42,10 @@ func toErrors(results runner.PathsToResults) PathsToErrors {
 		for file, optimizersToResults := range filesToResults {
 			pathsToErrors[path][file] = make(OptimizersToErrors)
 
-			cplexValue := optimizersToResults[executor.CPLEXName]
+			cplexValue := optimizersToResults[config.CPLEXOptimizerName]
 
 			for opt, value := range optimizersToResults {
-				if opt != executor.CPLEXName {
+				if opt != config.CPLEXOptimizerName {
 					pathsToErrors[path][file][opt] = *errors.Calculate(cplexValue, value)
 				}
 			}
@@ -74,7 +80,7 @@ func toAverageErrors(pathsToErrors PathsToErrors) PathsToAvgErrors {
 
 		pathsToAvgErrors[path] = make(OptimizersToAvgErrors)
 
-		for opt, _ := range optimizersToTotalRelativeError {
+		for opt := range optimizersToTotalRelativeError {
 			totalCount := float64(optimizersToTotalCount[opt])
 			pathsToAvgErrors[path][opt] = AvgErrors{
 				AvgRelativeError: optimizersToTotalRelativeError[opt] / totalCount,

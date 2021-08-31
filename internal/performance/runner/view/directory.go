@@ -10,6 +10,8 @@ type directory struct {
 	files   []string
 }
 
+// NewDirectory creates DirectoryView of given directory providing
+// the directory path and filenames that are inside the directory.
 func NewDirectory(rootDir string) (*directory, error) {
 	fileInfos, err := ioutil.ReadDir(rootDir)
 	if err != nil {
@@ -30,10 +32,12 @@ func NewDirectory(rootDir string) (*directory, error) {
 	return &directory{rootDir: rootDir, files: files}, nil
 }
 
+// Dir returns path to given directory.
 func (d *directory) Dir() string {
 	return d.rootDir
 }
 
+// Files return filenames that are inside given directory (only filenames, without paths).
 func (d *directory) Files() []string {
 	return d.files
 }

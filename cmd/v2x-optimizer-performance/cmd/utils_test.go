@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -104,13 +104,13 @@ func Test_toErrors(t *testing.T) {
 
 		results := runner.PathsToResults{
 			"/path/1": runner.FilesToResults{
-				"file1": runner.OptimizersToResults{executor.CPLEXName: 2, "opt1": 3, "opt4": 13},
-				"file2": runner.OptimizersToResults{executor.CPLEXName: 4, "opt1": 5, "opt4": 12},
-				"file3": runner.OptimizersToResults{executor.CPLEXName: 5, "opt1": 12, "opt4": 32},
+				"file1": runner.OptimizersToResults{config.CPLEXOptimizerName: 2, "opt1": 3, "opt4": 13},
+				"file2": runner.OptimizersToResults{config.CPLEXOptimizerName: 4, "opt1": 5, "opt4": 12},
+				"file3": runner.OptimizersToResults{config.CPLEXOptimizerName: 5, "opt1": 12, "opt4": 32},
 			},
 			"/path/2": runner.FilesToResults{
-				"file4": runner.OptimizersToResults{executor.CPLEXName: 12, "opt1": 23, "opt4": 53},
-				"file5": runner.OptimizersToResults{executor.CPLEXName: 14, "opt1": 35, "opt4": 22},
+				"file4": runner.OptimizersToResults{config.CPLEXOptimizerName: 12, "opt1": 23, "opt4": 53},
+				"file5": runner.OptimizersToResults{config.CPLEXOptimizerName: 14, "opt1": 35, "opt4": 22},
 			},
 		}
 
