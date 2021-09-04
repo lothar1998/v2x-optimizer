@@ -26,6 +26,9 @@ func NewCplex(modelFilepath, dataFilepath string) Executor {
 	return NewCplexWithThreadPool(modelFilepath, dataFilepath, defaultThreadPoolCount)
 }
 
+// NewCplexWithThreadPool returns Executor which is able to run cplex optimization process and obtain results from it.
+// It limits the thread count of the CPLEX process, so it is convenient in cases when several CPLEX processes
+// run on one machine to avoid excessive context switching.
 func NewCplexWithThreadPool(modelFilepath, dataFilepath string, threadPoolLimit uint) Executor {
 	c := &cplex{
 		parseOutputFunc: parseOutputFunc,
