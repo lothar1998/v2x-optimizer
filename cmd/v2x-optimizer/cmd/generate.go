@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/spf13/cobra"
 )
 
 const (

@@ -2,17 +2,18 @@ package runner
 
 import (
 	"context"
+	"path/filepath"
+	"sync"
+	"sync/atomic"
+
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"path/filepath"
-	"sync"
-	"sync/atomic"
 )
 
-type cacheable struct {
+type Cacheable struct {
 	pathRunner
 	ModelPath                  string
 	Optimizers                 []optimizer.Optimizer
@@ -22,7 +23,7 @@ type cacheable struct {
 }
 
 // NewCacheable returns pathRunner with the ability to cache results in local cache files using the cache package.
-func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer) *cacheable {
+func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer) *Cacheable {
 	c := newCacheable(modelPath, dataPaths, optimizers)
 	c.modelExecutorBuildFunc = executor.NewCplex
 	return c
@@ -31,15 +32,14 @@ func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.O
 // NewCacheableWithConcurrencyLimits returns pathRunner with the ability to cache results
 // in local cache files using the cache package. It also limits the model executor to a specified thread limit.
 func NewCacheableWithConcurrencyLimits(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer,
-	modelOptimizerThreadPoolSize uint) *cacheable {
-
+	modelOptimizerThreadPoolSize uint) *Cacheable {
 	c := newCacheable(modelPath, dataPaths, optimizers)
 	c.modelExecutorBuildFunc = getModelExecutorBuilderWithThreadPool(modelOptimizerThreadPoolSize)
 	return c
 }
 
-func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer) *cacheable {
-	c := &cacheable{
+func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer) *Cacheable {
+	c := &Cacheable{
 		pathRunner: pathRunner{
 			DataPaths:              dataPaths,
 			directoryViewBuildFunc: buildDirectoryViewWithoutCache,
@@ -55,11 +55,11 @@ func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.O
 }
 
 // Run cacheable Runner and returns the mapping between paths, files, optimizers and results.
-func (c *cacheable) Run(ctx context.Context) (PathsToResults, error) {
+func (c *Cacheable) Run(ctx context.Context) (PathsToResults, error) {
 	return c.pathRunner.Run(ctx)
 }
 
-func (c *cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesToResults, error) {
+func (c *Cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesToResults, error) {
 	var changesCount uint32
 
 	dir := view.Dir()
@@ -94,7 +94,7 @@ func (c *cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesT
 	return c.toFilesToResults(localCache, view.Files()), nil
 }
 
-func (c *cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesCount *uint32,
+func (c *Cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesCount *uint32,
 	localCache *cache.Cache, dir, file string, errs chan error) {
 	defer wg.Done()
 
@@ -140,7 +140,7 @@ func (c *cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesC
 	atomic.AddUint32(changesCount, 1)
 }
 
-func (c *cacheable) getAllExecutors(dataPath string) []executor.Executor {
+func (c *Cacheable) getAllExecutors(dataPath string) []executor.Executor {
 	var executors []executor.Executor
 	executors = append(executors, c.modelExecutorBuildFunc(c.ModelPath, dataPath))
 
@@ -151,7 +151,7 @@ func (c *cacheable) getAllExecutors(dataPath string) []executor.Executor {
 	return executors
 }
 
-func (c *cacheable) getNotCachedExecutors(dataPath string, info *cache.FileInfo) []executor.Executor {
+func (c *Cacheable) getNotCachedExecutors(dataPath string, info *cache.FileInfo) []executor.Executor {
 	var executors []executor.Executor
 
 	if _, isCached := info.Results[c.modelOptimizerName]; !isCached {
@@ -167,7 +167,7 @@ func (c *cacheable) getNotCachedExecutors(dataPath string, info *cache.FileInfo)
 	return executors
 }
 
-func (c *cacheable) toFilesToResults(localCache *cache.Cache, files []string) FilesToResults {
+func (c *Cacheable) toFilesToResults(localCache *cache.Cache, files []string) FilesToResults {
 	filesToResults := make(FilesToResults)
 
 	for _, file := range files {

@@ -2,9 +2,10 @@ package runner
 
 import (
 	"context"
+	"os"
+
 	"github.com/lothar1998/v2x-optimizer/internal/concurrency"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
-	"os"
 )
 
 // Runner is something that can be run to obtain the mapping between paths and results.

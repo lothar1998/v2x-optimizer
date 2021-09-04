@@ -5,6 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
@@ -12,12 +19,6 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/lothar1998/v2x-optimizer/test/mocks"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"testing"
-	"time"
 )
 
 func Test_cacheable_handle(t *testing.T) {
@@ -46,7 +47,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
 		optimizerStub2.EXPECT().Name().Return(optimizerName2).AnyTimes()
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers:         []optimizer.Optimizer{optimizerStub1, optimizerStub2},
 			modelOptimizerName: modelOptimizerName,
 		}
@@ -88,7 +89,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
 		optimizerStub2.EXPECT().Name().Return(optimizerName2).AnyTimes()
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers: []optimizer.Optimizer{optimizerStub1, optimizerStub2},
 			optimizerExecutorBuildFunc: func(_ string, o optimizer.Optimizer) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
@@ -137,7 +138,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub1 := mocks.NewMockOptimizer(controller)
 		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers: []optimizer.Optimizer{optimizerStub1},
 			modelExecutorBuildFunc: func(_ string, _ string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
@@ -186,7 +187,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub1 := mocks.NewMockOptimizer(controller)
 		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers: []optimizer.Optimizer{optimizerStub1},
 			modelExecutorBuildFunc: func(_ string, _ string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
@@ -226,6 +227,7 @@ func Test_cacheable_handle(t *testing.T) {
 		values := map[string]int{modelExecutorName: 1, optimizerName1: 2}
 
 		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-*")
+		assert.NoError(t, err)
 
 		errorFile, err := createFile(dir, "new-file-*")
 		assert.NoError(t, err)
@@ -236,7 +238,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub1 := mocks.NewMockOptimizer(controller)
 		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers: []optimizer.Optimizer{optimizerStub1},
 			modelExecutorBuildFunc: func(_ string, dataPath string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
@@ -284,13 +286,12 @@ func Test_cacheable_handle(t *testing.T) {
 		v, err := buildDirectoryViewWithoutCache(dir)
 		assert.NoError(t, err)
 
-		c := cacheable{}
+		c := Cacheable{}
 		result, err := c.handle(context.TODO(), v)
 		assert.ErrorAs(t, err, &expectedError)
 		assert.Zero(t, result)
 	})
 
-	//TODO fix removing
 	t.Run("should handle error from saving cache", func(t *testing.T) {
 		t.Parallel()
 
@@ -304,7 +305,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub := mocks.NewMockOptimizer(controller)
 		optimizerStub.EXPECT().Name().Return("opt1").AnyTimes()
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers: []optimizer.Optimizer{optimizerStub},
 			optimizerExecutorBuildFunc: func(_ string, o optimizer.Optimizer) executor.Executor {
 				err := os.RemoveAll(dir)
@@ -349,7 +350,7 @@ func Test_cacheable_getAllExecutors(t *testing.T) {
 
 		optimizers := []optimizer.Optimizer{optimizer1, optimizer2}
 
-		c := cacheable{
+		c := Cacheable{
 			Optimizers: optimizers,
 			ModelPath:  expectedModelPath,
 			modelExecutorBuildFunc: func(modelPath string, dataPath string) executor.Executor {
@@ -394,7 +395,7 @@ func Test_cacheable_getNotCachedExecutors(t *testing.T) {
 
 	optimizers := []optimizer.Optimizer{optimizer1, optimizer2}
 
-	c := cacheable{
+	c := Cacheable{
 		Optimizers: optimizers,
 		ModelPath:  expectedModelPath,
 		modelExecutorBuildFunc: func(modelPath string, dataPath string) executor.Executor {
@@ -476,7 +477,7 @@ func Test_cacheable_toFilesToResults(t *testing.T) {
 			},
 		}
 
-		c := cacheable{Optimizers: optimizers, modelOptimizerName: "modelOpt"}
+		c := Cacheable{Optimizers: optimizers, modelOptimizerName: "modelOpt"}
 		results := c.toFilesToResults(localCache, files)
 
 		assert.Len(t, results, 3)

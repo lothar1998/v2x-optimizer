@@ -3,10 +3,11 @@ package executor
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/test/mocks"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_cplex_Execute(t *testing.T) {

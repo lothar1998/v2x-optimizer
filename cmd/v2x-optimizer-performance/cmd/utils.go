@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/lothar1998/v2x-optimizer/internal/config"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"os"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/lothar1998/v2x-optimizer/internal/config"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 )
 
-var csvHeaders = []string{"path", "custom_result", "cplex_result", "absolute_error", "relative_error", "average_relative_error"}
+// var csvHeaders = []string{"path", "custom_result", "cplex_result",
+// "absolute_error", "relative_error", "average_relative_error"}
 
 // PathsToErrors represents mapping between paths and errors mapping.
 type PathsToErrors map[string]FilesToErrors
@@ -132,7 +134,7 @@ func outputToConsole(errs PathsToErrors, avgErrs PathsToAvgErrors, isVerbose boo
 }
 
 //
-//func outputToCSVFile(pathsToResults map[string]*pathsToErrors, outputFilepath string) error {
+// func outputToCSVFile(pathsToResults map[string]*pathsToErrors, outputFilepath string) error {
 //	for rootPath, result := range pathsToResults {
 //		err := os.MkdirAll(outputFilepath, 0755)
 //		if err != nil {
@@ -165,7 +167,7 @@ func outputToConsole(errs PathsToErrors, avgErrs PathsToAvgErrors, isVerbose boo
 //	return nil
 //}
 //
-//func toSeparatedValues(resultForPath *pathsToErrors) [][]string {
+// func toSeparatedValues(resultForPath *pathsToErrors) [][]string {
 //	result := make([][]string, len(resultForPath.PathToErrors))
 //
 //	var i int

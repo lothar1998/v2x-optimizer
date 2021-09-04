@@ -3,11 +3,12 @@ package executor
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/test/mocks"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestGroupExecutor_Execute(t *testing.T) {

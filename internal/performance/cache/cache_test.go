@@ -1,11 +1,12 @@
 package cache
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -111,6 +112,7 @@ func TestVerify(t *testing.T) {
 		assert.NoError(t, err)
 
 		change, err := localCache.Verify(dir, filename)
+		assert.NoError(t, err)
 
 		assert.NotNil(t, change)
 		assert.Equal(t, "ee5b1e846de74e70fb3ff449067e3039", change.Hash)
@@ -130,6 +132,7 @@ func TestVerify(t *testing.T) {
 
 		change, err := localCache.Verify(dir, filename)
 
+		assert.NoError(t, err)
 		assert.Nil(t, change)
 	})
 }
@@ -184,6 +187,7 @@ func TestSave(t *testing.T) {
 		assert.FileExists(t, cacheFilepath)
 
 		bytes, err := ioutil.ReadFile(cacheFilepath)
+		assert.NoError(t, err)
 
 		assert.Equal(t, removeWhiteSpaceChars(fileContent), removeWhiteSpaceChars(string(bytes)))
 	})
