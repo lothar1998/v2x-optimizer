@@ -13,6 +13,7 @@ type Runner interface {
 }
 
 type handleDirFunc func(ctx context.Context, view view.DirectoryView) (FilesToResults, error)
+
 type viewBuildFunc func(string) (view.DirectoryView, error)
 
 type pathToResult struct {

@@ -11,6 +11,7 @@ import (
 const (
 	outputCSVFileFlag        = "output"
 	verboseConsoleOutputFlat = "verbose"
+	modelExecutorThreadLimit = "threads"
 )
 
 var rootCmd = &cobra.Command{
@@ -56,7 +57,12 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 
 		//TODO add merging common paths into one to do not compute one thing several times
 
-		cacheable := runner.NewCacheable(modelFile, dataFiles, optimizers)
+		threadLimit, err := command.Flags().GetUint(modelExecutorThreadLimit)
+		if err != nil {
+			return err
+		}
+
+		cacheable := runner.NewCacheableWithConcurrencyLimits(modelFile, dataFiles, optimizers, threadLimit)
 
 		result, err := cacheable.Run(command.Context())
 		if err != nil {
@@ -91,4 +97,5 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 func setUpFlags(c *cobra.Command) {
 	c.Flags().StringP(outputCSVFileFlag, "o", "", "path to output CSV file")
 	c.Flags().BoolP(verboseConsoleOutputFlat, "v", false, "verbose console output")
+	c.Flags().UintP(modelExecutorThreadLimit, "t", 0, "thread pool for CPLEX optimizer (0 - use default CPLEX config)")
 }

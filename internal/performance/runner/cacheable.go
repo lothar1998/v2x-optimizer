@@ -21,8 +21,24 @@ type cacheable struct {
 	modelOptimizerName         string
 }
 
-// NewCacheable returns pathRunner with ability to cache results in local cache files using cache package.
+// NewCacheable returns pathRunner with the ability to cache results in local cache files using the cache package.
 func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer) *cacheable {
+	c := newCacheable(modelPath, dataPaths, optimizers)
+	c.modelExecutorBuildFunc = executor.NewCplex
+	return c
+}
+
+// NewCacheableWithConcurrencyLimits returns pathRunner with the ability to cache results
+// in local cache files using the cache package. It also limits the model executor to a specified thread limit.
+func NewCacheableWithConcurrencyLimits(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer,
+	modelOptimizerThreadPoolSize uint) *cacheable {
+
+	c := newCacheable(modelPath, dataPaths, optimizers)
+	c.modelExecutorBuildFunc = getModelExecutorBuilderWithThreadPool(modelOptimizerThreadPoolSize)
+	return c
+}
+
+func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Optimizer) *cacheable {
 	c := &cacheable{
 		pathRunner: pathRunner{
 			DataPaths:              dataPaths,
@@ -31,7 +47,6 @@ func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.O
 		},
 		ModelPath:                  modelPath,
 		Optimizers:                 optimizers,
-		modelExecutorBuildFunc:     executor.NewCplex,
 		optimizerExecutorBuildFunc: executor.NewCustom,
 		modelOptimizerName:         config.CPLEXOptimizerName,
 	}
@@ -178,4 +193,10 @@ func buildDirectoryViewWithoutCache(dir string) (view.DirectoryView, error) {
 	return view.NewDirectoryWithExclusion(dir, func(filename string) bool {
 		return filename == cache.Filename
 	})
+}
+
+func getModelExecutorBuilderWithThreadPool(threads uint) func(string, string) executor.Executor {
+	return func(modelPath string, dataPath string) executor.Executor {
+		return executor.NewCplexWithThreadPool(modelPath, dataPath, threads)
+	}
 }

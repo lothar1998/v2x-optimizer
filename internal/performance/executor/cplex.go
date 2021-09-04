@@ -29,7 +29,7 @@ func NewCplexWithThreadPool(modelFilepath, dataFilepath string, threadPoolLimit 
 	return &cplex{
 		NewCommand(
 			cplexCommandDefault,
-			fmt.Sprintf("-D threads=%d", threadPoolLimit),
+			fmt.Sprintf("-Dthreads=%d", threadPoolLimit),
 			modelFilepath,
 			dataFilepath,
 		),
