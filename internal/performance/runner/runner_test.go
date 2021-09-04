@@ -3,7 +3,6 @@ package runner
 import (
 	"context"
 	"errors"
-	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -19,7 +18,7 @@ func Test_runner_Run(t *testing.T) {
 	t.Run("should return results if there was no error", func(t *testing.T) {
 		t.Parallel()
 
-		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-runner-*")
+		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-pathRunner-*")
 		assert.NoError(t, err)
 
 		subDir, err := ioutil.TempDir(dir, "sub-dir-*")
@@ -33,20 +32,20 @@ func Test_runner_Run(t *testing.T) {
 		expectedResult := PathsToResults{
 			subDir: FilesToResults{
 				"file1.dat": OptimizersToResults{
-					config.CPLEXOptimizerName: 3,
-					"opt1":             10},
+					"opt1": 3,
+					"opt2": 10},
 				"file2.dat": OptimizersToResults{
-					config.CPLEXOptimizerName: 12,
-					"opt1":             18},
+					"opt1": 12,
+					"opt2": 18},
 			},
 			filePath: FilesToResults{
 				filepath.Base(filePath): OptimizersToResults{
-					config.CPLEXOptimizerName: 3,
-					"opt1":             10},
+					"opt1": 3,
+					"opt2": 10},
 			},
 		}
 
-		r := runner{
+		r := pathRunner{
 			DataPaths: []string{subDir, filePath},
 			handler: func(_ context.Context, view view.DirectoryView) (FilesToResults, error) {
 				if view.Dir() == subDir {
@@ -55,6 +54,8 @@ func Test_runner_Run(t *testing.T) {
 
 				return expectedResult[filePath], nil
 			},
+			directoryViewBuildFunc: view.NewDirectory,
+			fileViewBuildFunc:      view.NewFile,
 		}
 
 		result, err := r.Run(context.TODO())
@@ -67,17 +68,19 @@ func Test_runner_Run(t *testing.T) {
 
 		var expectedError *os.PathError
 
-		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-runner-*")
+		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-pathRunner-*")
 		assert.NoError(t, err)
 
 		subDir, err := ioutil.TempDir(dir, "sub-dir-*")
 		assert.NoError(t, err)
 
-		r := runner{
+		r := pathRunner{
 			DataPaths: []string{subDir, filepath.Join(dir, "not-existing-file.txt")},
 			handler: func(_ context.Context, _ view.DirectoryView) (FilesToResults, error) {
 				return FilesToResults{}, nil
 			},
+			directoryViewBuildFunc: view.NewDirectory,
+			fileViewBuildFunc:      view.NewFile,
 		}
 
 		result, err := r.Run(context.TODO())
@@ -90,7 +93,7 @@ func Test_runner_Run(t *testing.T) {
 
 		expectedError := errors.New("test error")
 
-		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-runner-*")
+		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-pathRunner-*")
 		assert.NoError(t, err)
 
 		subDir1, err := ioutil.TempDir(dir, "sub-dir-*")
@@ -99,14 +102,17 @@ func Test_runner_Run(t *testing.T) {
 		subDir2, err := ioutil.TempDir(dir, "sub-dir-*-err")
 		assert.NoError(t, err)
 
-		r := runner{
+		r := pathRunner{
 			DataPaths: []string{subDir1, subDir2},
 			handler: func(_ context.Context, view view.DirectoryView) (FilesToResults, error) {
 				if strings.HasSuffix(view.Dir(), "err") {
 					return nil, expectedError
 				}
 				return FilesToResults{}, nil
+
 			},
+			directoryViewBuildFunc: view.NewDirectory,
+			fileViewBuildFunc:      view.NewFile,
 		}
 
 		results, err := r.Run(context.TODO())

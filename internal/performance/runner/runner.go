@@ -12,27 +12,30 @@ type Runner interface {
 	Run(ctx context.Context) (PathsToResults, error)
 }
 
-type handleFunc func(ctx context.Context, view view.DirectoryView) (FilesToResults, error)
+type handleDirFunc func(ctx context.Context, view view.DirectoryView) (FilesToResults, error)
+type viewBuildFunc func(string) (view.DirectoryView, error)
 
 type pathToResult struct {
 	path   string
 	result chan FilesToResults
 }
 
-type runner struct {
-	DataPaths []string
-	handler   handleFunc
+type pathRunner struct {
+	DataPaths              []string
+	handler                handleDirFunc
+	directoryViewBuildFunc viewBuildFunc
+	fileViewBuildFunc      viewBuildFunc
 }
 
-// Run concurrently runs handleFunc for specified DataPaths with appropriate view.DirectoryView.
-func (r *runner) Run(ctx context.Context) (PathsToResults, error) {
+// Run concurrently runs handleDirFunc for specified DataPaths with appropriate view.DirectoryView.
+func (p *pathRunner) Run(ctx context.Context) (PathsToResults, error) {
 	cancelCtx, cancelFunc := context.WithCancel(ctx)
 	defer cancelFunc()
 
-	results := make([]pathToResult, len(r.DataPaths))
-	errs := make([]chan error, len(r.DataPaths))
+	results := make([]pathToResult, len(p.DataPaths))
+	errs := make([]chan error, len(p.DataPaths))
 
-	for i, path := range r.DataPaths {
+	for i, path := range p.DataPaths {
 		stat, err := os.Stat(path)
 		if os.IsNotExist(err) {
 			return nil, err
@@ -53,9 +56,9 @@ func (r *runner) Run(ctx context.Context) (PathsToResults, error) {
 			var v view.DirectoryView
 
 			if stat.IsDir() {
-				v, err = view.NewDirectory(path)
+				v, err = p.directoryViewBuildFunc(path)
 			} else {
-				v, err = view.NewFile(path)
+				v, err = p.fileViewBuildFunc(path)
 			}
 
 			if err != nil {
@@ -63,7 +66,7 @@ func (r *runner) Run(ctx context.Context) (PathsToResults, error) {
 				return
 			}
 
-			result, err := r.handler(cancelCtx, v)
+			result, err := p.handler(cancelCtx, v)
 			if err != nil {
 				errCh <- err
 				return

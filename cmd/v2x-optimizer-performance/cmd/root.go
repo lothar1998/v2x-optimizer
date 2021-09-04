@@ -54,6 +54,8 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 		modelFile := args[0]
 		dataFiles := args[1:]
 
+		//TODO add merging common paths into one to do not compute one thing several times
+
 		cacheable := runner.NewCacheable(modelFile, dataFiles, optimizers)
 
 		result, err := cacheable.Run(command.Context())

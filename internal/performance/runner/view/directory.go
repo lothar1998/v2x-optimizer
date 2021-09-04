@@ -1,7 +1,6 @@
 package view
 
 import (
-	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
 	"io/ioutil"
 )
 
@@ -12,7 +11,14 @@ type directory struct {
 
 // NewDirectory creates DirectoryView of given directory providing
 // the directory path and filenames that are inside the directory.
-func NewDirectory(rootDir string) (*directory, error) {
+func NewDirectory(rootDir string) (DirectoryView, error) {
+	return NewDirectoryWithExclusion(rootDir, NoOpExclusion)
+}
+
+// NewDirectoryWithExclusion creates DirectoryView of given directory providing
+// the directory path and filenames that are inside the directory.
+// It uses FileExclusionFunc to exclude files that are undesirable in the final view.
+func NewDirectoryWithExclusion(rootDir string, fileExclusionFunc FileExclusionFunc) (DirectoryView, error) {
 	fileInfos, err := ioutil.ReadDir(rootDir)
 	if err != nil {
 		return nil, err
@@ -21,8 +27,7 @@ func NewDirectory(rootDir string) (*directory, error) {
 	var files []string
 
 	for _, fileInfo := range fileInfos {
-		//TODO consider using file extension instead of exclusion of cache file
-		if fileInfo.IsDir() || fileInfo.Name() == cache.Filename {
+		if fileInfo.IsDir() || fileExclusionFunc(fileInfo.Name()) {
 			continue
 		}
 

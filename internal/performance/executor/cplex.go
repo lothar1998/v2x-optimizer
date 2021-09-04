@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"fmt"
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/console"
 	"os"
@@ -9,7 +10,10 @@ import (
 	"syscall"
 )
 
-const cplexCommandDefault = "oplrun"
+const (
+	cplexCommandDefault    = "oplrun"
+	defaultThreadPoolCount = 0
+)
 
 type cplex struct {
 	CPLEXProcess    Process
@@ -17,14 +21,20 @@ type cplex struct {
 }
 
 // NewCplex returns Executor which is able to run cplex optimization process and obtain results from it.
-func NewCplex(modelFilepath, dataFilepath string) *cplex {
-	return NewCplexWithCommandName(cplexCommandDefault, modelFilepath, dataFilepath)
+func NewCplex(modelFilepath, dataFilepath string) Executor {
+	return NewCplexWithThreadPool(modelFilepath, dataFilepath, defaultThreadPoolCount)
 }
 
-// NewCplexWithCommandName facilitates using cplex CLI command without enforcing
-// any particular CLI command name. It may be helpful to use it with aliases.
-func NewCplexWithCommandName(cplexCommandName, modelFilepath, dataFilepath string) *cplex {
-	return &cplex{NewCPLEXCommand(cplexCommandName, modelFilepath, dataFilepath), parseOutputFunc}
+func NewCplexWithThreadPool(modelFilepath, dataFilepath string, threadPoolLimit uint) Executor {
+	return &cplex{
+		NewCommand(
+			cplexCommandDefault,
+			fmt.Sprintf("-D threads=%d", threadPoolLimit),
+			modelFilepath,
+			dataFilepath,
+		),
+		parseOutputFunc,
+	}
 }
 
 // Execute runs cplex optimization process in the background and waits for its results or context cancellation.
@@ -95,9 +105,9 @@ type Command struct {
 	*exec.Cmd
 }
 
-// NewCPLEXCommand creates a cplex runnable command that fulfills Process interface.
-func NewCPLEXCommand(cplexCommandName, modelFile, dataFile string) *Command {
-	return &Command{Cmd: exec.Command(cplexCommandName, modelFile, dataFile)}
+// NewCommand creates a runnable command that fulfills Process interface.
+func NewCommand(name string, args ...string) *Command {
+	return &Command{Cmd: exec.Command(name, args...)}
 }
 
 // Signal allows signaling the underlying process with given os.Signal.

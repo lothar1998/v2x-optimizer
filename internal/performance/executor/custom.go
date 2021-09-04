@@ -13,6 +13,10 @@ type Custom struct {
 	Optimizer optimizer.Optimizer
 }
 
+func NewCustom(path string, optimizer optimizer.Optimizer) Executor {
+	return &Custom{Path: path, Optimizer: optimizer}
+}
+
 // Execute runs optimization using custom optimizer and waits for results or context cancellation.
 func (c *Custom) Execute(ctx context.Context) (int, error) {
 	file, err := os.Open(c.Path)

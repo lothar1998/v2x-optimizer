@@ -8,3 +8,9 @@ type DirectoryView interface {
 	Dir() string
 	Files() []string
 }
+
+type FileExclusionFunc func(string) bool
+
+func NoOpExclusion(_ string) bool {
+	return false
+}
