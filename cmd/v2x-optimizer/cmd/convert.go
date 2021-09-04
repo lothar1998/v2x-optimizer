@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // ConvertCmd returns cobra.Command which is able to convert one type of data into another.

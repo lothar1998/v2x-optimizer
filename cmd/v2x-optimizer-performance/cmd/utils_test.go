@@ -1,14 +1,15 @@
 package cmd
 
 import (
+	"testing"
+
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
-//func Test_outputToFile(t *testing.T) {
+// func Test_outputToFile(t *testing.T) {
 //	t.Parallel()
 //
 //	results := map[string]*pathsToErrors{
@@ -65,7 +66,7 @@ import (
 //	})
 //}
 //
-//func Test_toSeparatedValues(t *testing.T) {
+// func Test_toSeparatedValues(t *testing.T) {
 //	t.Parallel()
 //
 //	t.Run("should transform pathsToErrors into separated values", func(t *testing.T) {
@@ -180,14 +181,14 @@ func Test_toAverageErrors(t *testing.T) {
 		assert.Contains(t, averageErrors["/path/2"], "opt1")
 		assert.Contains(t, averageErrors["/path/2"], "opt2")
 
-		assertErrorWithinDelta(t, AvgErrors{6.0, 3}, averageErrors["/path/1"]["opt1"], 0.1)
-		assertErrorWithinDelta(t, AvgErrors{4.1, 4}, averageErrors["/path/1"]["opt2"], 0.1)
-		assertErrorWithinDelta(t, AvgErrors{4.0, 2.5}, averageErrors["/path/2"]["opt1"], 0.1)
-		assertErrorWithinDelta(t, AvgErrors{4.0, 5}, averageErrors["/path/2"]["opt2"], 0.1)
+		assertErrorWithinDelta(t, AvgErrors{6.0, 3}, averageErrors["/path/1"]["opt1"])
+		assertErrorWithinDelta(t, AvgErrors{4.1, 4}, averageErrors["/path/1"]["opt2"])
+		assertErrorWithinDelta(t, AvgErrors{4.0, 2.5}, averageErrors["/path/2"]["opt1"])
+		assertErrorWithinDelta(t, AvgErrors{4.0, 5}, averageErrors["/path/2"]["opt2"])
 	})
 }
 
-func assertErrorWithinDelta(t *testing.T, expected, given AvgErrors, delta float64) {
-	assert.InDelta(t, expected.AvgRelativeError, given.AvgRelativeError, delta)
-	assert.InDelta(t, expected.AvgAbsolutError, given.AvgAbsolutError, delta)
+func assertErrorWithinDelta(t *testing.T, expected, given AvgErrors) {
+	assert.InDelta(t, expected.AvgRelativeError, given.AvgRelativeError, 0.1)
+	assert.InDelta(t, expected.AvgAbsolutError, given.AvgAbsolutError, 0.1)
 }

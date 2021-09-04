@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
@@ -55,7 +56,7 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 		modelFile := args[0]
 		dataFiles := args[1:]
 
-		//TODO add merging common paths into one to do not compute one thing several times
+		// TODO add merging common paths into one to do not compute one thing several times
 
 		threadLimit, err := command.Flags().GetUint(modelExecutorThreadLimit)
 		if err != nil {
@@ -87,9 +88,9 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 			return nil
 		}
 		//
-		//if err := outputToCSVFile(result, outputFile); err != nil {
-		//	return err
-		//}
+		// if err := outputToCSVFile(result, outputFile); err != nil {
+		//	 return err
+		// }
 		return nil
 	}
 }

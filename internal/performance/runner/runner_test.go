@@ -3,13 +3,14 @@ package runner
 import (
 	"context"
 	"errors"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_runner_Run(t *testing.T) {
@@ -109,7 +110,6 @@ func Test_runner_Run(t *testing.T) {
 					return nil, expectedError
 				}
 				return FilesToResults{}, nil
-
 			},
 			directoryViewBuildFunc: view.NewDirectory,
 			fileViewBuildFunc:      view.NewFile,

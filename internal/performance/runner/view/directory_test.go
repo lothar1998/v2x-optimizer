@@ -1,11 +1,12 @@
 package view
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewDirectoryWithExclusion(t *testing.T) {

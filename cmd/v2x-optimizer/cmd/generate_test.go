@@ -1,17 +1,18 @@
 package cmd
 
 import (
-	"github.com/golang/mock/gomock"
-	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/test/mocks"
-	"github.com/spf13/cobra"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"path"
 	"strconv"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/test/mocks"
+	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_generateWith(t *testing.T) {

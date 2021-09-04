@@ -2,9 +2,10 @@ package executor
 
 import (
 	"context"
+	"os"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"os"
 )
 
 // Custom is an Executor that allows for running optimization using the custom, self-written optimizer.

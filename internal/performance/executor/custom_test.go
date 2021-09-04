@@ -3,14 +3,15 @@ package executor
 import (
 	"context"
 	"errors"
+	"io/ioutil"
+	"os"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/lothar1998/v2x-optimizer/test/mocks"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
-	"testing"
 )
 
 func Test_custom_Execute(t *testing.T) {

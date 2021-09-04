@@ -2,6 +2,7 @@ package optimizer
 
 import (
 	"context"
+
 	"github.com/lothar1998/v2x-optimizer/internal/namer"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
