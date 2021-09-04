@@ -6,9 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/test/mocks"
 	"github.com/stretchr/testify/assert"
-	"syscall"
 	"testing"
-	"time"
 )
 
 func Test_cplex_Execute(t *testing.T) {
@@ -26,7 +24,7 @@ func Test_cplex_Execute(t *testing.T) {
 			return 10, nil
 		}
 
-		c := cplex{CPLEXProcess: processMock, ParseOutputFunc: parseOutput}
+		c := cplex{parseOutputFunc: parseOutput, processBuildFunc: buildProcessMock(processMock)}
 
 		result, err := c.Execute(context.TODO())
 
@@ -43,8 +41,8 @@ func Test_cplex_Execute(t *testing.T) {
 		processMock.EXPECT().Output().Return(nil, expectedError)
 
 		c := cplex{
-			CPLEXProcess:    processMock,
-			ParseOutputFunc: func(s string) (int, error) { return 0, nil },
+			parseOutputFunc:  func(s string) (int, error) { return 0, nil },
+			processBuildFunc: buildProcessMock(processMock),
 		}
 
 		result, err := c.Execute(context.TODO())
@@ -62,8 +60,8 @@ func Test_cplex_Execute(t *testing.T) {
 		processMock.EXPECT().Output().Return([]byte{}, nil)
 
 		c := cplex{
-			CPLEXProcess:    processMock,
-			ParseOutputFunc: func(s string) (int, error) { return 0, expectedError },
+			parseOutputFunc:  func(s string) (int, error) { return 0, expectedError },
+			processBuildFunc: buildProcessMock(processMock),
 		}
 
 		result, err := c.Execute(context.TODO())
@@ -71,41 +69,10 @@ func Test_cplex_Execute(t *testing.T) {
 		assert.ErrorAs(t, err, &expectedError)
 		assert.Zero(t, result)
 	})
+}
 
-	t.Run("should handle context cancellation", func(t *testing.T) {
-		t.Parallel()
-
-		waitForOptimization := make(chan struct{})
-		waitForResults := make(chan struct{})
-
-		ctx, cancelFunc := context.WithCancel(context.TODO())
-		defer cancelFunc()
-
-		processMock := mocks.NewMockProcess(gomock.NewController(t))
-		processMock.EXPECT().Signal(gomock.Eq(syscall.SIGTERM)).Return(nil).Times(1)
-		processMock.EXPECT().Output().DoAndReturn(func() ([]byte, error) {
-			waitForOptimization <- struct{}{}
-			<-time.After(10 * time.Second)
-			return nil, nil
-		})
-
-		c := cplex{
-			CPLEXProcess:    processMock,
-			ParseOutputFunc: func(s string) (int, error) { return 0, nil },
-		}
-
-		go func() {
-			result, err := c.Execute(ctx)
-
-			assert.ErrorIs(t, err, context.Canceled)
-			assert.Zero(t, result)
-
-			waitForResults <- struct{}{}
-		}()
-
-		<-waitForOptimization
-		cancelFunc()
-
-		<-waitForResults
-	})
+func buildProcessMock(process Process) func(context.Context) Process {
+	return func(_ context.Context) Process {
+		return process
+	}
 }
