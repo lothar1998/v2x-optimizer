@@ -99,8 +99,8 @@ func TestVerify(t *testing.T) {
 		assert.NoError(t, err)
 
 		change, err := localCache.Verify(filename)
-		assert.NoError(t, err)
 
+		assert.NoError(t, err)
 		assert.NotNil(t, change)
 		assert.Equal(t, "ee5b1e846de74e70fb3ff449067e3039", change.Hash)
 		assert.Empty(t, change.Results)
