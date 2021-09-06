@@ -87,11 +87,8 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 			outputToConsole(errs, avgErrs, isVerboseSet)
 			return nil
 		}
-		//
-		// if err := outputToCSVFile(result, outputFile); err != nil {
-		//	 return err
-		// }
-		return nil
+
+		return outputToCSVFile(errs, avgErrs, outputFile)
 	}
 }
 

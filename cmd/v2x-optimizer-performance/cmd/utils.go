@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -10,9 +14,6 @@ import (
 	"github.com/lothar1998/v2x-optimizer/internal/performance/errors"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 )
-
-// var csvHeaders = []string{"path", "custom_result", "cplex_result",
-// "absolute_error", "relative_error", "average_relative_error"}
 
 type PathsToErrors map[string]FilesToErrors
 
@@ -91,7 +92,7 @@ func toAverageErrors(pathsToErrors PathsToErrors) PathsToAvgErrors {
 func outputToConsole(errs PathsToErrors, avgErrs PathsToAvgErrors, isVerbose bool) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 5, ' ', 0)
 
-	for path := range errs {
+	for path := range avgErrs {
 		_, _ = fmt.Fprintf(w, "Path: "+path)
 		_, _ = fmt.Fprint(w, "\n\n")
 
@@ -127,56 +128,98 @@ func outputToConsole(errs PathsToErrors, avgErrs PathsToAvgErrors, isVerbose boo
 	_ = w.Flush()
 }
 
-//
-// func outputToCSVFile(pathsToResults map[string]*pathsToErrors, outputFilepath string) error {
-//	for rootPath, result := range pathsToResults {
-//		err := os.MkdirAll(outputFilepath, 0755)
-//		if err != nil {
-//			return err
-//		}
-//
-//		csvFilepath := path.Join(outputFilepath,
-//			strings.Trim(strings.ReplaceAll(rootPath, "/", "_"), "_")+".csv")
-//
-//		file, err := os.OpenFile(csvFilepath, os.O_CREATE|os.O_WRONLY, 0644)
-//		if err != nil {
-//			return err
-//		}
-//
-//		writer := csv.NewWriter(file)
-//
-//		err = writer.Write(csvHeaders)
-//		if err != nil {
-//			return err
-//		}
-//
-//		err = writer.WriteAll(toSeparatedValues(result))
-//		if err != nil {
-//			return err
-//		}
-//
-//		_ = file.Close()
-//	}
-//
-//	return nil
-//}
-//
-// func toSeparatedValues(resultForPath *pathsToErrors) [][]string {
-//	result := make([][]string, len(resultForPath.PathToErrors))
-//
-//	var i int
-//	for currentPath, info := range resultForPath.PathToErrors {
-//		result[i] = make([]string, 6)
-//
-//		result[i][0] = currentPath
-//		result[i][1] = strconv.Itoa(info.CustomResult)
-//		result[i][2] = strconv.Itoa(info.CPLEXResult)
-//		result[i][3] = strconv.Itoa(info.AbsoluteError)
-//		result[i][4] = strconv.FormatFloat(info.RelativeError, 'f', 3, 64)
-//		result[i][5] = strconv.FormatFloat(resultForPath.AverageRelativeError, 'f', 3, 64)
-//
-//		i++
-//	}
-//
-//	return result
-//}
+func outputToCSVFile(errs PathsToErrors, avgErrs PathsToAvgErrors, outputFilepath string) error {
+	for path, optimizersToAvgErrors := range avgErrs {
+		err := os.MkdirAll(outputFilepath, 0755)
+		if err != nil {
+			return err
+		}
+
+		rootFilepath := filepath.Join(outputFilepath, pathToUnderscoreValue(path))
+
+		csvFile, err := os.OpenFile(rootFilepath+".csv", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			return err
+		}
+
+		err = writeAvgErrors(optimizersToAvgErrors, csvFile)
+		_ = csvFile.Close()
+
+		if err != nil {
+			return err
+		}
+
+		csvFileDetails, err := os.OpenFile(rootFilepath+"_details.csv", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			return err
+		}
+
+		err = writeErrors(errs[path], csvFileDetails)
+		_ = csvFileDetails.Close()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func pathToUnderscoreValue(path string) string {
+	return strings.Trim(strings.Join(strings.Split(path, "/"), "_"), "_")
+}
+
+func writeAvgErrors(optimizersToAvgErrors OptimizersToAvgErrors, w io.Writer) error {
+	writer := csv.NewWriter(w)
+	defer writer.Flush()
+
+	header := []string{"optimizer", "average absolute error", "average relative error"}
+
+	if err := writer.Write(header); err != nil {
+		return err
+	}
+
+	for optimizer, avgErr := range optimizersToAvgErrors {
+		err := writer.Write([]string{
+			optimizer,
+			strconv.FormatFloat(avgErr.AvgAbsolutError, 'f', 3, 64),
+			strconv.FormatFloat(avgErr.AvgRelativeError, 'f', 3, 64),
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func writeErrors(filesToErrors FilesToErrors, w io.Writer) error {
+	writer := csv.NewWriter(w)
+	defer writer.Flush()
+
+	header := []string{"filename", "optimizer", "value", "optimal value", "absolute error", "relative error"}
+
+	if err := writer.Write(header); err != nil {
+		return err
+	}
+
+	for filename, optimizersToErrors := range filesToErrors {
+		for optimizer, errorInfo := range optimizersToErrors {
+			err := writer.Write([]string{
+				filename,
+				optimizer,
+				strconv.Itoa(errorInfo.Value),
+				strconv.Itoa(errorInfo.ReferenceValue),
+				strconv.Itoa(errorInfo.AbsoluteError),
+				strconv.FormatFloat(errorInfo.RelativeError, 'f', 3, 64),
+			})
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}

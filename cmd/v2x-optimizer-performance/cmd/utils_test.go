@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
@@ -186,6 +188,94 @@ func Test_toAverageErrors(t *testing.T) {
 		assertErrorWithinDelta(t, AvgErrors{4.0, 2.5}, averageErrors["/path/2"]["opt1"])
 		assertErrorWithinDelta(t, AvgErrors{4.0, 5}, averageErrors["/path/2"]["opt2"])
 	})
+}
+
+func Test_pathToUnderscoreValue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		path string
+		want string
+	}{
+		{
+			"should transform path to underscore filename",
+			"example/path/to/file",
+			"example_path_to_file",
+		},
+		{
+			"should transform path to underscore filename with slash at the beginning",
+			"/example/path/to/file",
+			"example_path_to_file",
+		},
+		{
+			"should transform path to underscore filename with slash at the end",
+			"example/path/to/file/",
+			"example_path_to_file",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pathToUnderscoreValue(tt.path); got != tt.want {
+				t.Errorf("pathToUnderscoreValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_writeAvgErrors(t *testing.T) {
+	t.Parallel()
+
+	expectedHeader := "optimizer,average absolute error,average relative error"
+
+	optToAvgErr := OptimizersToAvgErrors{
+		"opt1": AvgErrors{1, 3},
+		"opt2": AvgErrors{3.3, 2.5},
+	}
+
+	var buffer bytes.Buffer
+
+	err := writeAvgErrors(optToAvgErr, &buffer)
+	assert.NoError(t, err)
+
+	s := buffer.String()
+	lines := strings.Split(s, "\n")
+
+	assert.Len(t, lines, 4)
+	assert.Equal(t, expectedHeader, lines[0])
+	assert.Contains(t, lines, "opt1,3.000,1.000")
+	assert.Contains(t, lines, "opt2,2.500,3.300")
+}
+
+func Test_writeErrors(t *testing.T) {
+	t.Parallel()
+
+	expectedHeader := "filename,optimizer,value,optimal value,absolute error,relative error"
+
+	filesToErrs := FilesToErrors{
+		"file1": OptimizersToErrors{
+			"opt1": errors.Info{Value: 1, ReferenceValue: 2, AbsoluteError: 1, RelativeError: 0.5},
+			"opt2": errors.Info{Value: 3, ReferenceValue: 6, AbsoluteError: 3, RelativeError: 0.5}},
+		"file2": OptimizersToErrors{
+			"opt1": errors.Info{Value: 5, ReferenceValue: 10, AbsoluteError: 5, RelativeError: 0.5},
+			"opt2": errors.Info{Value: 12, ReferenceValue: 6, AbsoluteError: 6, RelativeError: 1},
+		},
+	}
+
+	var buffer bytes.Buffer
+
+	err := writeErrors(filesToErrs, &buffer)
+	assert.NoError(t, err)
+
+	s := buffer.String()
+	lines := strings.Split(s, "\n")
+
+	assert.Len(t, lines, 6)
+	assert.Equal(t, expectedHeader, lines[0])
+	assert.Contains(t, lines, "file1,opt1,1,2,1,0.500")
+	assert.Contains(t, lines, "file1,opt2,3,6,3,0.500")
+	assert.Contains(t, lines, "file2,opt1,5,10,5,0.500")
+	assert.Contains(t, lines, "file2,opt2,12,6,6,1.000")
 }
 
 func assertErrorWithinDelta(t *testing.T, expected, given AvgErrors) {
