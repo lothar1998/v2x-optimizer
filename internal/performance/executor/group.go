@@ -19,7 +19,6 @@ type GroupExecutor struct {
 	Executors []Executor
 }
 
-// Execute executes underlying executors and returns results in executor defined order
 func (ge *GroupExecutor) Execute(ctx context.Context) (map[string]int, error) {
 	if ge.Executors == nil {
 		return nil, ErrUndefinedExecutors
@@ -77,5 +76,4 @@ func execute(ctx context.Context, executor Executor) (chan int, chan error) {
 	return resultCh, errCh
 }
 
-// ErrUndefinedExecutors is returned by GroupExecutor in case of passing nil list of executors.
 var ErrUndefinedExecutors = errors.New("executors undefined")

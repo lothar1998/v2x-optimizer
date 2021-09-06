@@ -41,8 +41,8 @@ func Test_runner_Run(t *testing.T) {
 			},
 			filePath: FilesToResults{
 				filepath.Base(filePath): OptimizersToResults{
-					"opt1": 3,
-					"opt2": 10},
+					"opt1": 43,
+					"opt2": 677},
 			},
 		}
 

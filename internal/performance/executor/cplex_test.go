@@ -48,7 +48,7 @@ func Test_cplex_Execute(t *testing.T) {
 
 		result, err := c.Execute(context.TODO())
 
-		assert.ErrorAs(t, err, &expectedError)
+		assert.ErrorIs(t, err, expectedError)
 		assert.Zero(t, result)
 	})
 
@@ -67,7 +67,7 @@ func Test_cplex_Execute(t *testing.T) {
 
 		result, err := c.Execute(context.TODO())
 
-		assert.ErrorAs(t, err, &expectedError)
+		assert.ErrorIs(t, err, expectedError)
 		assert.Zero(t, result)
 	})
 }

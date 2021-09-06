@@ -8,8 +8,8 @@ import (
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 )
 
-// Runner is something that can be run to obtain the mapping between paths and results.
-type Runner interface {
+// PathRunner is something that can be run to obtain the mapping between paths and results.
+type PathRunner interface {
 	Run(ctx context.Context) (PathsToResults, error)
 }
 
@@ -29,7 +29,7 @@ type pathRunner struct {
 	fileViewBuildFunc      viewBuildFunc
 }
 
-// Run concurrently runs handleDirFunc for specified DataPaths with appropriate view.DirectoryView.
+// Run concurrently runs handler for specified DataPaths with appropriate view.DirectoryView.
 func (p *pathRunner) Run(ctx context.Context) (PathsToResults, error) {
 	cancelCtx, cancelFunc := context.WithCancel(ctx)
 	defer cancelFunc()

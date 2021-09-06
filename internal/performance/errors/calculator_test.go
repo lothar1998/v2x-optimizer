@@ -35,6 +35,16 @@ func TestCalculate(t *testing.T) {
 				RelativeError:  float64(4) / float64(3),
 			},
 		},
+		{
+			"should calculate info for referenceValue equal to value",
+			args{referenceValue: 4, value: 4},
+			&Info{
+				Value:          4,
+				ReferenceValue: 4,
+				AbsoluteError:  0,
+				RelativeError:  0,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

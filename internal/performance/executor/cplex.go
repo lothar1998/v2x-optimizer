@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	cplexCommandDefault    = "oplrun"
+	cplexCommandDefault = "oplrun"
+	// The provided model uses 0 as an indicator of the default configuration
 	defaultThreadPoolCount = 0
 )
 

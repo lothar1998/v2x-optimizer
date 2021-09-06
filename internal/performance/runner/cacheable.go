@@ -42,7 +42,7 @@ func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.O
 	c := &Cacheable{
 		pathRunner: pathRunner{
 			DataPaths:              dataPaths,
-			directoryViewBuildFunc: buildDirectoryViewWithoutCache,
+			directoryViewBuildFunc: buildDirectoryViewWithoutCacheFile,
 			fileViewBuildFunc:      view.NewFile,
 		},
 		ModelPath:                  modelPath,
@@ -54,7 +54,7 @@ func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.O
 	return c
 }
 
-// Run cacheable Runner and returns the mapping between paths, files, optimizers and results.
+// Run cacheable PathRunner and returns the mapping between paths, files, optimizers and results.
 func (c *Cacheable) Run(ctx context.Context) (PathsToResults, error) {
 	return c.pathRunner.Run(ctx)
 }
@@ -80,7 +80,7 @@ func (c *Cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesT
 	wg.Wait()
 
 	if changesCount > 0 {
-		if err := localCache.Save(dir); err != nil {
+		if err := localCache.Save(); err != nil {
 			return nil, err
 		}
 	}
@@ -103,14 +103,14 @@ func (c *Cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesC
 	var executors []executor.Executor
 
 	if !localCache.Has(file) {
-		err := localCache.AddFile(dir, file)
+		err := localCache.AddFile(file)
 		if err != nil {
 			errs <- err
 			return
 		}
 		executors = c.getAllExecutors(dataFilePath)
 	} else {
-		change, err := localCache.Verify(dir, file)
+		change, err := localCache.Verify(file)
 		if err != nil {
 			errs <- err
 			return
@@ -189,7 +189,7 @@ func updateLocalCache(localCache *cache.Cache, filename string, updates map[stri
 	}
 }
 
-func buildDirectoryViewWithoutCache(dir string) (view.DirectoryView, error) {
+func buildDirectoryViewWithoutCacheFile(dir string) (view.DirectoryView, error) {
 	return view.NewDirectoryWithExclusion(dir, func(filename string) bool {
 		return filename == cache.Filename
 	})

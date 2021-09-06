@@ -2,9 +2,7 @@ package cache
 
 import (
 	"crypto"
-	"sync"
-
-	// Used to include register md5 checksum
+	// required to init md5 hash func
 	_ "crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -12,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // Filename defines the name of the local Cache file.
@@ -32,30 +31,31 @@ type OptimizersToResults map[string]int
 
 type Cache struct {
 	mu   sync.RWMutex
-	Data Data
+	data Data
+	dir  string
 }
 
-func NewEmptyCache() *Cache {
-	return &Cache{Data: make(Data)}
+func NewEmptyCache(dir string) *Cache {
+	return &Cache{data: make(Data), dir: dir}
 }
 
 func (c *Cache) Has(key string) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	_, isInCache := c.Data[key]
+	_, isInCache := c.data[key]
 	return isInCache
 }
 
 func (c *Cache) Get(key string) *FileInfo {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.Data[key]
+	return c.data[key]
 }
 
 func (c *Cache) Put(key string, value *FileInfo) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.Data[key] = value
+	c.data[key] = value
 }
 
 // Load loads Cache from filesystem for a given directory.
@@ -74,7 +74,7 @@ func Load(dir string) (*Cache, error) {
 
 	file, err := os.Open(filepath.Join(dir, Filename))
 	if errors.As(err, &pathError) {
-		return NewEmptyCache(), nil
+		return NewEmptyCache(dir), nil
 	} else if err != nil {
 		return nil, err
 	}
@@ -87,14 +87,13 @@ func Load(dir string) (*Cache, error) {
 		return nil, err
 	}
 
-	return &Cache{Data: entries}, nil
+	return &Cache{data: entries, dir: dir}, nil
 }
 
 // Verify verifies whether the given file in the given directory didn't change based on its content hash value.
-// If the file has been changed, then it returns Data with the given filename mapped to its new hash
-// and empty OptimizersToResults mapping.
-func (c *Cache) Verify(dir, file string) (*FileInfo, error) {
-	hash, err := computeHashFromFile(filepath.Join(dir, file))
+// If the file has been changed, then it returns FileInfo with its new hash and empty OptimizersToResults mapping.
+func (c *Cache) Verify(file string) (*FileInfo, error) {
+	hash, err := computeHashFromFile(filepath.Join(c.dir, file))
 	if err != nil {
 		return nil, err
 	}
@@ -106,10 +105,10 @@ func (c *Cache) Verify(dir, file string) (*FileInfo, error) {
 	return nil, nil
 }
 
-// AddFile creates an entry for a new file in Data Cache mapping.
+// AddFile creates an entry for a new file in data mapping.
 // It computes the hash for the file and provides empty OptimizersToResults mapping.
-func (c *Cache) AddFile(dir, file string) error {
-	hash, err := computeHashFromFile(filepath.Join(dir, file))
+func (c *Cache) AddFile(file string) error {
+	hash, err := computeHashFromFile(filepath.Join(c.dir, file))
 	if err != nil {
 		return err
 	}
@@ -119,9 +118,9 @@ func (c *Cache) AddFile(dir, file string) error {
 	return nil
 }
 
-// Save simply writes Data mapping on local storage inside the given directory.
-func (c *Cache) Save(dir string) error {
-	file, err := os.OpenFile(filepath.Join(dir, Filename), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+// Save simply writes data mapping to file inside the given directory.
+func (c *Cache) Save() error {
+	file, err := os.OpenFile(filepath.Join(c.dir, Filename), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -129,7 +128,7 @@ func (c *Cache) Save(dir string) error {
 
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return json.NewEncoder(file).Encode(c.Data)
+	return json.NewEncoder(file).Encode(c.data)
 }
 
 func computeHashFromFile(filepath string) (string, error) {

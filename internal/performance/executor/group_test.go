@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/test/mocks"
@@ -32,7 +31,7 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		assert.Equal(t, expectedResult, result)
 	})
 
-	t.Run("should execute two executors concurrently and return their results in appropriate order", func(t *testing.T) {
+	t.Run("should execute two executors concurrently and return their results", func(t *testing.T) {
 		t.Parallel()
 
 		executorMockName1 := "mock-executor-1"
@@ -59,8 +58,6 @@ func TestGroupExecutor_Execute(t *testing.T) {
 	t.Run("should return error from one of executors", func(t *testing.T) {
 		t.Parallel()
 
-		waitCtxClosed := make(chan struct{})
-
 		executorMockName1 := "mock-executor-1"
 		executorMockName2 := "mock-executor-2"
 		executorMockName3 := "mock-executor-3"
@@ -72,17 +69,9 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		executorMock2 := mocks.NewMockExecutor(mockController)
 		executorMock3 := mocks.NewMockExecutor(mockController)
 
-		executorMock1.EXPECT().Execute(gomock.Any()).DoAndReturn(func(ctx context.Context) (int, error) {
-			<-ctx.Done()
-			waitCtxClosed <- struct{}{}
-			return 5, nil
-		}).Times(1)
+		executorMock1.EXPECT().Execute(gomock.Any()).Return(5, nil).Times(1)
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
-		executorMock3.EXPECT().Execute(gomock.Any()).DoAndReturn(func(ctx context.Context) (int, error) {
-			<-ctx.Done()
-			waitCtxClosed <- struct{}{}
-			return 21, nil
-		}).Times(1)
+		executorMock3.EXPECT().Execute(gomock.Any()).Return(21, nil).Times(1)
 
 		executorMock1.EXPECT().Name().Return(executorMockName1)
 		executorMock2.EXPECT().Name().Return(executorMockName2)
@@ -94,15 +83,6 @@ func TestGroupExecutor_Execute(t *testing.T) {
 
 		assert.ErrorIs(t, err, expectedError)
 		assert.Zero(t, result)
-
-		assert.Eventually(t, func() bool {
-			select {
-			case <-waitCtxClosed:
-				return true
-			default:
-				return false
-			}
-		}, time.Millisecond*10, time.Millisecond)
 	})
 
 	t.Run("should return empty result for empty list of executors", func(t *testing.T) {

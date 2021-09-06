@@ -66,7 +66,7 @@ func Test_cacheable_handle(t *testing.T) {
 
 		size, err := getSizeOfCache(dir)
 		assert.NoError(t, err)
-		assert.True(t, size == prevSize)
+		assert.Equal(t, prevSize, size)
 	})
 
 	t.Run("should compute results - part of the results cached", func(t *testing.T) {
@@ -120,8 +120,8 @@ func Test_cacheable_handle(t *testing.T) {
 		t.Parallel()
 
 		modelOptimizerName := "modelOpt"
-		optimizerName1 := "opt1"
-		expectedValues := map[string]int{modelOptimizerName: 1, optimizerName1: 2}
+		optimizerName := "opt1"
+		expectedValues := map[string]int{modelOptimizerName: 1, optimizerName: 2}
 
 		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-cacheable-*")
 		assert.NoError(t, err)
@@ -135,11 +135,11 @@ func Test_cacheable_handle(t *testing.T) {
 		assert.NoFileExists(t, cacheFilePath)
 
 		controller := gomock.NewController(t)
-		optimizerStub1 := mocks.NewMockOptimizer(controller)
-		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
+		optimizerStub := mocks.NewMockOptimizer(controller)
+		optimizerStub.EXPECT().Name().Return(optimizerName).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.Optimizer{optimizerStub1},
+			Optimizers: []optimizer.Optimizer{optimizerStub},
 			modelExecutorBuildFunc: func(_ string, _ string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Name().Return(modelOptimizerName).AnyTimes()
@@ -170,8 +170,8 @@ func Test_cacheable_handle(t *testing.T) {
 		t.Parallel()
 
 		modelExecutorName := "modelOpt"
-		optimizerName1 := "opt1"
-		values := map[string]int{modelExecutorName: 1, optimizerName1: 2}
+		optimizerName := "opt1"
+		values := map[string]int{modelExecutorName: 1, optimizerName: 2}
 
 		dir, file, err := setUpCache(values)
 		assert.NoError(t, err)
@@ -184,21 +184,21 @@ func Test_cacheable_handle(t *testing.T) {
 		assert.NoError(t, err)
 
 		controller := gomock.NewController(t)
-		optimizerStub1 := mocks.NewMockOptimizer(controller)
-		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
+		optimizerStub := mocks.NewMockOptimizer(controller)
+		optimizerStub.EXPECT().Name().Return(optimizerName).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.Optimizer{optimizerStub1},
+			Optimizers: []optimizer.Optimizer{optimizerStub},
 			modelExecutorBuildFunc: func(_ string, _ string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Name().Return(modelExecutorName).AnyTimes()
-				e.EXPECT().Execute(gomock.Any()).Return(1, nil)
+				e.EXPECT().Execute(gomock.Any()).Return(3, nil)
 				return e
 			},
 			optimizerExecutorBuildFunc: func(_ string, o optimizer.Optimizer) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Name().Return(o.Name()).AnyTimes()
-				e.EXPECT().Execute(gomock.Any()).Return(2, nil)
+				e.EXPECT().Execute(gomock.Any()).Return(4, nil)
 				return e
 			},
 			modelOptimizerName: modelExecutorName,
@@ -210,7 +210,11 @@ func Test_cacheable_handle(t *testing.T) {
 		results, err := c.handle(context.TODO(), v)
 		assert.NoError(t, err)
 
-		assert.Equal(t, values, map[string]int(results[file]))
+		assert.Equal(
+			t,
+			map[string]int{modelExecutorName: 3, optimizerName: 4},
+			map[string]int(results[file]),
+		)
 
 		cacheContent, err := ioutil.ReadFile(cacheFilePath)
 		assert.NoError(t, err)
@@ -223,23 +227,23 @@ func Test_cacheable_handle(t *testing.T) {
 		expectedError := errors.New("test error")
 
 		modelExecutorName := "modelOpt"
-		optimizerName1 := "opt1"
-		values := map[string]int{modelExecutorName: 1, optimizerName1: 2}
+		optimizerName := "opt1"
+		values := map[string]int{modelExecutorName: 1, optimizerName: 2}
 
 		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-*")
 		assert.NoError(t, err)
 
-		errorFile, err := createFile(dir, "new-file-*")
+		errorFile, err := createFile(dir, "err-file-*")
 		assert.NoError(t, err)
 		newFile, err := createFile(dir, "new-file-*")
 		assert.NoError(t, err)
 
 		controller := gomock.NewController(t)
-		optimizerStub1 := mocks.NewMockOptimizer(controller)
-		optimizerStub1.EXPECT().Name().Return(optimizerName1).AnyTimes()
+		optimizerStub := mocks.NewMockOptimizer(controller)
+		optimizerStub.EXPECT().Name().Return(optimizerName).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.Optimizer{optimizerStub1},
+			Optimizers: []optimizer.Optimizer{optimizerStub},
 			modelExecutorBuildFunc: func(_ string, dataPath string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Name().Return(modelExecutorName).AnyTimes()
@@ -259,7 +263,7 @@ func Test_cacheable_handle(t *testing.T) {
 			modelOptimizerName: modelExecutorName,
 		}
 
-		v, err := buildDirectoryViewWithoutCache(dir)
+		v, err := buildDirectoryViewWithoutCacheFile(dir)
 		assert.NoError(t, err)
 
 		results, err := c.handle(context.TODO(), v)
@@ -270,6 +274,8 @@ func Test_cacheable_handle(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, values, map[string]int(localCache.Get(newFile).Results))
+		assert.Nil(t, localCache.Get(errorFile).Results)
+		assert.NotZero(t, localCache.Get(errorFile).Hash)
 	})
 
 	t.Run("should handle error from loading cache", func(t *testing.T) {
@@ -283,7 +289,7 @@ func Test_cacheable_handle(t *testing.T) {
 		err = ioutil.WriteFile(filepath.Join(dir, cache.Filename), []byte("invalid cache content"), 0644)
 		assert.NoError(t, err)
 
-		v, err := buildDirectoryViewWithoutCache(dir)
+		v, err := buildDirectoryViewWithoutCacheFile(dir)
 		assert.NoError(t, err)
 
 		c := Cacheable{}
@@ -318,7 +324,7 @@ func Test_cacheable_handle(t *testing.T) {
 			modelOptimizerName: modelExecutorName,
 		}
 
-		v, err := buildDirectoryViewWithoutCache(dir)
+		v, err := buildDirectoryViewWithoutCacheFile(dir)
 		assert.NoError(t, err)
 
 		result, err := c.handle(context.TODO(), v)
@@ -462,20 +468,20 @@ func Test_cacheable_toFilesToResults(t *testing.T) {
 
 		controller := gomock.NewController(t)
 		optimizer1 := mocks.NewMockOptimizer(controller)
-		optimizer2 := mocks.NewMockOptimizer(controller)
+		optimizer4 := mocks.NewMockOptimizer(controller)
 
 		optimizer1.EXPECT().Name().Return("opt1").AnyTimes()
-		optimizer2.EXPECT().Name().Return("opt4").AnyTimes()
+		optimizer4.EXPECT().Name().Return("opt4").AnyTimes()
 
-		optimizers := []optimizer.Optimizer{optimizer1, optimizer2}
+		optimizers := []optimizer.Optimizer{optimizer1, optimizer4}
 
-		localCache := &cache.Cache{
-			Data: cache.Data{
-				file1: &cache.FileInfo{Results: cache.OptimizersToResults{"modelOpt": 2, "opt1": 3, "opt4": 13}},
-				file2: &cache.FileInfo{Results: cache.OptimizersToResults{"modelOpt": 4, "opt1": 5, "opt2": 6, "opt4": 12}},
-				file3: &cache.FileInfo{Results: cache.OptimizersToResults{"modelOpt": 5, "opt1": 12, "opt3": 4, "opt4": 32}},
-			},
-		}
+		localCache := cache.NewEmptyCache("")
+		localCache.Put(file1,
+			&cache.FileInfo{Results: cache.OptimizersToResults{"modelOpt": 2, "opt1": 3, "opt4": 13}})
+		localCache.Put(file2,
+			&cache.FileInfo{Results: cache.OptimizersToResults{"modelOpt": 4, "opt1": 5, "opt2": 6, "opt4": 12}})
+		localCache.Put(file3,
+			&cache.FileInfo{Results: cache.OptimizersToResults{"modelOpt": 5, "opt1": 12, "opt3": 4, "opt4": 32}})
 
 		c := Cacheable{Optimizers: optimizers, modelOptimizerName: "modelOpt"}
 		results := c.toFilesToResults(localCache, files)
@@ -496,8 +502,8 @@ func Test_updateLocalCache(t *testing.T) {
 	dir := filepath.Dir(file.Name())
 	_ = file.Close()
 
-	localCache := cache.NewEmptyCache()
-	err = localCache.AddFile(dir, filename)
+	localCache := cache.NewEmptyCache(dir)
+	err = localCache.AddFile(filename)
 	assert.NoError(t, err)
 	updates := map[string]int{"opt1": 1, "opt2": 2, "opt3": 3}
 
@@ -516,7 +522,7 @@ func setUpCache(cachedValues map[string]int) (dir string, filename string, err e
 		return "", "", err
 	}
 
-	localCache := cache.NewEmptyCache()
+	localCache := cache.NewEmptyCache(dir)
 
 	file, err := ioutil.TempFile(dir, "file-*")
 	if err != nil {
@@ -525,13 +531,13 @@ func setUpCache(cachedValues map[string]int) (dir string, filename string, err e
 	filename = filepath.Base(file.Name())
 	_ = file.Close()
 
-	err = localCache.AddFile(dir, filename)
+	err = localCache.AddFile(filename)
 	if err != nil {
 		return "", "", err
 	}
 	localCache.Get(filename).Results = cachedValues
 
-	err = localCache.Save(dir)
+	err = localCache.Save()
 	if err != nil {
 		return "", "", err
 	}
