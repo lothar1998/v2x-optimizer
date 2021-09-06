@@ -14,22 +14,16 @@ import (
 // var csvHeaders = []string{"path", "custom_result", "cplex_result",
 // "absolute_error", "relative_error", "average_relative_error"}
 
-// PathsToErrors represents mapping between paths and errors mapping.
 type PathsToErrors map[string]FilesToErrors
 
-// FilesToErrors represents mapping between files and errors mapping.
 type FilesToErrors map[string]OptimizersToErrors
 
-// OptimizersToErrors represents mapping between optimizers' names and error infos.
 type OptimizersToErrors map[string]errors.Info
 
-// PathsToAvgErrors represents mapping between paths and average errors mapping.
 type PathsToAvgErrors map[string]OptimizersToAvgErrors
 
-// OptimizersToAvgErrors represents mapping between optimizers' names and average errors.
 type OptimizersToAvgErrors map[string]AvgErrors
 
-// AvgErrors consists of two average error - relative and absolute.
 type AvgErrors struct {
 	AvgRelativeError float64
 	AvgAbsolutError  float64
