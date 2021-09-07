@@ -4,7 +4,6 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
 
 jobs:
 
@@ -16,13 +15,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
 
-      - name: Set up Linter
-        run: go get -u golang.org/x/lint/golint
-
-      - name: Lint
-        run: make lint
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42
 
       - name: Test
         run: make test

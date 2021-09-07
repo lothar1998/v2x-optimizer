@@ -1,3 +1,11 @@
+int threads = ...;
+
+execute PARAMS {
+  if (threads > 0) {
+    cplex.threads = threads;
+  }
+}
+
 int V = ...;
 int N = ...; 
 

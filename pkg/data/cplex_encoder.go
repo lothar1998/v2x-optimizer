@@ -50,9 +50,7 @@ func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
 // It is possible to decode data with additional variables defined. In such a case Decode skips these values.
 func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 	var data Data
-
 	bufferedReader := bufio.NewReader(reader)
-
 	var n, v int
 
 	for {
@@ -105,18 +103,8 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 		}
 	}
 
-	if data.MRB == nil || data.R == nil {
-		return nil, ErrMalformedData
-	}
-
-	if len(data.MRB) != n && len(data.R) != v {
-		return nil, ErrMalformedData
-	}
-
-	for _, e := range data.R {
-		if len(e) != n {
-			return nil, ErrMalformedData
-		}
+	if err := verifyDecodedData(&data, n, v); err != nil {
+		return nil, err
 	}
 
 	return &data, nil
@@ -153,10 +141,11 @@ func parseIntArray(array string) (result []int, err error) {
 	isPreviousSpace := true
 
 	for i, c := range array {
-		if unicode.IsDigit(c) {
+		switch {
+		case unicode.IsDigit(c):
 			length++
 			isPreviousSpace = false
-		} else if unicode.IsSpace(c) && !isPreviousSpace {
+		case unicode.IsSpace(c) && !isPreviousSpace:
 			parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
 			if err != nil {
 				return nil, err
@@ -167,7 +156,7 @@ func parseIntArray(array string) (result []int, err error) {
 			length = 0
 			leftIndex = i + 1
 			isPreviousSpace = true
-		} else if unicode.IsSpace(c) && isPreviousSpace {
+		case unicode.IsSpace(c) && isPreviousSpace:
 			leftIndex = i + 1
 		}
 	}
@@ -181,7 +170,7 @@ func parseIntArray(array string) (result []int, err error) {
 		result = append(result, int(parsedInt))
 	}
 
-	return
+	return result, nil
 }
 
 func parseArrayOfArrays(str string) []string {
@@ -217,4 +206,22 @@ func findValue(str string) string {
 	str = strings.Trim(str, " \n\t")
 	str = strings.ReplaceAll(str, "\t", "")
 	return strings.ReplaceAll(str, "\n", "")
+}
+
+func verifyDecodedData(data *Data, n, v int) error {
+	if data.MRB == nil || data.R == nil {
+		return ErrMalformedData
+	}
+
+	if len(data.MRB) != n && len(data.R) != v {
+		return ErrMalformedData
+	}
+
+	for _, e := range data.R {
+		if len(e) != n {
+			return ErrMalformedData
+		}
+	}
+
+	return nil
 }

@@ -51,15 +51,16 @@ func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 
 	line, err := lineReader.ReadString('\n')
 
-	if err == io.EOF && len(line) > 0 {
+	switch {
+	case err == io.EOF && len(line) > 0:
 		err := setMRB(&data, line)
 		if err != nil {
 			return nil, err
 		}
 		return &data, nil
-	} else if err == io.EOF {
+	case err == io.EOF:
 		return &data, nil
-	} else if err != nil {
+	case err != nil:
 		return nil, err
 	}
 
@@ -73,15 +74,16 @@ func (e PlainEncoder) Decode(reader io.Reader) (*Data, error) {
 	for {
 		line, err := lineReader.ReadString('\n')
 
-		if err == io.EOF && len(line) > 0 {
+		switch {
+		case err == io.EOF && len(line) > 0:
 			err := appendR(&data, line, mrbLen)
 			if err != nil {
 				return nil, err
 			}
 			return &data, nil
-		} else if err == io.EOF {
+		case err == io.EOF:
 			return &data, nil
-		} else if err != nil {
+		case err != nil:
 			return nil, err
 		}
 
@@ -168,5 +170,5 @@ func splitIntString(str string, sep rune) (result []int, err error) {
 
 	result = append(result, int(parsedInt))
 
-	return
+	return result, nil
 }

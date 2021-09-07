@@ -2,9 +2,10 @@ package data
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPlainEncoder_Encode_Decode_Compatibility(t *testing.T) {

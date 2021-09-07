@@ -1,0 +1,49 @@
+{
+  "linters": {
+    "disable-all": true,
+    "enable": [
+      "bodyclose",
+      "deadcode",
+      "depguard",
+      "dogsled",
+      "dupl",
+      "errcheck",
+      "exportloopref",
+      "funlen",
+      "goconst",
+      "gocritic",
+      "gocyclo",
+      "gofmt",
+      "goimports",
+      "gosimple",
+      "govet",
+      "ineffassign",
+      "lll",
+      "misspell",
+      "nakedret",
+      "revive",
+      "staticcheck",
+      "stylecheck",
+      "unconvert",
+      "unparam",
+      "unused",
+      "varcheck",
+      "wastedassign",
+      "whitespace"
+    ]
+  },
+  "run": {
+    "skip-dirs": [
+      "test"
+    ]
+  },
+  "issues": {
+    "exclude-rules": {
+      "path": ".*_test.go",
+      "linters": [
+        "funlen",
+        "goconst"
+      ]
+    }
+  }
+}

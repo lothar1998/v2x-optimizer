@@ -36,6 +36,20 @@ func (m *MockOptimizer) EXPECT() *MockOptimizerMockRecorder {
 	return m.recorder
 }
 
+// Name mocks base method.
+func (m *MockOptimizer) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockOptimizerMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockOptimizer)(nil).Name))
+}
+
 // Optimize mocks base method.
 func (m *MockOptimizer) Optimize(arg0 context.Context, arg1 *data.Data) (*optimizer.Result, error) {
 	m.ctrl.T.Helper()

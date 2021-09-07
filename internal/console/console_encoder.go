@@ -2,10 +2,11 @@ package console
 
 import (
 	"bufio"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
 const (
