@@ -10,7 +10,6 @@ import (
 // with heterogeneous bins and items with different sizes that depend on the bin.
 type FirstFit struct{}
 
-// Optimize runs first-fit algorithm on the given data.
 func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
 	v := len(data.R)
 	n := len(data.MRB)
@@ -40,7 +39,6 @@ func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 	return toResult(sequence, n), nil
 }
 
-// Name returns name of optimizer.
 func (f FirstFit) Name() string {
 	return "first-fit"
 }
