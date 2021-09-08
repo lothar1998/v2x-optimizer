@@ -17,24 +17,28 @@ func (nf NextFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 	leftSpace := data.MRB
 	var currIndex int
 	for i := 0; i < v; i++ {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
+		var bucketsSearched int
 
-		if currIndex >= n {
-			return nil, ErrCannotAssignToBucket
-		}
+		for {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+			}
 
-		if data.R[i][currIndex] <= leftSpace[currIndex] {
-			sequence[i] = currIndex
-			leftSpace[currIndex] -= data.R[i][currIndex]
-			continue
-		}
+			if bucketsSearched >= n {
+				return nil, ErrCannotAssignToBucket
+			}
 
-		i--
-		currIndex++
+			if data.R[i][currIndex] <= leftSpace[currIndex] {
+				sequence[i] = currIndex
+				leftSpace[currIndex] -= data.R[i][currIndex]
+				break
+			}
+
+			bucketsSearched++
+			currIndex = (currIndex + 1) % n
+		}
 	}
 
 	return toResult(sequence, n), nil
