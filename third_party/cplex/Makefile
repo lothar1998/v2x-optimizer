@@ -1,6 +1,6 @@
 MODEL_FILE ?= v2x-optimization.mod
 DEFAULT_DATA_DIR ?= ./data
-OUTPUT_REGEX = "RRH_COUNT|RRH"
+OUTPUT_REGEX = "N\b|V\b|RRH_COUNT|RRH_ENABLE|VEHICLE_ASSIGNMENT"
 THREADS_PARAM = -D threads=0 # use default CPLEX value
 
 .PHONY: optimize
