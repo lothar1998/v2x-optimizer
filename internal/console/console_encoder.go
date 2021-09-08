@@ -100,11 +100,11 @@ func ToOutput(result *optimizer.Result) string {
 
 	sb.WriteString(vehicleAssignment + " = [")
 	if len(result.VehiclesToRRHAssignment) > 0 {
-		sb.WriteRune(rune(result.VehiclesToRRHAssignment[0] + '0'))
+		sb.WriteString(strconv.Itoa(result.VehiclesToRRHAssignment[0]))
 
 		for _, e := range result.VehiclesToRRHAssignment[1:] {
 			sb.WriteRune(' ')
-			sb.WriteRune(rune(e + '0'))
+			sb.WriteString(strconv.Itoa(e))
 		}
 	}
 	sb.WriteString("]\n")
