@@ -10,7 +10,7 @@ build:
 
 lint:
 	@echo "# Running lint..."
-	@golint -set_exit_status ./...
+	@golangci-lint run
 
 test:
 	@echo "# Running test..."
@@ -18,7 +18,9 @@ test:
 
 format:
 	@echo "# Running format..."
-	@go fmt ./...
+	@goimports -w pkg/
+	@goimports -w internal/
+	@goimports -w cmd/
 
 install:
 	@echo "# Installing app..."

@@ -1,9 +1,10 @@
 package console
 
 import (
+	"testing"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCompatibility(t *testing.T) {

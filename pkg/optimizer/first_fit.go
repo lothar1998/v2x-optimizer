@@ -2,6 +2,7 @@ package optimizer
 
 import (
 	"context"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
@@ -37,4 +38,9 @@ func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 	}
 
 	return toResult(sequence, n), nil
+}
+
+// Name returns name of optimizer.
+func (f FirstFit) Name() string {
+	return "first-fit"
 }

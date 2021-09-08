@@ -2,6 +2,7 @@ package optimizer
 
 import (
 	"context"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
@@ -42,4 +43,8 @@ func (nf NextFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 	}
 
 	return toResult(sequence, n), nil
+}
+
+func (nf NextFit) Name() string {
+	return "next-fit"
 }

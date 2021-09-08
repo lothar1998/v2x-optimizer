@@ -2,9 +2,10 @@ package optimizer
 
 import (
 	"context"
+	"testing"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestFirstFit_Optimize(t *testing.T) {

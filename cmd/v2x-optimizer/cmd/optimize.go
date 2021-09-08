@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/console"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 // OptimizeCmd returns cobra.Command which is able to optimize problem with specific algorithm.
@@ -22,8 +23,8 @@ func OptimizeCmd() *cobra.Command {
 		},
 	}
 
-	for name, o := range config.NamesToOptimizers {
-		command := optimizeWith(name, o)
+	for _, o := range config.RegisteredOptimizers {
+		command := optimizeWith(o.Name(), o)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
 	}

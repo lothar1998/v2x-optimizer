@@ -6,11 +6,10 @@ func toResult(vehicleAssignment []int, n int) *Result {
 
 	var count int
 	for _, e := range vehicleAssignment {
-		if result.RRHEnable[e] == false {
+		if !result.RRHEnable[e] {
 			result.RRHEnable[e] = true
 			count++
 		}
-
 	}
 
 	result.RRHCount = count
