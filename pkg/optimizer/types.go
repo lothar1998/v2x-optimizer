@@ -2,6 +2,7 @@ package optimizer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/lothar1998/v2x-optimizer/internal/namer"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
@@ -19,3 +20,7 @@ type Result struct {
 	RRHEnable               []bool
 	VehiclesToRRHAssignment []int
 }
+
+// ErrCannotAssignToBucket should be returned if there is no possibility
+// to assign items to buckets using the given algorithm.
+var ErrCannotAssignToBucket = errors.New("cannot assign items to buckets")

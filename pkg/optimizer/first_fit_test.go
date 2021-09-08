@@ -33,23 +33,24 @@ func TestFirstFit_Optimize(t *testing.T) {
 		assert.Equal(t, []int{0, 1, 2, 0, 2}, result.VehiclesToRRHAssignment)
 	})
 
-	t.Run("should return error if there is no possibility to pack items using first-fit algorithm", func(t *testing.T) {
-		t.Parallel()
+	t.Run("should return error if there is no possibility to pack items using first-fit algorithm",
+		func(t *testing.T) {
+			t.Parallel()
 
-		d := &data.Data{
-			MRB: []int{12, 15, 8, 10},
-			R: [][]int{
-				{6, 3, 2, 1},
-				{7, 8, 5, 3},
-				{9, 10, 7, 8},
-				{6, 3, 2, 1},
-				{7, 8, 3, 12},
-			},
-		}
+			d := &data.Data{
+				MRB: []int{12, 15, 8, 10},
+				R: [][]int{
+					{6, 3, 2, 1},
+					{7, 8, 5, 3},
+					{9, 10, 7, 8},
+					{6, 3, 2, 1},
+					{7, 8, 3, 12},
+				},
+			}
 
-		result, err := FirstFit{}.Optimize(context.TODO(), d)
+			result, err := FirstFit{}.Optimize(context.TODO(), d)
 
-		assert.Error(t, err)
-		assert.Zero(t, result)
-	})
+			assert.ErrorIs(t, err, ErrCannotAssignToBucket)
+			assert.Zero(t, result)
+		})
 }

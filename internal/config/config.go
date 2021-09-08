@@ -7,4 +7,7 @@ import "github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 const CPLEXOptimizerName = "cplex"
 
 // RegisteredOptimizers is a list of all possible optimizers.
-var RegisteredOptimizers = []optimizer.Optimizer{optimizer.FirstFit{}}
+var RegisteredOptimizers = []optimizer.Optimizer{
+	optimizer.FirstFit{},
+	optimizer.NextFit{},
+}
