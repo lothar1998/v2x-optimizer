@@ -5,7 +5,6 @@
 package mocks
 
 import (
-	os "os"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -47,18 +46,4 @@ func (m *MockProcess) Output() ([]byte, error) {
 func (mr *MockProcessMockRecorder) Output() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Output", reflect.TypeOf((*MockProcess)(nil).Output))
-}
-
-// Signal mocks base method.
-func (m *MockProcess) Signal(arg0 os.Signal) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Signal", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Signal indicates an expected call of Signal.
-func (mr *MockProcessMockRecorder) Signal(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Signal", reflect.TypeOf((*MockProcess)(nil).Signal), arg0)
 }

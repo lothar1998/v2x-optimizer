@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
+	wrapper "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer_wrapper"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +29,7 @@ func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
 	for _, currOptimizer := range config.RegisteredOptimizers {
-		performanceOfCmd := performanceOf(currOptimizer.Name(), []optimizer.Optimizer{currOptimizer})
+		performanceOfCmd := performanceOf(currOptimizer.Name(), []wrapper.Optimizer{currOptimizer})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
@@ -41,7 +41,7 @@ func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }
 
-func performanceOf(optimizerName string, optimizers []optimizer.Optimizer) *cobra.Command {
+func performanceOf(optimizerName string, optimizers []wrapper.Optimizer) *cobra.Command {
 	return &cobra.Command{
 		Use:   fmt.Sprintf("%s {model_file} {data_file | data_dir}... ", optimizerName),
 		Args:  cobra.MinimumNArgs(2),
@@ -51,7 +51,7 @@ func performanceOf(optimizerName string, optimizers []optimizer.Optimizer) *cobr
 	}
 }
 
-func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command, []string) error {
+func computePerformanceOf(optimizers []wrapper.Optimizer) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		modelFile := args[0]
 		dataFiles := args[1:]
