@@ -2,19 +2,19 @@ package executor
 
 import (
 	"context"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"os"
 
-	wrapper "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer_wrapper"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
 // Custom is an Executor that allows for running optimization using the custom, self-written optimizer.
 type Custom struct {
 	Path      string
-	Optimizer wrapper.Optimizer
+	Optimizer optimizer.Wrapper
 }
 
-func NewCustom(path string, optimizer wrapper.Optimizer) Executor {
+func NewCustom(path string, optimizer optimizer.Wrapper) Executor {
 	return &Custom{Path: path, Optimizer: optimizer}
 }
 
