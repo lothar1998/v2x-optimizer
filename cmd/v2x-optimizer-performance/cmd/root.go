@@ -29,13 +29,13 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
-	for _, factory := range config.RegisteredFactories {
+	for _, factory := range config.RegisteredOptimizerFactories {
 		performanceOfCmd := performanceOf(factory.Identifier(), []optimizerfactory.Factory{factory})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
 
-	performanceOfCmd := performanceOf("all", config.RegisteredFactories)
+	performanceOfCmd := performanceOf("all", config.RegisteredOptimizerFactories)
 	setUpFlags(performanceOfCmd)
 	rootCmd.AddCommand(performanceOfCmd)
 
@@ -69,8 +69,8 @@ func computePerformanceOf(optimizerFactories []optimizerfactory.Factory) func(*c
 		}
 
 		optimizers := make([]optimizer.IdentifiableOptimizer, len(optimizerFactories))
-		for i, f := range optimizerFactories {
-			build := f.Builder()
+		for i, factory := range optimizerFactories {
+			build := factory.Builder()
 			opt, err := build(command)
 			if err != nil {
 				return err

@@ -10,8 +10,8 @@ import (
 // because CPLEX doesn't have optimizer.Optimizer implementation.
 const CPLEXOptimizerName = "CPLEX"
 
-// RegisteredFactories is a list of all possible factories.
-var RegisteredFactories = []optimizerfactory.Factory{
+// RegisteredOptimizerFactories is a list of all possible factories.
+var RegisteredOptimizerFactories = []optimizerfactory.Factory{
 	&optimizerfactory.Parameterless{
 		IdentifiableOptimizer: &optimizerwrapper.IdentifiableWrapper{
 			Optimizer: optimizer.FirstFit{},
