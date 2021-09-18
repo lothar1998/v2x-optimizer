@@ -6,17 +6,17 @@ import (
 )
 
 type Parameterless struct {
-	optimizer.Identifiable
+	optimizer.IdentifiableOptimizer
 }
 
 func (p *Parameterless) Builder() BuildFunc {
-	return func(_ *cobra.Command) (optimizer.Identifiable, error) {
-		return p.Identifiable, nil
+	return func(_ *cobra.Command) (optimizer.IdentifiableOptimizer, error) {
+		return p.IdentifiableOptimizer, nil
 	}
 }
 
 func (p *Parameterless) SetUpFlags(_ *cobra.Command) {}
 
-func (p *Parameterless) Name() string {
-	return p.Identifier()
+func (p *Parameterless) Identifier() string {
+	return p.IdentifiableOptimizer.Identifier()
 }

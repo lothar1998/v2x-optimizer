@@ -36,7 +36,7 @@ func (ge *GroupExecutor) Execute(ctx context.Context) (map[string]int, error) {
 
 	for i, executor := range ge.Executors {
 		result, err := execute(cancelCtx, executor)
-		results[i] = nameToExecutorResult{executor.Name(), result}
+		results[i] = nameToExecutorResult{executor.Identifier(), result}
 		errs[i] = err
 	}
 

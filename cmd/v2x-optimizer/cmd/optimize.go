@@ -25,7 +25,7 @@ func OptimizeCmd() *cobra.Command {
 	}
 
 	for _, o := range config.RegisteredFactories {
-		command := optimizeWith(o.Name(), o)
+		command := optimizeWith(o.Identifier(), o)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
 	}

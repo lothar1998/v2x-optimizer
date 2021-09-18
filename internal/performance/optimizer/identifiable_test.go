@@ -22,18 +22,10 @@ func (o OptimizerWithParams) Optimize(_ context.Context, _ *data.Data) (*optimiz
 	return nil, nil
 }
 
-func (o OptimizerWithParams) Name() string {
-	return ""
-}
-
 type Empty struct{}
 
 func (e Empty) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
 	return nil, nil
-}
-
-func (e Empty) Name() string {
-	return ""
 }
 
 func TestOptimizer_Identifier(t *testing.T) {
@@ -42,7 +34,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier from exported values of struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableOptimizer{Optimizer: OptimizerWithParams{
+		o := IdentifiableWrapper{Optimizer: OptimizerWithParams{
 			A: "a",
 			B: 2,
 			C: true,
@@ -57,7 +49,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	})
 
 	t.Run("should make an identifier consisted of only struct name", func(t *testing.T) {
-		o := IdentifiableOptimizer{Empty{}}
+		o := IdentifiableWrapper{Empty{}}
 
 		assert.Equal(t, "Empty", o.Identifier())
 	})

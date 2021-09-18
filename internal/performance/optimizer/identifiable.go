@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/lothar1998/v2x-optimizer/internal/identifiable"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
@@ -18,16 +20,16 @@ func (p keyValue) toEntry() string {
 	return fmt.Sprintf("%s:%v", p.key, p.value)
 }
 
-type Identifiable interface {
-	optimizer.Optimizer
-	Identifier() string
-}
-
-type IdentifiableOptimizer struct {
+type IdentifiableOptimizer interface {
+	identifiable.Identifiable
 	optimizer.Optimizer
 }
 
-func (w *IdentifiableOptimizer) Identifier() string {
+type IdentifiableWrapper struct {
+	optimizer.Optimizer
+}
+
+func (w *IdentifiableWrapper) Identifier() string {
 	val := reflect.ValueOf(w.Optimizer)
 	vType := val.Type()
 
