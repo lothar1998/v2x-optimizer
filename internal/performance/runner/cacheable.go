@@ -17,14 +17,14 @@ import (
 type Cacheable struct {
 	pathRunner
 	ModelPath                  string
-	Optimizers                 []optimizer.Identifiable
+	Optimizers                 []optimizer.IdentifiableOptimizer
 	modelExecutorBuildFunc     func(string, string) executor.Executor
-	optimizerExecutorBuildFunc func(string, optimizer.Identifiable) executor.Executor
+	optimizerExecutorBuildFunc func(string, optimizer.IdentifiableOptimizer) executor.Executor
 	modelOptimizerName         string
 }
 
 // NewCacheable returns pathRunner with the ability to cache results in local cache files using the cache package.
-func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Identifiable) *Cacheable {
+func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.IdentifiableOptimizer) *Cacheable {
 	c := newCacheable(modelPath, dataPaths, optimizers)
 	c.modelExecutorBuildFunc = executor.NewCplex
 	return c
@@ -32,14 +32,14 @@ func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.I
 
 // NewCacheableWithConcurrencyLimits returns pathRunner with the ability to cache results
 // in local cache files using the cache package. It also limits the model executor to a specified thread limit.
-func NewCacheableWithConcurrencyLimits(modelPath string, dataPaths []string, optimizers []optimizer.Identifiable,
-	modelOptimizerThreadPoolSize uint) *Cacheable {
+func NewCacheableWithConcurrencyLimits(modelPath string, dataPaths []string,
+	optimizers []optimizer.IdentifiableOptimizer, modelOptimizerThreadPoolSize uint) *Cacheable {
 	c := newCacheable(modelPath, dataPaths, optimizers)
 	c.modelExecutorBuildFunc = getModelExecutorBuilderWithThreadPool(modelOptimizerThreadPoolSize)
 	return c
 }
 
-func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Identifiable) *Cacheable {
+func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.IdentifiableOptimizer) *Cacheable {
 	c := &Cacheable{
 		pathRunner: pathRunner{
 			DataPaths:              dataPaths,

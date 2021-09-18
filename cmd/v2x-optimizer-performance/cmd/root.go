@@ -29,13 +29,13 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
-	for _, f := range config.RegisteredFactories {
-		performanceOfCmd := performanceOf(f.Name(), []optimizerfactory.Factory{f})
+	for _, factory := range config.RegisteredOptimizerFactories {
+		performanceOfCmd := performanceOf(factory.Identifier(), []optimizerfactory.Factory{factory})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
 
-	performanceOfCmd := performanceOf("all", config.RegisteredFactories)
+	performanceOfCmd := performanceOf("all", config.RegisteredOptimizerFactories)
 	setUpFlags(performanceOfCmd)
 	rootCmd.AddCommand(performanceOfCmd)
 
@@ -43,7 +43,7 @@ func Execute() {
 }
 
 func performanceOf(optimizerName string, optimizerFactories []optimizerfactory.Factory) *cobra.Command {
-	c := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {model_file} {data_file | data_dir}... ", optimizerName),
 		Args:  cobra.MinimumNArgs(2),
 		Short: fmt.Sprintf("Verify performance of %s optimizer", optimizerName),
@@ -51,9 +51,9 @@ func performanceOf(optimizerName string, optimizerFactories []optimizerfactory.F
 		RunE:  computePerformanceOf(optimizerFactories),
 	}
 	for _, f := range optimizerFactories {
-		f.SetUpFlags(c)
+		f.SetUpFlags(cmd)
 	}
-	return c
+	return cmd
 }
 
 func computePerformanceOf(optimizerFactories []optimizerfactory.Factory) func(*cobra.Command, []string) error {
@@ -68,9 +68,9 @@ func computePerformanceOf(optimizerFactories []optimizerfactory.Factory) func(*c
 			return err
 		}
 
-		optimizers := make([]optimizer.Identifiable, len(optimizerFactories))
-		for i, f := range optimizerFactories {
-			build := f.Builder()
+		optimizers := make([]optimizer.IdentifiableOptimizer, len(optimizerFactories))
+		for i, factory := range optimizerFactories {
+			build := factory.Builder()
 			opt, err := build(command)
 			if err != nil {
 				return err

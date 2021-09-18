@@ -44,7 +44,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier from exported values of struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableOptimizer{Optimizer: optimizerWithParams{
+		o := IdentifiableWrapper{Optimizer: optimizerWithParams{
 			A: "a",
 			B: 2,
 			C: true,
@@ -61,13 +61,15 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier from exported values of pointer to struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableOptimizer{Optimizer: &optimizerPointerReceiver{A: "a", B: 12, c: true}}
+		o := IdentifiableWrapper{Optimizer: &optimizerPointerReceiver{A: "a", B: 12, c: true}}
 
 		assert.Equal(t, "optimizerPointerReceiver,A:a,B:12", o.Identifier())
 	})
 
 	t.Run("should make an identifier consisted of only struct name", func(t *testing.T) {
-		o := IdentifiableOptimizer{empty{}}
+		t.Parallel()
+
+		o := IdentifiableWrapper{empty{}}
 
 		assert.Equal(t, "empty", o.Identifier())
 	})

@@ -11,12 +11,12 @@ const nextKFitParameterK = "nkf_k"
 type NextKFit struct{}
 
 func (n NextKFit) Builder() BuildFunc {
-	return func(command *cobra.Command) (identifiable.Identifiable, error) {
+	return func(command *cobra.Command) (identifiable.IdentifiableOptimizer, error) {
 		k, err := command.Flags().GetUint(nextKFitParameterK)
 		if err != nil {
 			return nil, err
 		}
-		return &identifiable.IdentifiableOptimizer{Optimizer: &optimizer.NextKFit{K: int(k)}}, nil
+		return &identifiable.IdentifiableWrapper{Optimizer: &optimizer.NextKFit{K: int(k)}}, nil
 	}
 }
 
@@ -24,6 +24,6 @@ func (n NextKFit) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(nextKFitParameterK, "", 1, "NextKFit k parameter")
 }
 
-func (n NextKFit) Name() string {
+func (n NextKFit) Identifier() string {
 	return "NextKFit"
 }

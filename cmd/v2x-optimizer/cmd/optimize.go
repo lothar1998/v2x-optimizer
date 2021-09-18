@@ -24,8 +24,8 @@ func OptimizeCmd() *cobra.Command {
 		},
 	}
 
-	for _, o := range config.RegisteredFactories {
-		command := optimizeWith(o.Name(), o)
+	for _, o := range config.RegisteredOptimizerFactories {
+		command := optimizeWith(o.Identifier(), o)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
 	}
@@ -34,15 +34,15 @@ func OptimizeCmd() *cobra.Command {
 }
 
 func optimizeWith(optimizerName string, optimizerFactory optimizerfactory.Factory) *cobra.Command {
-	c := &cobra.Command{
+	cmmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {data_file}", optimizerName),
 		Args:  cobra.ExactArgs(1),
 		Short: fmt.Sprintf("Optimize using %s", optimizerName),
 		Long:  fmt.Sprintf("Allows optimizing using %s", optimizerName),
 		RunE:  optimizeUsing(optimizerFactory.Builder()),
 	}
-	optimizerFactory.SetUpFlags(c)
-	return c
+	optimizerFactory.SetUpFlags(cmmd)
+	return cmmd
 }
 
 func optimizeUsing(build optimizerfactory.BuildFunc) func(*cobra.Command, []string) error {

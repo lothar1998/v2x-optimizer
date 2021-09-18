@@ -21,7 +21,7 @@ func TestGroupExecutor_Execute(t *testing.T) {
 
 		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
 		executorMock.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMockName], nil).Times(1)
-		executorMock.EXPECT().Name().Return(executorMockName)
+		executorMock.EXPECT().Identifier().Return(executorMockName)
 
 		e := GroupExecutor{[]Executor{executorMock}}
 
@@ -44,8 +44,8 @@ func TestGroupExecutor_Execute(t *testing.T) {
 
 		executorMock1.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMockName1], nil).Times(1)
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMockName2], nil).Times(1)
-		executorMock1.EXPECT().Name().Return(executorMockName1)
-		executorMock2.EXPECT().Name().Return(executorMockName2)
+		executorMock1.EXPECT().Identifier().Return(executorMockName1)
+		executorMock2.EXPECT().Identifier().Return(executorMockName2)
 
 		e := GroupExecutor{[]Executor{executorMock1, executorMock2}}
 
@@ -73,9 +73,9 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
 		executorMock3.EXPECT().Execute(gomock.Any()).Return(21, nil).Times(1)
 
-		executorMock1.EXPECT().Name().Return(executorMockName1)
-		executorMock2.EXPECT().Name().Return(executorMockName2)
-		executorMock3.EXPECT().Name().Return(executorMockName3)
+		executorMock1.EXPECT().Identifier().Return(executorMockName1)
+		executorMock2.EXPECT().Identifier().Return(executorMockName2)
+		executorMock3.EXPECT().Identifier().Return(executorMockName3)
 
 		e := GroupExecutor{[]Executor{executorMock1, executorMock2, executorMock3}}
 
