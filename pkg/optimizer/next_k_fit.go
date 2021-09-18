@@ -73,7 +73,3 @@ func (nkf NextKFit) Optimize(ctx context.Context, data *data.Data) (*Result, err
 
 	return toResult(sequence, n), nil
 }
-
-func (nkf NextKFit) Name() string {
-	return "next-k-fit"
-}

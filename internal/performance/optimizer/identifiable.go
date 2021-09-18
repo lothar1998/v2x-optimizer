@@ -28,16 +28,20 @@ type IdentifiableOptimizer struct {
 }
 
 func (w *IdentifiableOptimizer) Identifier() string {
-	val := reflect.ValueOf(w.Optimizer)
-	vType := val.Type()
+	rValue := reflect.ValueOf(w.Optimizer)
+	if rValue.Kind() == reflect.Ptr {
+		rValue = rValue.Elem()
+	}
+
+	rType := rValue.Type()
 
 	var params []keyValue
 
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
+	for i := 0; i < rValue.NumField(); i++ {
+		field := rValue.Field(i)
 
 		if field.CanInterface() {
-			p := keyValue{vType.Field(i).Name, field.Interface()}
+			p := keyValue{rType.Field(i).Name, field.Interface()}
 			params = append(params, p)
 		}
 	}
@@ -47,10 +51,10 @@ func (w *IdentifiableOptimizer) Identifier() string {
 	})
 
 	if len(params) == 0 {
-		return vType.Name()
+		return rType.Name()
 	}
 
-	return vType.Name() + "," + join(params, ",")
+	return rType.Name() + "," + join(params, ",")
 }
 
 func join(elems []keyValue, sep string) string {

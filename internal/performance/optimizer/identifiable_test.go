@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type OptimizerWithParams struct {
+type optimizerWithParams struct {
 	A string
 	B int
 	C bool
@@ -18,22 +18,24 @@ type OptimizerWithParams struct {
 	f string
 }
 
-func (o OptimizerWithParams) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
+func (o optimizerWithParams) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
 	return nil, nil
 }
 
-func (o OptimizerWithParams) Name() string {
-	return ""
+type optimizerPointerReceiver struct {
+	A string
+	B int
+	c bool
 }
 
-type Empty struct{}
-
-func (e Empty) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
+func (o *optimizerPointerReceiver) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
 	return nil, nil
 }
 
-func (e Empty) Name() string {
-	return ""
+type empty struct{}
+
+func (e empty) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
+	return nil, nil
 }
 
 func TestOptimizer_Identifier(t *testing.T) {
@@ -42,7 +44,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier from exported values of struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableOptimizer{Optimizer: OptimizerWithParams{
+		o := IdentifiableOptimizer{Optimizer: optimizerWithParams{
 			A: "a",
 			B: 2,
 			C: true,
@@ -52,13 +54,21 @@ func TestOptimizer_Identifier(t *testing.T) {
 		}}
 
 		assert.Equal(t,
-			"OptimizerWithParams,A:a,B:2,C:true,D:[[12] [213 133]],E:map[abc:map[2:true]]",
+			"optimizerWithParams,A:a,B:2,C:true,D:[[12] [213 133]],E:map[abc:map[2:true]]",
 			o.Identifier())
 	})
 
-	t.Run("should make an identifier consisted of only struct name", func(t *testing.T) {
-		o := IdentifiableOptimizer{Empty{}}
+	t.Run("should make an identifier from exported values of pointer to struct", func(t *testing.T) {
+		t.Parallel()
 
-		assert.Equal(t, "Empty", o.Identifier())
+		o := IdentifiableOptimizer{Optimizer: &optimizerPointerReceiver{A: "a", B: 12, c: true}}
+
+		assert.Equal(t, "optimizerPointerReceiver,A:a,B:12", o.Identifier())
+	})
+
+	t.Run("should make an identifier consisted of only struct name", func(t *testing.T) {
+		o := IdentifiableOptimizer{empty{}}
+
+		assert.Equal(t, "empty", o.Identifier())
 	})
 }

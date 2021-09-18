@@ -14,4 +14,5 @@ const CPLEXOptimizerName = "cplex"
 var RegisteredFactories = []optimizerfactory.Factory{
 	&optimizerfactory.Parameterless{Identifiable: &identifiable.IdentifiableOptimizer{Optimizer: optimizer.FirstFit{}}},
 	&optimizerfactory.Parameterless{Identifiable: &identifiable.IdentifiableOptimizer{Optimizer: optimizer.NextFit{}}},
+	&optimizerfactory.NextKFit{},
 }
