@@ -7,8 +7,8 @@ import (
 )
 
 // CPLEXOptimizerName is a name of cplex optimizer. It needs to be defined here
-// because CPLEX doesn't have optimizer.Wrapper implementation.
-const CPLEXOptimizerName = "cplex"
+// because CPLEX doesn't have optimizer.Optimizer implementation.
+const CPLEXOptimizerName = "CPLEX"
 
 // RegisteredFactories is a list of all possible factories.
 var RegisteredFactories = []optimizerfactory.Factory{
