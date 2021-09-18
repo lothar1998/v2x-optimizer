@@ -38,7 +38,3 @@ func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 
 	return toResult(sequence, n), nil
 }
-
-func (f FirstFit) Name() string {
-	return "first-fit"
-}

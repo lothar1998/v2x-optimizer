@@ -2,8 +2,9 @@ package executor
 
 import (
 	"context"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"os"
+
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -11,10 +12,10 @@ import (
 // Custom is an Executor that allows for running optimization using the custom, self-written optimizer.
 type Custom struct {
 	Path      string
-	Optimizer optimizer.Wrapper
+	Optimizer optimizer.Identifiable
 }
 
-func NewCustom(path string, optimizer optimizer.Wrapper) Executor {
+func NewCustom(path string, optimizer optimizer.Identifiable) Executor {
 	return &Custom{Path: path, Optimizer: optimizer}
 }
 
@@ -41,5 +42,5 @@ func (c *Custom) Execute(ctx context.Context) (int, error) {
 
 // Name returns the name of the executor, which in this case is also the name of the underlying optimizer.
 func (c *Custom) Name() string {
-	return c.Optimizer.Name()
+	return c.Optimizer.Identifier()
 }

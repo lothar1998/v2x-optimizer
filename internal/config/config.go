@@ -1,8 +1,8 @@
 package config
 
 import (
-	wrapper2 "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
-	wrapper "github.com/lothar1998/v2x-optimizer/internal/performance/wrapper"
+	identifiable "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/optimizerfactory"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
@@ -10,8 +10,8 @@ import (
 // because CPLEX doesn't have optimizer.Wrapper implementation.
 const CPLEXOptimizerName = "cplex"
 
-// RegisteredOptimizers is a list of all possible optimizers.
-var RegisteredOptimizers = []wrapper2.Wrapper{
-	wrapper.Cacheable{Optimizer: optimizer.FirstFit{}},
-	wrapper.Cacheable{Optimizer: optimizer.NextFit{}},
+// RegisteredFactories is a list of all possible factories.
+var RegisteredFactories = []optimizerfactory.Factory{
+	&optimizerfactory.Parameterless{Identifiable: &identifiable.IdentifiableOptimizer{Optimizer: optimizer.FirstFit{}}},
+	&optimizerfactory.Parameterless{Identifiable: &identifiable.IdentifiableOptimizer{Optimizer: optimizer.NextFit{}}},
 }

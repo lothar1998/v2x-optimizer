@@ -10,38 +10,47 @@ import (
 )
 
 type keyValue struct {
-	name  string
+	key   string
 	value interface{}
 }
 
 func (p keyValue) toEntry() string {
-	return fmt.Sprintf("%s:%v", p.name, p.value)
+	return fmt.Sprintf("%s:%v", p.key, p.value)
 }
 
-type Wrapper struct {
+type Identifiable interface {
+	optimizer.Optimizer
+	Identifier() string
+}
+
+type IdentifiableOptimizer struct {
 	optimizer.Optimizer
 }
 
-func (w *Wrapper) MapKey() string {
+func (w *IdentifiableOptimizer) Identifier() string {
 	val := reflect.ValueOf(w.Optimizer)
+	vType := val.Type()
 
 	var params []keyValue
+
 	for i := 0; i < val.NumField(); i++ {
-		if val.Field(i).CanInterface() {
-			p := keyValue{val.Type().Field(i).Name, val.Field(i).Interface()}
+		field := val.Field(i)
+
+		if field.CanInterface() {
+			p := keyValue{vType.Field(i).Name, field.Interface()}
 			params = append(params, p)
 		}
 	}
 
 	sort.Slice(params, func(i, j int) bool {
-		return params[i].name < params[j].name
+		return params[i].key < params[j].key
 	})
 
 	if len(params) == 0 {
-		return val.Type().Name()
+		return vType.Name()
 	}
 
-	return val.Type().Name() + "," + join(params, ",")
+	return vType.Name() + "," + join(params, ",")
 }
 
 func join(elems []keyValue, sep string) string {

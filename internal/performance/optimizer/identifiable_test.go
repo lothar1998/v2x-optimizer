@@ -19,30 +19,30 @@ type OptimizerWithParams struct {
 }
 
 func (o OptimizerWithParams) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
-	panic("implement me")
+	return nil, nil
 }
 
 func (o OptimizerWithParams) Name() string {
-	panic("implement me")
+	return ""
 }
 
 type Empty struct{}
 
 func (e Empty) Optimize(_ context.Context, _ *data.Data) (*optimizer.Result, error) {
-	panic("implement me")
+	return nil, nil
 }
 
 func (e Empty) Name() string {
-	panic("implement me")
+	return ""
 }
 
-func TestOptimizer_MapKey(t *testing.T) {
+func TestOptimizer_Identifier(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should make a key from exported values of struct", func(t *testing.T) {
+	t.Run("should make an identifier from exported values of struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := Wrapper{Optimizer: OptimizerWithParams{
+		o := IdentifiableOptimizer{Optimizer: OptimizerWithParams{
 			A: "a",
 			B: 2,
 			C: true,
@@ -53,12 +53,12 @@ func TestOptimizer_MapKey(t *testing.T) {
 
 		assert.Equal(t,
 			"OptimizerWithParams,A:a,B:2,C:true,D:[[12] [213 133]],E:map[abc:map[2:true]]",
-			o.MapKey())
+			o.Identifier())
 	})
 
-	t.Run("should make key consisted of only struct name", func(t *testing.T) {
-		o := Wrapper{Empty{}}
+	t.Run("should make an identifier consisted of only struct name", func(t *testing.T) {
+		o := IdentifiableOptimizer{Empty{}}
 
-		assert.Equal(t, "Empty", o.MapKey())
+		assert.Equal(t, "Empty", o.Identifier())
 	})
 }

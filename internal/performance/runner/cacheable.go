@@ -2,10 +2,11 @@ package runner
 
 import (
 	"context"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
+
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
@@ -16,14 +17,14 @@ import (
 type Cacheable struct {
 	pathRunner
 	ModelPath                  string
-	Optimizers                 []optimizer.Wrapper
+	Optimizers                 []optimizer.Identifiable
 	modelExecutorBuildFunc     func(string, string) executor.Executor
-	optimizerExecutorBuildFunc func(string, optimizer.Wrapper) executor.Executor
+	optimizerExecutorBuildFunc func(string, optimizer.Identifiable) executor.Executor
 	modelOptimizerName         string
 }
 
 // NewCacheable returns pathRunner with the ability to cache results in local cache files using the cache package.
-func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Wrapper) *Cacheable {
+func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Identifiable) *Cacheable {
 	c := newCacheable(modelPath, dataPaths, optimizers)
 	c.modelExecutorBuildFunc = executor.NewCplex
 	return c
@@ -31,14 +32,14 @@ func NewCacheable(modelPath string, dataPaths []string, optimizers []optimizer.W
 
 // NewCacheableWithConcurrencyLimits returns pathRunner with the ability to cache results
 // in local cache files using the cache package. It also limits the model executor to a specified thread limit.
-func NewCacheableWithConcurrencyLimits(modelPath string, dataPaths []string, optimizers []optimizer.Wrapper,
+func NewCacheableWithConcurrencyLimits(modelPath string, dataPaths []string, optimizers []optimizer.Identifiable,
 	modelOptimizerThreadPoolSize uint) *Cacheable {
 	c := newCacheable(modelPath, dataPaths, optimizers)
 	c.modelExecutorBuildFunc = getModelExecutorBuilderWithThreadPool(modelOptimizerThreadPoolSize)
 	return c
 }
 
-func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Wrapper) *Cacheable {
+func newCacheable(modelPath string, dataPaths []string, optimizers []optimizer.Identifiable) *Cacheable {
 	c := &Cacheable{
 		pathRunner: pathRunner{
 			DataPaths:              dataPaths,
@@ -159,7 +160,7 @@ func (c *Cacheable) getNotCachedExecutors(dataPath string, info *cache.FileInfo)
 	}
 
 	for _, opt := range c.Optimizers {
-		if _, isCached := info.Results[opt.Name()]; !isCached {
+		if _, isCached := info.Results[opt.Identifier()]; !isCached {
 			executors = append(executors, c.optimizerExecutorBuildFunc(dataPath, opt))
 		}
 	}
@@ -175,7 +176,7 @@ func (c *Cacheable) toFilesToResults(localCache *cache.Cache, files []string) Fi
 		fileInfo := localCache.Get(file)
 		filesToResults[file][c.modelOptimizerName] = fileInfo.Results[c.modelOptimizerName]
 		for _, opt := range c.Optimizers {
-			filesToResults[file][opt.Name()] = fileInfo.Results[opt.Name()]
+			filesToResults[file][opt.Identifier()] = fileInfo.Results[opt.Identifier()]
 		}
 	}
 

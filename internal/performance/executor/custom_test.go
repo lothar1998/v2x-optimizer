@@ -25,8 +25,9 @@ func Test_custom_Execute(t *testing.T) {
 		filepath, err := setupDataFile(true)
 		assert.NoError(t, err)
 
-		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
+		optimizerMock := mocks.NewMockIdentifiable(gomock.NewController(t))
 		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(&optimizer.Result{RRHCount: expectedResult}, nil)
+
 		c := Custom{Path: filepath, Optimizer: optimizerMock}
 
 		result, err := c.Execute(context.TODO())
@@ -40,7 +41,7 @@ func Test_custom_Execute(t *testing.T) {
 
 		var expectedError *os.PathError
 
-		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
+		optimizerMock := mocks.NewMockIdentifiable(gomock.NewController(t))
 
 		c := Custom{Path: "", Optimizer: optimizerMock}
 
@@ -56,7 +57,7 @@ func Test_custom_Execute(t *testing.T) {
 		filepath, err := setupDataFile(false)
 		assert.NoError(t, err)
 
-		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
+		optimizerMock := mocks.NewMockIdentifiable(gomock.NewController(t))
 
 		c := Custom{Path: filepath, Optimizer: optimizerMock}
 
@@ -74,7 +75,7 @@ func Test_custom_Execute(t *testing.T) {
 		filepath, err := setupDataFile(true)
 		assert.NoError(t, err)
 
-		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
+		optimizerMock := mocks.NewMockIdentifiable(gomock.NewController(t))
 		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).Return(nil, expectedError)
 
 		c := Custom{Path: filepath, Optimizer: optimizerMock}
@@ -97,7 +98,7 @@ func Test_custom_Execute(t *testing.T) {
 		ctx, cancelFunc := context.WithCancel(context.TODO())
 		defer cancelFunc()
 
-		optimizerMock := mocks.NewMockOptimizer(gomock.NewController(t))
+		optimizerMock := mocks.NewMockIdentifiable(gomock.NewController(t))
 		optimizerMock.EXPECT().Optimize(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(ctx context.Context, _ *data.Data) (*optimizer.Result, error) {
 				waitForOptimization <- struct{}{}
