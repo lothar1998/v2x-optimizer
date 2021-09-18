@@ -21,7 +21,7 @@ func (n NextKFit) Builder() BuildFunc {
 }
 
 func (n NextKFit) SetUpFlags(command *cobra.Command) {
-	command.Flags().UintP(nextKFitParameterK, "", 1, "k parameter")
+	command.Flags().UintP(nextKFitParameterK, "", 1, "NextKFit k parameter")
 }
 
 func (n NextKFit) Name() string {
