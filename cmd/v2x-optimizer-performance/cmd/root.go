@@ -50,9 +50,11 @@ func performanceOf(optimizerName string, optimizerFactories []optimizerfactory.F
 		Long:  fmt.Sprintf("Allows for performance verification of %s optimizer", optimizerName),
 		RunE:  computePerformanceOf(optimizerFactories),
 	}
-	for _, f := range optimizerFactories {
-		f.SetUpFlags(cmd)
+
+	for _, factory := range optimizerFactories {
+		factory.SetUpFlags(cmd)
 	}
+
 	return cmd
 }
 
