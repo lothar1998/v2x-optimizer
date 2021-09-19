@@ -49,16 +49,16 @@ func (mr *MockExecutorMockRecorder) Execute(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockExecutor)(nil).Execute), arg0)
 }
 
-// Name mocks base method.
-func (m *MockExecutor) Name() string {
+// Identifier mocks base method.
+func (m *MockExecutor) Identifier() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Name")
+	ret := m.ctrl.Call(m, "Identifier")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// Name indicates an expected call of Name.
-func (mr *MockExecutorMockRecorder) Name() *gomock.Call {
+// Identifier indicates an expected call of Identifier.
+func (mr *MockExecutorMockRecorder) Identifier() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockExecutor)(nil).Name))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Identifier", reflect.TypeOf((*MockExecutor)(nil).Identifier))
 }

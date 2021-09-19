@@ -1,7 +1,10 @@
 CGO_ENABLED = 0
 
-.PHONY: all build lint test format install optimize
-all: lint test build
+MOCKS_DIR = ./test/mocks
+MOCKS_DEFINITION_FILE = mocks.go
+
+.PHONY: all build lint test format install mocks optimize-cplex
+all: mocks lint test build
 
 # V2X Optimizer
 build:
@@ -21,6 +24,11 @@ format:
 	@goimports -w pkg/
 	@goimports -w internal/
 	@goimports -w cmd/
+
+mocks:
+	@echo "# Regenerating mocks..."
+	@find $(MOCKS_DIR) -type f | grep -v $(MOCKS_DEFINITION_FILE) | xargs rm
+	@go generate $(MOCKS_DIR)/$(MOCKS_DEFINITION_FILE)
 
 install:
 	@echo "# Installing app..."

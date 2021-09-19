@@ -54,8 +54,8 @@ func (c *cplex) Execute(ctx context.Context) (int, error) {
 	return c.parseOutputFunc(string(bytes))
 }
 
-// Name returns the name of cplex executor, which in this case is also the name of the underlying optimizer.
-func (c *cplex) Name() string {
+// Identifier returns the name of cplex executor, which in this case is also the name of the underlying optimizer.
+func (c *cplex) Identifier() string {
 	return config.CPLEXOptimizerName
 }
 

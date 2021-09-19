@@ -46,7 +46,3 @@ func (nf NextFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 
 	return toResult(sequence, n), nil
 }
-
-func (nf NextFit) Name() string {
-	return "next-fit"
-}

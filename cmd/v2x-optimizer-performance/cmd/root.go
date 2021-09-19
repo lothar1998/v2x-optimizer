@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/optimizerfactory"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 )
 
@@ -28,30 +29,34 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
-	for _, currOptimizer := range config.RegisteredOptimizers {
-		performanceOfCmd := performanceOf(currOptimizer.Name(), []optimizer.Optimizer{currOptimizer})
+	for _, factory := range config.RegisteredOptimizerFactories {
+		performanceOfCmd := performanceOf(factory.Identifier(), []optimizerfactory.Factory{factory})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
 
-	performanceOfCmd := performanceOf("all", config.RegisteredOptimizers)
+	performanceOfCmd := performanceOf("all", config.RegisteredOptimizerFactories)
 	setUpFlags(performanceOfCmd)
 	rootCmd.AddCommand(performanceOfCmd)
 
 	cobra.CheckErr(rootCmd.Execute())
 }
 
-func performanceOf(optimizerName string, optimizers []optimizer.Optimizer) *cobra.Command {
-	return &cobra.Command{
+func performanceOf(optimizerName string, optimizerFactories []optimizerfactory.Factory) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {model_file} {data_file | data_dir}... ", optimizerName),
 		Args:  cobra.MinimumNArgs(2),
 		Short: fmt.Sprintf("Verify performance of %s optimizer", optimizerName),
 		Long:  fmt.Sprintf("Allows for performance verification of %s optimizer", optimizerName),
-		RunE:  computePerformanceOf(optimizers),
+		RunE:  computePerformanceOf(optimizerFactories),
 	}
+	for _, factory := range optimizerFactories {
+		factory.SetUpFlags(cmd)
+	}
+	return cmd
 }
 
-func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command, []string) error {
+func computePerformanceOf(optimizerFactories []optimizerfactory.Factory) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		modelFile := args[0]
 		dataFiles := args[1:]
@@ -61,6 +66,16 @@ func computePerformanceOf(optimizers []optimizer.Optimizer) func(*cobra.Command,
 		threadLimit, err := command.Flags().GetUint(modelExecutorThreadLimit)
 		if err != nil {
 			return err
+		}
+
+		optimizers := make([]optimizer.IdentifiableOptimizer, len(optimizerFactories))
+		for i, factory := range optimizerFactories {
+			build := factory.Builder()
+			opt, err := build(command)
+			if err != nil {
+				return err
+			}
+			optimizers[i] = opt
 		}
 
 		cacheable := runner.NewCacheableWithConcurrencyLimits(modelFile, dataFiles, optimizers, threadLimit)
