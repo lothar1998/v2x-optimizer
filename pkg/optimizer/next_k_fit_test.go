@@ -9,7 +9,7 @@ import (
 )
 
 func TestNextKFit_Optimize(t *testing.T) {
-	t.Run("should pack items according to next-2-fit-algorithm", func(t *testing.T) {
+	t.Run("should pack items according to next-2-fit algorithm", func(t *testing.T) {
 		t.Parallel()
 
 		d := &data.Data{
@@ -32,7 +32,7 @@ func TestNextKFit_Optimize(t *testing.T) {
 		assert.Equal(t, []int{0, 2, 1, 1, 2, 2}, result.VehiclesToRRHAssignment)
 	})
 
-	t.Run("should pack items according to next-3-fit-algorithm", func(t *testing.T) {
+	t.Run("should pack items according to next-3-fit algorithm", func(t *testing.T) {
 		t.Parallel()
 
 		d := &data.Data{
