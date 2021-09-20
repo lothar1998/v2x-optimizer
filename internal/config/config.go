@@ -22,5 +22,10 @@ var RegisteredOptimizerFactories = []optimizerfactory.Factory{
 			Optimizer: optimizer.NextFit{},
 		},
 	},
+	&optimizerfactory.Parameterless{
+		IdentifiableOptimizer: &optimizerwrapper.IdentifiableWrapper{
+			Optimizer: optimizer.WorstFit{},
+		},
+	},
 	optimizerfactory.NextKFit{},
 }
