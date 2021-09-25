@@ -8,7 +8,7 @@ import (
 )
 
 // WorstFit is an optimizer that implements the worst-fit algorithm expanded to solve the bin packing problem
-// with heterogeneous bins and items with different sizes that depend on the bin.
+// with heterogeneous bins and items with different sizes that depend on the bin choice.
 // If the item cannot be assigned to the bucket from heap top, it is tried to assign it to any of the other buckets
 // in heap array order. This means that if the least filled bucket is not suitable
 // the algorithm doesn't look for the second least filled bucket but gets next from the current heap array.
