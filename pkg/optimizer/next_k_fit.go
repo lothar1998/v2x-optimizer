@@ -7,6 +7,13 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
+// NextKFit is an optimizer that implements the next-k-fit algorithm expanded to solve the bin packing problem
+// with heterogeneous bins and items with different sizes that depend on the bin choice.
+// K parameter defines the number of open bins on which the first-fit algorithm is performed.
+// If any of the bins within the K range is not suitable for the item, the algorithm
+// consecutively tries to put the item inside the next bins, simultaneously moving the open bins' range borders.
+// If K is equal to 1, the algorithm behaves like NextFit.
+// If K is equal to n (the number of bins), the algorithm behaves like a FirstFit.
 type NextKFit struct {
 	K int
 }
