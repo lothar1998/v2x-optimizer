@@ -60,7 +60,7 @@ func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*Result,
 
 			if data.R[i][b.Index] <= b.LeftSpace {
 				sequence[i] = b.Index
-				b.LeftSpace -= data.R[i][b.Index]
+				pq.Decrease(b, data.R[i][b.Index])
 				break
 			}
 		}
