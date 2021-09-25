@@ -8,7 +8,7 @@ import (
 )
 
 // NextKFit is an optimizer that implements the next-k-fit algorithm expanded to solve the bin packing problem
-// with heterogeneous bins and items with different sizes that depend on the bin.
+// with heterogeneous bins and items with different sizes that depend on the bin choice.
 // K parameter defines the number of open bins on which the first-fit algorithm is performed.
 // If any of the bins within the K range is not suitable for the item, the algorithm
 // consecutively tries to put the item inside the next bins, simultaneously moving the open bins' range borders.
