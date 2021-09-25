@@ -3,7 +3,7 @@ package bucketqueue
 import "container/heap"
 
 type Bucket struct {
-	Index     int
+	Id        int
 	LeftSpace int
 	HeapIndex int
 }
@@ -15,7 +15,7 @@ func NewPriority(bucketSizes []int) PriorityBucketQueue {
 
 	for i, bucketSize := range bucketSizes {
 		pq[i] = &Bucket{
-			Index:     i,
+			Id:        i,
 			LeftSpace: bucketSize,
 			HeapIndex: i,
 		}

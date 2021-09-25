@@ -32,9 +32,9 @@ func (w WorstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 
 			b := pq.At(j)
 
-			if data.R[i][b.Index] <= b.LeftSpace {
-				sequence[i] = b.Index
-				pq.Decrease(b, data.R[i][b.Index])
+			if data.R[i][b.Id] <= b.LeftSpace {
+				sequence[i] = b.Id
+				pq.Decrease(b, data.R[i][b.Id])
 				break
 			}
 		}

@@ -32,17 +32,17 @@ func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*Result,
 		b1 := pq.PopEmptiestBucket()
 		b2 := pq.PopEmptiestBucket()
 
-		if data.R[i][b2.Index] <= b2.LeftSpace {
-			sequence[i] = b2.Index
-			b2.LeftSpace -= data.R[i][b2.Index]
+		if data.R[i][b2.Id] <= b2.LeftSpace {
+			sequence[i] = b2.Id
+			b2.LeftSpace -= data.R[i][b2.Id]
 			pq.PushBucket(b1)
 			pq.PushBucket(b2)
 			continue
 		}
 
-		if data.R[i][b1.Index] <= b1.LeftSpace {
-			sequence[i] = b1.Index
-			b1.LeftSpace -= data.R[i][b1.Index]
+		if data.R[i][b1.Id] <= b1.LeftSpace {
+			sequence[i] = b1.Id
+			b1.LeftSpace -= data.R[i][b1.Id]
 			pq.PushBucket(b1)
 			pq.PushBucket(b2)
 			continue
@@ -58,9 +58,9 @@ func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*Result,
 
 			b := pq.At(j)
 
-			if data.R[i][b.Index] <= b.LeftSpace {
-				sequence[i] = b.Index
-				pq.Decrease(b, data.R[i][b.Index])
+			if data.R[i][b.Id] <= b.LeftSpace {
+				sequence[i] = b.Id
+				pq.Decrease(b, data.R[i][b.Id])
 				break
 			}
 		}
