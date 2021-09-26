@@ -28,4 +28,5 @@ var RegisteredOptimizerFactories = []optimizerfactory.Factory{
 		},
 	},
 	optimizerfactory.NextKFit{},
+	optimizerfactory.BestFit{},
 }
