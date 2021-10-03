@@ -3,9 +3,10 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/wrapper"
+
 	"github.com/lothar1998/v2x-optimizer/internal/config"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/optimizerfactory"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"github.com/spf13/cobra"
 )
@@ -29,8 +30,8 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
-	for _, factory := range config.RegisteredOptimizerFactories {
-		performanceOfCmd := performanceOf(factory.Identifier(), []optimizerfactory.Factory{factory})
+	for _, f := range config.RegisteredOptimizerFactories {
+		performanceOfCmd := performanceOf(f.TypeName(), []configurator.Configurator{f})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
@@ -42,7 +43,7 @@ func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }
 
-func performanceOf(optimizerName string, optimizerFactories []optimizerfactory.Factory) *cobra.Command {
+func performanceOf(optimizerName string, optimizerFactories []configurator.Configurator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {model_file} {data_file | data_dir}... ", optimizerName),
 		Args:  cobra.MinimumNArgs(2),
@@ -58,7 +59,7 @@ func performanceOf(optimizerName string, optimizerFactories []optimizerfactory.F
 	return cmd
 }
 
-func computePerformanceOf(optimizerFactories []optimizerfactory.Factory) func(*cobra.Command, []string) error {
+func computePerformanceOf(optimizerFactories []configurator.Configurator) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		modelFile := args[0]
 		dataFiles := args[1:]
@@ -70,7 +71,7 @@ func computePerformanceOf(optimizerFactories []optimizerfactory.Factory) func(*c
 			return err
 		}
 
-		optimizers := make([]optimizer.IdentifiableOptimizer, len(optimizerFactories))
+		optimizers := make([]wrapper.IdentifiableOptimizer, len(optimizerFactories))
 		for i, factory := range optimizerFactories {
 			build := factory.Builder()
 			opt, err := build(command)

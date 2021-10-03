@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/optimizerfactory"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/console"
@@ -33,8 +33,8 @@ func OptimizeCmd() *cobra.Command {
 	return optimizeCmd
 }
 
-func optimizeWith(optimizerFactory optimizerfactory.Factory) *cobra.Command {
-	optimizerName := optimizerFactory.Identifier()
+func optimizeWith(optimizerFactory configurator.Configurator) *cobra.Command {
+	optimizerName := optimizerFactory.TypeName()
 	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {data_file}", optimizerName),
 		Args:  cobra.ExactArgs(1),
@@ -46,7 +46,7 @@ func optimizeWith(optimizerFactory optimizerfactory.Factory) *cobra.Command {
 	return cmd
 }
 
-func optimizeUsing(build optimizerfactory.BuildFunc) func(*cobra.Command, []string) error {
+func optimizeUsing(build configurator.BuildFunc) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		input := args[0]
 

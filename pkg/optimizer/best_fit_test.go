@@ -24,7 +24,7 @@ func TestBestFit_Optimize(t *testing.T) {
 			},
 		}
 
-		result, err := BestFit{BestFitClassicFitnessFunction}.Optimize(context.TODO(), d)
+		result, err := BestFit{BestFitFitnessClassic}.Optimize(context.TODO(), d)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 3, result.RRHCount)
@@ -48,7 +48,7 @@ func TestBestFit_Optimize(t *testing.T) {
 			},
 		}
 
-		result, err := BestFit{BestFitFitnessFunctionWithBucketSize}.Optimize(context.TODO(), d)
+		result, err := BestFit{BestFitFitnessWithBucketSize}.Optimize(context.TODO(), d)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 3, result.RRHCount)
@@ -72,7 +72,7 @@ func TestBestFit_Optimize(t *testing.T) {
 			},
 		}
 
-		result, err := BestFit{BestFitFitnessFunctionWithBucketLeftSpace}.Optimize(context.TODO(), d)
+		result, err := BestFit{BestFitFitnessWithBucketLeftSpace}.Optimize(context.TODO(), d)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 4, result.RRHCount)

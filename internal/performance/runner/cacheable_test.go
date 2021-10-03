@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/wrapper"
 
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
@@ -49,7 +49,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub2.EXPECT().Identifier().Return(optimizerName2).AnyTimes()
 
 		c := Cacheable{
-			Optimizers:         []optimizer.IdentifiableOptimizer{optimizerStub1, optimizerStub2},
+			Optimizers:         []wrapper.IdentifiableOptimizer{optimizerStub1, optimizerStub2},
 			modelOptimizerName: modelOptimizerName,
 		}
 
@@ -91,8 +91,8 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub2.EXPECT().Identifier().Return(optimizerName2).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.IdentifiableOptimizer{optimizerStub1, optimizerStub2},
-			optimizerExecutorBuildFunc: func(_ string, o optimizer.IdentifiableOptimizer) executor.Executor {
+			Optimizers: []wrapper.IdentifiableOptimizer{optimizerStub1, optimizerStub2},
+			optimizerExecutorBuildFunc: func(_ string, o wrapper.IdentifiableOptimizer) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(o.Identifier()).AnyTimes()
 				e.EXPECT().Execute(gomock.Any()).Return(3, nil)
@@ -140,14 +140,14 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub.EXPECT().Identifier().Return(optimizerName).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.IdentifiableOptimizer{optimizerStub},
+			Optimizers: []wrapper.IdentifiableOptimizer{optimizerStub},
 			modelExecutorBuildFunc: func(_ string, _ string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(modelOptimizerName).AnyTimes()
 				e.EXPECT().Execute(gomock.Any()).Return(1, nil)
 				return e
 			},
-			optimizerExecutorBuildFunc: func(_ string, o optimizer.IdentifiableOptimizer) executor.Executor {
+			optimizerExecutorBuildFunc: func(_ string, o wrapper.IdentifiableOptimizer) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(o.Identifier()).AnyTimes()
 				e.EXPECT().Execute(gomock.Any()).Return(2, nil)
@@ -189,14 +189,14 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub.EXPECT().Identifier().Return(optimizerName).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.IdentifiableOptimizer{optimizerStub},
+			Optimizers: []wrapper.IdentifiableOptimizer{optimizerStub},
 			modelExecutorBuildFunc: func(_ string, _ string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(modelExecutorName).AnyTimes()
 				e.EXPECT().Execute(gomock.Any()).Return(3, nil)
 				return e
 			},
-			optimizerExecutorBuildFunc: func(_ string, o optimizer.IdentifiableOptimizer) executor.Executor {
+			optimizerExecutorBuildFunc: func(_ string, o wrapper.IdentifiableOptimizer) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(o.Identifier()).AnyTimes()
 				e.EXPECT().Execute(gomock.Any()).Return(4, nil)
@@ -244,7 +244,7 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub.EXPECT().Identifier().Return(optimizerName).AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.IdentifiableOptimizer{optimizerStub},
+			Optimizers: []wrapper.IdentifiableOptimizer{optimizerStub},
 			modelExecutorBuildFunc: func(_ string, dataPath string) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(modelExecutorName).AnyTimes()
@@ -255,7 +255,7 @@ func Test_cacheable_handle(t *testing.T) {
 				}
 				return e
 			},
-			optimizerExecutorBuildFunc: func(_ string, o optimizer.IdentifiableOptimizer) executor.Executor {
+			optimizerExecutorBuildFunc: func(_ string, o wrapper.IdentifiableOptimizer) executor.Executor {
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(o.Identifier()).AnyTimes()
 				e.EXPECT().Execute(gomock.Any()).Return(2, nil)
@@ -313,8 +313,8 @@ func Test_cacheable_handle(t *testing.T) {
 		optimizerStub.EXPECT().Identifier().Return("opt1").AnyTimes()
 
 		c := Cacheable{
-			Optimizers: []optimizer.IdentifiableOptimizer{optimizerStub},
-			optimizerExecutorBuildFunc: func(_ string, o optimizer.IdentifiableOptimizer) executor.Executor {
+			Optimizers: []wrapper.IdentifiableOptimizer{optimizerStub},
+			optimizerExecutorBuildFunc: func(_ string, o wrapper.IdentifiableOptimizer) executor.Executor {
 				err := os.RemoveAll(dir)
 				assert.NoError(t, err)
 				executorMock := mocks.NewMockExecutor(gomock.NewController(t))
@@ -355,7 +355,7 @@ func Test_cacheable_getAllExecutors(t *testing.T) {
 		optimizer1.EXPECT().Identifier().Return(optimizerName1)
 		optimizer2.EXPECT().Identifier().Return(optimizerName2)
 
-		optimizers := []optimizer.IdentifiableOptimizer{optimizer1, optimizer2}
+		optimizers := []wrapper.IdentifiableOptimizer{optimizer1, optimizer2}
 
 		c := Cacheable{
 			Optimizers: optimizers,
@@ -367,7 +367,7 @@ func Test_cacheable_getAllExecutors(t *testing.T) {
 				e.EXPECT().Identifier().Return(modelOptimizerName)
 				return e
 			},
-			optimizerExecutorBuildFunc: func(dataPath string, o optimizer.IdentifiableOptimizer) executor.Executor {
+			optimizerExecutorBuildFunc: func(dataPath string, o wrapper.IdentifiableOptimizer) executor.Executor {
 				assert.Equal(t, expectedDataPath, dataPath)
 				e := mocks.NewMockExecutor(controller)
 				e.EXPECT().Identifier().Return(o.Identifier())
@@ -400,7 +400,7 @@ func Test_cacheable_getNotCachedExecutors(t *testing.T) {
 	optimizer1.EXPECT().Identifier().Return(optimizerName1).AnyTimes()
 	optimizer2.EXPECT().Identifier().Return(optimizerName2).AnyTimes()
 
-	optimizers := []optimizer.IdentifiableOptimizer{optimizer1, optimizer2}
+	optimizers := []wrapper.IdentifiableOptimizer{optimizer1, optimizer2}
 
 	c := Cacheable{
 		Optimizers: optimizers,
@@ -412,7 +412,7 @@ func Test_cacheable_getNotCachedExecutors(t *testing.T) {
 			e.EXPECT().Identifier().Return(modelOptimizerName).AnyTimes()
 			return e
 		},
-		optimizerExecutorBuildFunc: func(dataPath string, o optimizer.IdentifiableOptimizer) executor.Executor {
+		optimizerExecutorBuildFunc: func(dataPath string, o wrapper.IdentifiableOptimizer) executor.Executor {
 			assert.Equal(t, expectedDataPath, dataPath)
 			e := mocks.NewMockExecutor(controller)
 			e.EXPECT().Identifier().Return(o.Identifier()).AnyTimes()
@@ -474,7 +474,7 @@ func Test_cacheable_toFilesToResults(t *testing.T) {
 		optimizer1.EXPECT().Identifier().Return("opt1").AnyTimes()
 		optimizer4.EXPECT().Identifier().Return("opt4").AnyTimes()
 
-		optimizers := []optimizer.IdentifiableOptimizer{optimizer1, optimizer4}
+		optimizers := []wrapper.IdentifiableOptimizer{optimizer1, optimizer4}
 
 		localCache := cache.NewEmptyCache("")
 		localCache.Put(file1,

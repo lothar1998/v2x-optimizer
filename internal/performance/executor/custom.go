@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/wrapper"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -12,10 +12,10 @@ import (
 // Custom is an Executor that allows for running optimization using the custom, self-written optimizer.
 type Custom struct {
 	Path      string
-	Optimizer optimizer.IdentifiableOptimizer
+	Optimizer wrapper.IdentifiableOptimizer
 }
 
-func NewCustom(path string, optimizer optimizer.IdentifiableOptimizer) Executor {
+func NewCustom(path string, optimizer wrapper.IdentifiableOptimizer) Executor {
 	return &Custom{Path: path, Optimizer: optimizer}
 }
 

@@ -2,36 +2,18 @@ package optimizer
 
 import (
 	"context"
-	"errors"
 	"math"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
-const (
-	BestFitClassicFitnessFunction = iota
-	BestFitFitnessFunctionWithBucketSize
-	BestFitFitnessFunctionWithBucketLeftSpace
-)
+type BestFitFitnessFunc func(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64
 
 type BestFit struct {
-	FitnessFuncID int
+	FitnessFunc BestFitFitnessFunc
 }
 
 func (b BestFit) Optimize(ctx context.Context, inputData *data.Data) (*Result, error) {
-	var fitnessFunc func([]int, *data.Data, int, int) float64
-
-	switch b.FitnessFuncID {
-	case BestFitClassicFitnessFunction:
-		fitnessFunc = fitnessClassic
-	case BestFitFitnessFunctionWithBucketSize:
-		fitnessFunc = fitnessWithBucketSize
-	case BestFitFitnessFunctionWithBucketLeftSpace:
-		fitnessFunc = fitnessWithBucketLeftSpace
-	default:
-		return nil, errors.New("undefined fitness function")
-	}
-
 	v := len(inputData.R)
 	n := len(inputData.MRB)
 	sequence := make([]int, v)
@@ -49,7 +31,7 @@ func (b BestFit) Optimize(ctx context.Context, inputData *data.Data) (*Result, e
 			default:
 			}
 
-			fitnessValue := fitnessFunc(leftSpace, inputData, i, j)
+			fitnessValue := b.FitnessFunc(leftSpace, inputData, i, j)
 
 			if fitnessValue == 0 {
 				bestBucket = j
@@ -73,14 +55,14 @@ func (b BestFit) Optimize(ctx context.Context, inputData *data.Data) (*Result, e
 	return toResult(sequence, n), nil
 }
 
-func fitnessClassic(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64 {
+func BestFitFitnessClassic(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64 {
 	return float64(leftSpace[bucketIndex] - data.R[itemIndex][bucketIndex])
 }
 
-func fitnessWithBucketSize(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64 {
-	return fitnessClassic(leftSpace, data, itemIndex, bucketIndex) / float64(data.MRB[bucketIndex])
+func BestFitFitnessWithBucketSize(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64 {
+	return BestFitFitnessClassic(leftSpace, data, itemIndex, bucketIndex) / float64(data.MRB[bucketIndex])
 }
 
-func fitnessWithBucketLeftSpace(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64 {
-	return fitnessClassic(leftSpace, data, itemIndex, bucketIndex) / float64(leftSpace[bucketIndex])
+func BestFitFitnessWithBucketLeftSpace(leftSpace []int, data *data.Data, itemIndex, bucketIndex int) float64 {
+	return BestFitFitnessClassic(leftSpace, data, itemIndex, bucketIndex) / float64(leftSpace[bucketIndex])
 }
