@@ -28,7 +28,7 @@ func (n NextKFitConfigurator) Builder() BuildFunc {
 		}
 
 		if k == 0 {
-			return nil, errors.New("K cannot be equal to 0")
+			return nil, errors.New("parameter K cannot be equal to 0")
 		}
 
 		nkf := &NextKFitWrapper{
