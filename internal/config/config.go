@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
+	optimizerconfigurator "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
@@ -9,11 +9,11 @@ import (
 // because CPLEX doesn't have optimizer.Optimizer implementation.
 const CPLEXOptimizerName = "CPLEX"
 
-// RegisteredOptimizerFactories is a list of all possible factories.
-var RegisteredOptimizerFactories = []configurator.Configurator{
-	configurator.NewParameterless(optimizer.FirstFit{}),
-	configurator.NewParameterless(optimizer.NextFit{}),
-	configurator.NewParameterless(optimizer.WorstFit{}),
-	configurator.NextKFitConfigurator{},
-	configurator.BestFitConfigurator{},
+// RegisteredOptimizerConfigurators is a list of all possible configurators.
+var RegisteredOptimizerConfigurators = []optimizerconfigurator.Configurator{
+	optimizerconfigurator.NewParameterless(optimizer.FirstFit{}),
+	optimizerconfigurator.NewParameterless(optimizer.NextFit{}),
+	optimizerconfigurator.NewParameterless(optimizer.WorstFit{}),
+	optimizerconfigurator.NextKFitConfigurator{},
+	optimizerconfigurator.BestFitConfigurator{},
 }

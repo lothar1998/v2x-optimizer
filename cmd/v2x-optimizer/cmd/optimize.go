@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/console"
@@ -24,8 +24,8 @@ func OptimizeCmd() *cobra.Command {
 		},
 	}
 
-	for _, factory := range config.RegisteredOptimizerFactories {
-		command := optimizeWith(factory)
+	for _, configurator := range config.RegisteredOptimizerConfigurators {
+		command := optimizeWith(configurator)
 		setUpOptimizeFlags(command)
 		optimizeCmd.AddCommand(command)
 	}
@@ -33,20 +33,20 @@ func OptimizeCmd() *cobra.Command {
 	return optimizeCmd
 }
 
-func optimizeWith(optimizerFactory configurator.Configurator) *cobra.Command {
-	optimizerName := optimizerFactory.TypeName()
+func optimizeWith(configurator optimizer.Configurator) *cobra.Command {
+	optimizerName := configurator.TypeName()
 	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {data_file}", optimizerName),
 		Args:  cobra.ExactArgs(1),
 		Short: fmt.Sprintf("Optimize using %s", optimizerName),
 		Long:  fmt.Sprintf("Allows optimizing using %s", optimizerName),
-		RunE:  optimizeUsing(optimizerFactory.Builder()),
+		RunE:  optimizeUsing(configurator.Builder()),
 	}
-	optimizerFactory.SetUpFlags(cmd)
+	configurator.SetUpFlags(cmd)
 	return cmd
 }
 
-func optimizeUsing(build configurator.BuildFunc) func(*cobra.Command, []string) error {
+func optimizeUsing(build optimizer.BuildFunc) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		input := args[0]
 

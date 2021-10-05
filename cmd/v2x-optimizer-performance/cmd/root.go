@@ -3,8 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/wrapper"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
@@ -30,36 +29,36 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
-	for _, f := range config.RegisteredOptimizerFactories {
-		performanceOfCmd := performanceOf(f.TypeName(), []configurator.Configurator{f})
+	for _, configurator := range config.RegisteredOptimizerConfigurators {
+		performanceOfCmd := performanceOf(configurator.TypeName(), []optimizer.Configurator{configurator})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
 
-	performanceOfCmd := performanceOf("all", config.RegisteredOptimizerFactories)
+	performanceOfCmd := performanceOf("all", config.RegisteredOptimizerConfigurators)
 	setUpFlags(performanceOfCmd)
 	rootCmd.AddCommand(performanceOfCmd)
 
 	cobra.CheckErr(rootCmd.Execute())
 }
 
-func performanceOf(optimizerName string, optimizerFactories []configurator.Configurator) *cobra.Command {
+func performanceOf(optimizerName string, configurators []optimizer.Configurator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {model_file} {data_file | data_dir}... ", optimizerName),
 		Args:  cobra.MinimumNArgs(2),
 		Short: fmt.Sprintf("Verify performance of %s optimizer", optimizerName),
 		Long:  fmt.Sprintf("Allows for performance verification of %s optimizer", optimizerName),
-		RunE:  computePerformanceOf(optimizerFactories),
+		RunE:  computePerformanceUsing(configurators),
 	}
 
-	for _, factory := range optimizerFactories {
-		factory.SetUpFlags(cmd)
+	for _, configurator := range configurators {
+		configurator.SetUpFlags(cmd)
 	}
 
 	return cmd
 }
 
-func computePerformanceOf(optimizerFactories []configurator.Configurator) func(*cobra.Command, []string) error {
+func computePerformanceUsing(configurators []optimizer.Configurator) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		modelFile := args[0]
 		dataFiles := args[1:]
@@ -71,9 +70,9 @@ func computePerformanceOf(optimizerFactories []configurator.Configurator) func(*
 			return err
 		}
 
-		optimizers := make([]wrapper.IdentifiableOptimizer, len(optimizerFactories))
-		for i, factory := range optimizerFactories {
-			build := factory.Builder()
+		optimizers := make([]optimizer.IdentifiableOptimizer, len(configurators))
+		for i, configurator := range configurators {
+			build := configurator.Builder()
 			opt, err := build(command)
 			if err != nil {
 				return err
