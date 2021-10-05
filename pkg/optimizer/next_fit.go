@@ -7,7 +7,7 @@ import (
 )
 
 // NextFit is an optimizer that implements the next-fit algorithm expanded to solve the bin packing problem
-// with heterogeneous bins and items with different sizes that depend on the bin.
+// with heterogeneous bins and items with different sizes that depend on the bin choice.
 type NextFit struct{}
 
 func (nf NextFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {

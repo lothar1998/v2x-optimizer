@@ -14,6 +14,7 @@ var RegisteredOptimizerConfigurators = []optimizerconfigurator.Configurator{
 	optimizerconfigurator.NewParameterless(optimizer.FirstFit{}),
 	optimizerconfigurator.NewParameterless(optimizer.NextFit{}),
 	optimizerconfigurator.NewParameterless(optimizer.WorstFit{}),
+	optimizerconfigurator.NewParameterless(optimizer.AlmostWorstFit{}),
 	optimizerconfigurator.NextKFitConfigurator{},
 	optimizerconfigurator.BestFitConfigurator{},
 }

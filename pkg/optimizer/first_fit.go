@@ -7,7 +7,7 @@ import (
 )
 
 // FirstFit is an optimizer that implements the first-fit algorithm expanded to solve the bin packing problem
-// with heterogeneous bins and items with different sizes that depend on the bin.
+// with heterogeneous bins and items with different sizes that depend on the bin choice.
 type FirstFit struct{}
 
 func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
