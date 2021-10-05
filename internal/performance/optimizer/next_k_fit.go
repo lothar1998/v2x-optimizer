@@ -30,6 +30,7 @@ func (n NextKFitConfigurator) Builder() BuildFunc {
 			K:        int(k),
 			NextKFit: optimizer.NextKFit{K: int(k)},
 		}
+
 		return &IdentifiableAdapter{Optimizer: nkf}, nil
 	}
 }
