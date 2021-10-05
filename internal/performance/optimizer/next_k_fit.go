@@ -1,6 +1,7 @@
 package optimizer
 
 import (
+	"errors"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +24,10 @@ func (n NextKFitConfigurator) Builder() BuildFunc {
 		k, err := command.Flags().GetUint(nextKFitParameterK)
 		if err != nil {
 			return nil, err
+		}
+
+		if k == 0 {
+			return nil, errors.New("K cannot be equal to 0")
 		}
 
 		nkf := &NextKFitWrapper{
