@@ -40,7 +40,7 @@ func (c *Custom) Execute(ctx context.Context) (int, error) {
 	return result.RRHCount, nil
 }
 
-// Name returns the name of the executor, which in this case is also the name of the underlying optimizer.
+// Identifier returns the name of the executor, which in this case is also the name of the underlying optimizer.
 func (c *Custom) Identifier() string {
 	return c.Optimizer.Identifier()
 }
