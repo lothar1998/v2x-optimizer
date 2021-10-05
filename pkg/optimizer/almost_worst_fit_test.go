@@ -9,7 +9,7 @@ import (
 )
 
 func TestAlmostWorstFit_Optimize(t *testing.T) {
-	t.Run("should pack items according to the worst-fit algorithm", func(t *testing.T) {
+	t.Run("should pack items according to the almost-worst-fit algorithm", func(t *testing.T) {
 		t.Parallel()
 
 		d := &data.Data{
@@ -106,7 +106,7 @@ func TestAlmostWorstFit_Optimize(t *testing.T) {
 			assert.Equal(t, []int{0, 0, 3, 2, 2, 2}, result.VehiclesToRRHAssignment)
 		})
 
-	t.Run("should return error of there is no possibility to pack items using worst-fit algorithm",
+	t.Run("should return error of there is no possibility to pack items using almost-worst-fit algorithm",
 		func(t *testing.T) {
 			t.Parallel()
 
