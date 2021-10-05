@@ -2,6 +2,7 @@ package optimizer
 
 import (
 	"errors"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 )
