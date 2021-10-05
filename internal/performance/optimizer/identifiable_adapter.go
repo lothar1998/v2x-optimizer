@@ -11,6 +11,14 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
+const (
+	TagIncludeKey   = "id_include"
+	TagIncludeValue = "true"
+
+	TagRenameKey = "id_rename"
+	TagNameKey   = "id_name"
+)
+
 type keyValue struct {
 	key   string
 	value interface{}
@@ -25,37 +33,54 @@ type IdentifiableOptimizer interface {
 	optimizer.Optimizer
 }
 
-type IdentifiableWrapper struct {
+type IdentifiableAdapter struct {
 	optimizer.Optimizer
 }
 
-func (w *IdentifiableWrapper) Identifier() string {
+func (w *IdentifiableAdapter) Identifier() string {
 	rValue := reflect.ValueOf(w.Optimizer)
 	if rValue.Kind() == reflect.Ptr {
 		rValue = rValue.Elem()
 	}
 
-	rType := rValue.Type()
+	var name string
 	var params []keyValue
 
 	for i := 0; i < rValue.NumField(); i++ {
 		field := rValue.Field(i)
+		fieldType := rValue.Type().Field(i)
 
-		if field.CanInterface() {
-			p := keyValue{rType.Field(i).Name, field.Interface()}
-			params = append(params, p)
+		if includeTagValue, ok := fieldType.Tag.Lookup(TagIncludeKey); !ok || includeTagValue != TagIncludeValue {
+			if _, ok = fieldType.Tag.Lookup(TagNameKey); ok {
+				name = field.Interface().(string)
+			}
+			continue
 		}
+
+		var p keyValue
+
+		if renameTagValue, ok := fieldType.Tag.Lookup(TagRenameKey); ok {
+			p = keyValue{renameTagValue, field.Interface()}
+		} else {
+			p = keyValue{fieldType.Name, field.Interface()}
+		}
+
+		params = append(params, p)
 	}
 
 	sort.Slice(params, func(i, j int) bool {
 		return params[i].key < params[j].key
 	})
 
-	if len(params) == 0 {
-		return rType.Name()
+	if name == "" {
+		name = rValue.Type().Name()
 	}
 
-	return rType.Name() + "," + join(params, ",")
+	if len(params) == 0 {
+		return name
+	}
+
+	return name + "," + join(params, ",")
 }
 
 func join(elems []keyValue, sep string) string {
