@@ -69,9 +69,9 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		executorMock2 := mocks.NewMockExecutor(mockController)
 		executorMock3 := mocks.NewMockExecutor(mockController)
 
-		executorMock1.EXPECT().Execute(gomock.Any()).Return(5, nil).Times(1)
+		executorMock1.EXPECT().Execute(gomock.Any()).Return(5, nil).MaxTimes(1)
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
-		executorMock3.EXPECT().Execute(gomock.Any()).Return(21, nil).Times(1)
+		executorMock3.EXPECT().Execute(gomock.Any()).Return(21, nil).MaxTimes(1)
 
 		executorMock1.EXPECT().Identifier().Return(executorMockName1)
 		executorMock2.EXPECT().Identifier().Return(executorMockName2)
