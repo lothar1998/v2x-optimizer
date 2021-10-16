@@ -1,8 +1,10 @@
-package optimizer
+package nextkfit
 
 import (
 	"context"
 	"testing"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
@@ -138,7 +140,7 @@ func TestNextKFit_Optimize(t *testing.T) {
 
 			result, err := NextKFit{2}.Optimize(context.TODO(), d)
 
-			assert.ErrorIs(t, err, ErrCannotAssignToBucket)
+			assert.ErrorIs(t, err, optimizer.ErrCannotAssignToBucket)
 			assert.Zero(t, result)
 		})
 }

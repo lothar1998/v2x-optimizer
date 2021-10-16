@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
-
 	"github.com/lothar1998/v2x-optimizer/internal/config"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	optimizerConfigurator "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ func Execute() {
 	rootCmd.CompletionOptions = cobra.CompletionOptions{DisableDefaultCmd: true}
 
 	for _, configurator := range config.RegisteredOptimizerConfigurators {
-		performanceOfCmd := performanceOf(configurator.TypeName(), []optimizer.Configurator{configurator})
+		performanceOfCmd := performanceOf(configurator.TypeName(), []optimizerConfigurator.Configurator{configurator})
 		setUpFlags(performanceOfCmd)
 		rootCmd.AddCommand(performanceOfCmd)
 	}
@@ -42,7 +42,7 @@ func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }
 
-func performanceOf(optimizerName string, configurators []optimizer.Configurator) *cobra.Command {
+func performanceOf(optimizerName string, configurators []optimizerConfigurator.Configurator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   fmt.Sprintf("%s {model_file} {data_file | data_dir}... ", optimizerName),
 		Args:  cobra.MinimumNArgs(2),
@@ -58,7 +58,7 @@ func performanceOf(optimizerName string, configurators []optimizer.Configurator)
 	return cmd
 }
 
-func computePerformanceUsing(configurators []optimizer.Configurator) func(*cobra.Command, []string) error {
+func computePerformanceUsing(configurators []optimizerConfigurator.Configurator) func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, args []string) error {
 		modelFile := args[0]
 		dataFiles := args[1:]

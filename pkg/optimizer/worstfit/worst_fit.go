@@ -1,7 +1,10 @@
-package optimizer
+package worstfit
 
 import (
 	"context"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils/bucketqueue"
@@ -14,7 +17,7 @@ import (
 // the algorithm doesn't look for the second least filled bucket but gets next from the current heap array.
 type WorstFit struct{}
 
-func (w WorstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
+func (w WorstFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Result, error) {
 	v := len(data.R)
 	n := len(data.MRB)
 	sequence := make([]int, v)
@@ -40,9 +43,9 @@ func (w WorstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 		}
 
 		if j >= pq.Len() {
-			return nil, ErrCannotAssignToBucket
+			return nil, optimizer.ErrCannotAssignToBucket
 		}
 	}
 
-	return toResult(sequence, n), nil
+	return utils.ToResult(sequence, n), nil
 }

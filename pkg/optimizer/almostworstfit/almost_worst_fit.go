@@ -1,7 +1,10 @@
-package optimizer
+package almostworstfit
 
 import (
 	"context"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils/bucketqueue"
@@ -15,7 +18,7 @@ import (
 // is checked, and then the consecutive ones in heap order.
 type AlmostWorstFit struct{}
 
-func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
+func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Result, error) {
 	v := len(data.R)
 	n := len(data.MRB)
 	sequence := make([]int, v)
@@ -66,12 +69,12 @@ func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*Result,
 		}
 
 		if j >= pq.Len() {
-			return nil, ErrCannotAssignToBucket
+			return nil, optimizer.ErrCannotAssignToBucket
 		}
 
 		pq.PushBucket(b1)
 		pq.PushBucket(b2)
 	}
 
-	return toResult(sequence, n), nil
+	return utils.ToResult(sequence, n), nil
 }

@@ -1,8 +1,10 @@
-package optimizer
+package worstfit
 
 import (
 	"context"
 	"testing"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
@@ -73,7 +75,7 @@ func TestWorstFit_Optimize(t *testing.T) {
 
 			result, err := WorstFit{}.Optimize(context.TODO(), d)
 
-			assert.ErrorIs(t, err, ErrCannotAssignToBucket)
+			assert.ErrorIs(t, err, optimizer.ErrCannotAssignToBucket)
 			assert.Zero(t, result)
 		})
 }
