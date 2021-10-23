@@ -20,4 +20,5 @@ var RegisteredOptimizerConfigurators = []optimizerConfigurator.Configurator{
 	optimizerConfigurator.NewParameterless(almostworstfit.AlmostWorstFit{}),
 	optimizerConfigurator.NextKFitConfigurator{},
 	optimizerConfigurator.BestFitConfigurator{},
+	optimizerConfigurator.BucketPoolBestFitConfigurator{},
 }

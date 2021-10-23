@@ -18,16 +18,16 @@ type BestFit struct {
 	FitnessFunc FitnessFunc
 }
 
-func (b BestFit) Optimize(ctx context.Context, inputData *data.Data) (*optimizer.Result, error) {
-	v := len(inputData.R)
-	n := len(inputData.MRB)
+func (b BestFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Result, error) {
+	v := len(data.R)
+	n := len(data.MRB)
 	sequence := make([]int, v)
-	leftSpace := make([]int, len(inputData.MRB))
-	copy(leftSpace, inputData.MRB)
+	leftSpace := make([]int, len(data.MRB))
+	copy(leftSpace, data.MRB)
 
 	for i := 0; i < v; i++ {
 		bestBucket := -1
-		minFitness := math.MaxFloat64
+		minFitness := math.Inf(1)
 
 		for j := 0; j < n; j++ {
 			select {
@@ -36,7 +36,7 @@ func (b BestFit) Optimize(ctx context.Context, inputData *data.Data) (*optimizer
 			default:
 			}
 
-			fitnessValue := b.FitnessFunc(leftSpace, inputData, i, j)
+			fitnessValue := b.FitnessFunc(leftSpace[j], data.R[i][j], data.MRB[j])
 
 			if fitnessValue == 0 {
 				bestBucket = j
@@ -54,7 +54,7 @@ func (b BestFit) Optimize(ctx context.Context, inputData *data.Data) (*optimizer
 		}
 
 		sequence[i] = bestBucket
-		leftSpace[bestBucket] -= inputData.R[i][bestBucket]
+		leftSpace[bestBucket] -= data.R[i][bestBucket]
 	}
 
 	return utils.ToResult(sequence, n), nil

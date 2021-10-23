@@ -9,7 +9,7 @@ import (
 )
 
 func TestBestFit_Optimize(t *testing.T) {
-	t.Run("should pack items according to the best-fit algorithm - class fitness function", func(t *testing.T) {
+	t.Run("should pack items according to the best-fit algorithm - classic fitness function", func(t *testing.T) {
 		t.Parallel()
 
 		d := &data.Data{
