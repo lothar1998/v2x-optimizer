@@ -1,8 +1,11 @@
-package optimizer
+package nextkfit
 
 import (
 	"context"
 	"errors"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -18,7 +21,7 @@ type NextKFit struct {
 	K int
 }
 
-func (nkf NextKFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
+func (nkf NextKFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Result, error) {
 	v := len(data.R)
 	n := len(data.MRB)
 
@@ -61,7 +64,7 @@ func (nkf NextKFit) Optimize(ctx context.Context, data *data.Data) (*Result, err
 				}
 
 				if additionalBucketsSearched >= n-nkf.K {
-					return nil, ErrCannotAssignToBucket
+					return nil, optimizer.ErrCannotAssignToBucket
 				}
 
 				firstBucketOpen = (firstBucketOpen + 1) % n
@@ -78,5 +81,5 @@ func (nkf NextKFit) Optimize(ctx context.Context, data *data.Data) (*Result, err
 		}
 	}
 
-	return toResult(sequence, n), nil
+	return utils.ToResult(sequence, n), nil
 }

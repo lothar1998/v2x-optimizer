@@ -1,9 +1,10 @@
-package optimizer
+package configurator
 
 import (
 	"errors"
 
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/nextkfit"
 	"github.com/spf13/cobra"
 )
 
@@ -15,13 +16,13 @@ const (
 type NextKFitWrapper struct {
 	Name string `id_name:""`
 	K    int    `id_include:"true"`
-	optimizer.NextKFit
+	nextkfit.NextKFit
 }
 
 type NextKFitConfigurator struct{}
 
 func (n NextKFitConfigurator) Builder() BuildFunc {
-	return func(command *cobra.Command) (IdentifiableOptimizer, error) {
+	return func(command *cobra.Command) (optimizer.IdentifiableOptimizer, error) {
 		k, err := command.Flags().GetUint(nextKFitParameterK)
 		if err != nil {
 			return nil, err
@@ -34,10 +35,10 @@ func (n NextKFitConfigurator) Builder() BuildFunc {
 		nkf := &NextKFitWrapper{
 			Name:     nextKFitName,
 			K:        int(k),
-			NextKFit: optimizer.NextKFit{K: int(k)},
+			NextKFit: nextkfit.NextKFit{K: int(k)},
 		}
 
-		return &IdentifiableAdapter{Optimizer: nkf}, nil
+		return &optimizer.IdentifiableAdapter{Optimizer: nkf}, nil
 	}
 }
 

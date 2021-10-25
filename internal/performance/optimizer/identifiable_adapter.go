@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/lothar1998/v2x-optimizer/internal/identifiable"
-
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 

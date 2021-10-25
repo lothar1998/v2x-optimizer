@@ -1,20 +1,21 @@
-package optimizer
+package configurator
 
 import (
+	adapter "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/spf13/cobra"
 )
 
 type Parameterless struct {
-	IdentifiableOptimizer
+	adapter.IdentifiableOptimizer
 }
 
 func NewParameterless(optimizer optimizer.Optimizer) *Parameterless {
-	return &Parameterless{&IdentifiableAdapter{Optimizer: optimizer}}
+	return &Parameterless{&adapter.IdentifiableAdapter{Optimizer: optimizer}}
 }
 
 func (p *Parameterless) Builder() BuildFunc {
-	return func(_ *cobra.Command) (IdentifiableOptimizer, error) {
+	return func(_ *cobra.Command) (adapter.IdentifiableOptimizer, error) {
 		return p.IdentifiableOptimizer, nil
 	}
 }

@@ -1,7 +1,9 @@
-package optimizer
+package utils
 
-func toResult(vehicleAssignment []int, n int) *Result {
-	var result Result
+import "github.com/lothar1998/v2x-optimizer/pkg/optimizer"
+
+func ToResult(vehicleAssignment []int, n int) *optimizer.Result {
+	var result optimizer.Result
 	result.RRHEnable = make([]bool, n)
 
 	var count int

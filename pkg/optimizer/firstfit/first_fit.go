@@ -1,7 +1,10 @@
-package optimizer
+package firstfit
 
 import (
 	"context"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -10,7 +13,7 @@ import (
 // with heterogeneous bins and items with different sizes that depend on the bin choice.
 type FirstFit struct{}
 
-func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error) {
+func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Result, error) {
 	v := len(data.R)
 	n := len(data.MRB)
 	sequence := make([]int, v)
@@ -32,9 +35,9 @@ func (f FirstFit) Optimize(ctx context.Context, data *data.Data) (*Result, error
 			}
 		}
 		if j == n {
-			return nil, ErrCannotAssignToBucket
+			return nil, optimizer.ErrCannotAssignToBucket
 		}
 	}
 
-	return toResult(sequence, n), nil
+	return utils.ToResult(sequence, n), nil
 }
