@@ -13,18 +13,32 @@ func TestBucketPool_Expand(t *testing.T) {
 		t.Parallel()
 
 		pool := BucketPool{[]int{1, 2, 3}, 0}
+		newItem, err := pool.Expand()
 
-		assert.Equal(t, 1, pool.Expand())
+		assert.NoError(t, err)
+		assert.Equal(t, 1, newItem)
 		assert.Equal(t, 1, pool.InitSize)
 	})
 
 	t.Run("should expand pool with init size > 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 1}
+		pool := BucketPool{[]int{1, 2, 3}, 2}
+		newItem, err := pool.Expand()
 
-		assert.Equal(t, 2, pool.Expand())
-		assert.Equal(t, 2, pool.InitSize)
+		assert.NoError(t, err)
+		assert.Equal(t, 3, newItem)
+		assert.Equal(t, 3, pool.InitSize)
+	})
+
+	t.Run("should return error if there is no item to expand pool", func(t *testing.T) {
+		t.Parallel()
+
+		pool := BucketPool{[]int{1, 2, 3}, 3}
+		newItem, err := pool.Expand()
+
+		assert.Error(t, err)
+		assert.Zero(t, newItem)
 	})
 }
 

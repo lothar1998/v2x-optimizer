@@ -32,7 +32,7 @@ func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
 			return nil, err
 		}
 
-		if fitnessID > 4 {
+		if fitnessID > 6 {
 			return nil, errors.New("unsupported fitness function")
 		}
 
@@ -68,13 +68,16 @@ func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
 
 func (b BucketPoolBestFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bucketPoolBestFitParameterFunctionID, "", 0,
-		"BucketPoolBestFit fitness function parameter:\n"+
+		"BucketPoolBestFit fitness function:\n"+
 			"0 - classic fitness function\n"+
 			"1 - take into account bucket size\n"+
 			"2 - take into account left space in bucket and prefer big items\n"+
 			"3 - take into account left space in bucket and prefer small items\n"+
-			"4 - take into account left space in bucket and prefer as little space left as possible"+
+			"4 - take into account left space in bucket and prefer small items and punish perfectly fitted items\n"+
+			"5 - take into account left space in bucket and prefer as little space left as possible"+
 			" before and after item assignment\n"+
+			"6 - take into account left space in bucket and prefer as little space left as possible"+
+			" before and after item assignment and punish perfectly fitted items\n"+
 			"(default 0)")
 	command.Flags().UintP(bucketPoolBestFitParameterBucketReorderFunctionID, "", 0,
 		"BucketPoolBestFit bucket reorder function (defines order in which items are added to bucket pool):\n"+

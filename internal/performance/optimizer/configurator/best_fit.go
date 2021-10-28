@@ -28,7 +28,7 @@ func (n BestFitConfigurator) Builder() BuildFunc {
 			return nil, err
 		}
 
-		if fitnessID > 4 {
+		if fitnessID > 6 {
 			return nil, errors.New("unsupported fitness function")
 		}
 
@@ -44,13 +44,16 @@ func (n BestFitConfigurator) Builder() BuildFunc {
 
 func (n BestFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bestFitParameterFunctionID, "", 0,
-		"BestFit fitness function parameter:\n"+
+		"BestFit fitness function:\n"+
 			"0 - classic fitness function\n"+
 			"1 - take into account bucket size\n"+
 			"2 - take into account left space in bucket and prefer big items\n"+
 			"3 - take into account left space in bucket and prefer small items\n"+
-			"4 - take into account left space in bucket and prefer as little space left as possible"+
+			"4 - take into account left space in bucket and prefer small items and punish perfectly fitted items\n"+
+			"5 - take into account left space in bucket and prefer as little space left as possible"+
 			" before and after item assignment\n"+
+			"6 - take into account left space in bucket and prefer as little space left as possible"+
+			" before and after item assignment and punish perfectly fitted items\n"+
 			"(default 0)")
 }
 
@@ -69,7 +72,11 @@ func intToFitness(intValue uint) bestfit.FitnessFunc {
 	case 3:
 		return bestfit.FitnessWithBucketLeftSpacePreferringSmallItems
 	case 4:
+		return bestfit.FitnessWithBucketLeftSpacePreferringSmallItemsPunishPerfectlyFittedItems
+	case 5:
 		return bestfit.FitnessWithBucketLeftSpacePreferringLittleSpaceBeforeAndAfterAssignment
+	case 6:
+		return bestfit.FitnessWithBucketLeftSpacePreferringLittleSpaceBeforeAndAfterAssignmentPunishPerfectlyFittedItems
 	default:
 		return nil
 	}

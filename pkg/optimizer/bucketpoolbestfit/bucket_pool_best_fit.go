@@ -11,6 +11,7 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
 )
 
+// BucketPoolBestFit TODO add comment
 type BucketPoolBestFit struct {
 	InitPoolSize int
 	ReorderBucketsFunc
@@ -107,7 +108,10 @@ func (b BucketPoolBestFit) fallbackAssignment(
 		default:
 		}
 
-		additionalBucket := bucketPool.Expand()
+		additionalBucket, err := bucketPool.Expand()
+		if err != nil {
+			return err
+		}
 
 		fitnessValue :=
 			b.FitnessFunc(leftSpace[additionalBucket], data.R[itemIndex][additionalBucket], data.MRB[additionalBucket])
