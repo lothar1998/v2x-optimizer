@@ -112,7 +112,7 @@ func (b BucketPoolBestFit) fallbackAssignment(
 		fitnessValue :=
 			b.FitnessFunc(leftSpace[additionalBucket], data.R[itemIndex][additionalBucket], data.MRB[additionalBucket])
 
-		if fitnessValue > 0 {
+		if fitnessValue >= 0 {
 			sequence[itemIndex] = additionalBucket
 			leftSpace[additionalBucket] -= data.R[itemIndex][additionalBucket]
 			break

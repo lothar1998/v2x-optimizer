@@ -101,9 +101,9 @@ func TestBestFit_Optimize(t *testing.T) {
 		result, err := BestFit{FitnessWithBucketLeftSpacePreferringSmallItems}.Optimize(context.TODO(), d)
 
 		assert.NoError(t, err)
-		assert.Equal(t, 3, result.RRHCount)
-		assert.Equal(t, []bool{true, false, true, true}, result.RRHEnable)
-		assert.Equal(t, []int{3, 3, 0, 3, 2, 0}, result.VehiclesToRRHAssignment)
+		assert.Equal(t, 2, result.RRHCount)
+		assert.Equal(t, []bool{true, false, false, true}, result.RRHEnable)
+		assert.Equal(t, []int{3, 3, 0, 3, 3, 0}, result.VehiclesToRRHAssignment)
 	})
 
 	t.Run("should pack items according to the best-fit algorithm"+

@@ -1,7 +1,9 @@
 package bestfit
 
 // FitnessFunc defines what means "best" assignment. The lower the value of FitnessFunc
-// the better the assignment would be.
+// the better the assignment would be. It returns 0 when the item fits perfectly leaving no space in the bucket,
+// a negative value for an item that cannot be assigned to the given bucket,
+// and a positive value if the item can be assigned and leave some space in it.
 type FitnessFunc func(leftSpace, itemCost, bucketSize int) float64
 
 // FitnessClassic is a fitness function defined by classic best-fit algorithm for classic bin packing problem.
@@ -22,6 +24,9 @@ func FitnessWithBucketSize(leftSpace, itemCost, bucketSize int) float64 {
 // the assignment the better. It prefers big items that leave as little space as possible after assignment.
 func FitnessWithBucketLeftSpacePreferringBigItems(
 	leftSpace, itemCost, bucketSize int) float64 {
+	if leftSpace == 0 {
+		return -1
+	}
 	return FitnessClassic(leftSpace, itemCost, bucketSize) / float64(leftSpace)
 }
 
@@ -30,7 +35,14 @@ func FitnessWithBucketLeftSpacePreferringBigItems(
 // the assignment the better. It prefers small items that leave as much space as possible after assignment.
 func FitnessWithBucketLeftSpacePreferringSmallItems(
 	leftSpace, itemCost, bucketSize int) float64 {
-	return float64(leftSpace) / FitnessClassic(leftSpace, itemCost, bucketSize)
+	if leftSpace == 0 {
+		return -1
+	}
+	fitnessClassic := FitnessClassic(leftSpace, itemCost, bucketSize)
+	if fitnessClassic == 0 {
+		return 0
+	}
+	return float64(leftSpace) / fitnessClassic
 }
 
 // FitnessWithBucketLeftSpacePreferringLittleSpaceBeforeAndAfterAssignment is a fitness function that
@@ -39,5 +51,12 @@ func FitnessWithBucketLeftSpacePreferringSmallItems(
 // that leave as little space as possible after assignment.
 func FitnessWithBucketLeftSpacePreferringLittleSpaceBeforeAndAfterAssignment(
 	leftSpace, itemCost, bucketSize int) float64 {
-	return 1.0 / (float64(leftSpace) * FitnessClassic(leftSpace, itemCost, bucketSize))
+	if leftSpace == 0 {
+		return -1
+	}
+	fitnessClassic := FitnessClassic(leftSpace, itemCost, bucketSize)
+	if fitnessClassic == 0 {
+		return 0
+	}
+	return 1.0 / (float64(leftSpace) * fitnessClassic)
 }
