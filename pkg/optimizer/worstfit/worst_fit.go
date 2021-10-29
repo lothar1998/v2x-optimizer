@@ -3,10 +3,9 @@ package worstfit
 import (
 	"context"
 
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
-
-	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils/bucketqueue"
 )
 
