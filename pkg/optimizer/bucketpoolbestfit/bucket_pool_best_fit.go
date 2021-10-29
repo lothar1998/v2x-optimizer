@@ -11,7 +11,12 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
 )
 
-// BucketPoolBestFit TODO add comment
+// BucketPoolBestFit is an optimizer that implements the enhanced best-fit algorithm with bucket pool,
+// expanded to solve the bin packing problem with heterogeneous bins and items with different sizes
+// that depend on the bin choice. The goal of using a bucket pool is the reduction of available buckets
+// to assign in a given moment during execution. The algorithm uses bestfit.FitnessFunc to choose "best" bucket.
+// ReorderBucketsFunc defines the order in which buckets will be added to the pool.
+// InitPoolSize sets the initial size of a pool. The implementation works in O(v*n) time.
 type BucketPoolBestFit struct {
 	InitPoolSize int
 	ReorderBucketsFunc
@@ -31,10 +36,10 @@ func (b BucketPoolBestFit) Optimize(ctx context.Context, data *data.Data) (*opti
 	copy(leftSpace, data.MRB)
 
 	buckets := b.ReorderBucketsFunc(leftSpace)
-	bucketPool := &BucketPool{buckets, b.InitPoolSize}
+	pool := &bucketPool{buckets, b.InitPoolSize}
 
 	for itemIndex := 0; itemIndex < v; itemIndex++ {
-		isFallbackAssignmentRequired, err := b.assignBucket(ctx, bucketPool, sequence, leftSpace, data, itemIndex)
+		isFallbackAssignmentRequired, err := b.assignBucket(ctx, pool, sequence, leftSpace, data, itemIndex)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +48,7 @@ func (b BucketPoolBestFit) Optimize(ctx context.Context, data *data.Data) (*opti
 			continue
 		}
 
-		if err = b.fallbackAssignment(ctx, bucketPool, sequence, leftSpace, data, itemIndex); err != nil {
+		if err = b.fallbackAssignment(ctx, pool, sequence, leftSpace, data, itemIndex); err != nil {
 			return nil, err
 		}
 	}
@@ -53,7 +58,7 @@ func (b BucketPoolBestFit) Optimize(ctx context.Context, data *data.Data) (*opti
 
 func (b BucketPoolBestFit) assignBucket(
 	ctx context.Context,
-	bucketPool *BucketPool,
+	bucketPool *bucketPool,
 	sequence, leftSpace []int,
 	data *data.Data,
 	itemIndex int,
@@ -93,7 +98,7 @@ func (b BucketPoolBestFit) assignBucket(
 
 func (b BucketPoolBestFit) fallbackAssignment(
 	ctx context.Context,
-	bucketPool *BucketPool,
+	bucketPool *bucketPool,
 	sequence, leftSpace []int,
 	data *data.Data,
 	itemIndex int,

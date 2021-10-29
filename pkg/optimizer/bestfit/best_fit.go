@@ -12,7 +12,7 @@ import (
 
 // BestFit is an optimizer that implements the best-fit algorithm expanded to solve
 // the bin packing problem with heterogeneous bins and items with different sizes that depend on the bin choice.
-// The algorithm uses BestFitFitnessFunc to choose "best" bucket. Unfortunately, due to the extended problem, it is not
+// The algorithm uses FitnessFunc to choose "best" bucket. Unfortunately, due to the extended problem, it is not
 // possible to implement best-fit using a balanced binary tree, therefore the implementation works in O(v*n) time.
 type BestFit struct {
 	FitnessFunc FitnessFunc

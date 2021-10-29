@@ -2,12 +2,12 @@ package bucketpoolbestfit
 
 import "errors"
 
-type BucketPool struct {
+type bucketPool struct {
 	Buckets  []int
 	InitSize int
 }
 
-func (bp *BucketPool) Expand() (int, error) {
+func (bp *bucketPool) Expand() (int, error) {
 	if bp.InitSize == bp.MaxSize() {
 		return 0, errors.New("no items to expand the pool")
 	}
@@ -18,14 +18,14 @@ func (bp *BucketPool) Expand() (int, error) {
 	return bp.Buckets[bp.InitSize], nil
 }
 
-func (bp *BucketPool) GetBuckets() []int {
+func (bp *bucketPool) GetBuckets() []int {
 	return bp.Buckets[:bp.InitSize]
 }
 
-func (bp *BucketPool) Size() int {
+func (bp *bucketPool) Size() int {
 	return bp.InitSize
 }
 
-func (bp *BucketPool) MaxSize() int {
+func (bp *bucketPool) MaxSize() int {
 	return len(bp.Buckets)
 }

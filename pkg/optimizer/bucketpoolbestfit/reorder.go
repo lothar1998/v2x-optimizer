@@ -5,8 +5,11 @@ import (
 	"sort"
 )
 
+// ReorderBucketsFunc is a function that defines the order in which buckets will be added to the bucket pool.
+// It defines the order based on size of buckets available.
 type ReorderBucketsFunc func(bucketSizes []int) (orderOfBuckets []int)
 
+// NoOpReorder defines an order as the one from input data.Data definition.
 func NoOpReorder(bucketSizes []int) []int {
 	result := make([]int, len(bucketSizes))
 	for i := range bucketSizes {
@@ -15,18 +18,21 @@ func NoOpReorder(bucketSizes []int) []int {
 	return result
 }
 
+// IncreasingSizeReorder sorts buckets by their size increasing.
 func IncreasingSizeReorder(bucketSizes []int) []int {
 	return sizeReorder(bucketSizes, func(s1 int, s2 int) bool {
 		return s1 < s2
 	})
 }
 
+// DecreasingSizeReorder sorts buckets by their size decreasing.
 func DecreasingSizeReorder(bucketSizes []int) []int {
 	return sizeReorder(bucketSizes, func(s1 int, s2 int) bool {
 		return s1 > s2
 	})
 }
 
+// RandomReorder permutes buckets in a random fashion.
 func RandomReorder(bucketSizes []int) []int {
 	return rand.Perm(len(bucketSizes))
 }

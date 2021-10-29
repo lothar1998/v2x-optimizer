@@ -123,7 +123,7 @@ func TestBucketPoolBestFit_assignBucket(t *testing.T) {
 		leftSpace := []int{1, 8, 12, 10}
 		itemIndex := 1
 
-		bucketPool := &BucketPool{[]int{0, 1, 2, 3}, 2}
+		bucketPool := &bucketPool{[]int{0, 1, 2, 3}, 2}
 
 		isFallbackRequired, err := BucketPoolBestFit{FitnessFunc: bestfit.FitnessClassic}.
 			assignBucket(context.TODO(), bucketPool, sequence, leftSpace, d, itemIndex)
@@ -150,7 +150,7 @@ func TestBucketPoolBestFit_assignBucket(t *testing.T) {
 		leftSpace := []int{1, 8, 12, 10}
 		itemIndex := 1
 
-		bucketPool := &BucketPool{[]int{0, 1, 2, 3}, 2}
+		bucketPool := &bucketPool{[]int{0, 1, 2, 3}, 2}
 
 		isFallbackRequired, err := BucketPoolBestFit{FitnessFunc: bestfit.FitnessClassic}.
 			assignBucket(context.TODO(), bucketPool, sequence, leftSpace, d, itemIndex)
@@ -183,7 +183,7 @@ func TestBucketPoolBestFit_assignBucket(t *testing.T) {
 
 		itemIndex := 1
 
-		bucketPool := &BucketPool{[]int{0, 1, 2, 3}, 2}
+		bucketPool := &bucketPool{[]int{0, 1, 2, 3}, 2}
 
 		isFallbackRequired, err := BucketPoolBestFit{FitnessFunc: bestfit.FitnessClassic}.
 			assignBucket(context.TODO(), bucketPool, sequence, leftSpace, d, itemIndex)
@@ -214,7 +214,7 @@ func TestBucketPoolBestFit_fallbackAssignment(t *testing.T) {
 		leftSpace := []int{1, 2, 12, 10}
 		itemIndex := 2
 
-		bucketPool := &BucketPool{[]int{0, 1, 2, 3}, 2}
+		bucketPool := &bucketPool{[]int{0, 1, 2, 3}, 2}
 
 		err := BucketPoolBestFit{FitnessFunc: bestfit.FitnessClassic}.
 			fallbackAssignment(context.TODO(), bucketPool, sequence, leftSpace, d, itemIndex)
@@ -240,7 +240,7 @@ func TestBucketPoolBestFit_fallbackAssignment(t *testing.T) {
 		leftSpace := []int{1, 2, 12, 10}
 		itemIndex := 2
 
-		bucketPool := &BucketPool{[]int{0, 1, 2, 3}, 2}
+		bucketPool := &bucketPool{[]int{0, 1, 2, 3}, 2}
 
 		err := BucketPoolBestFit{FitnessFunc: bestfit.FitnessClassic}.
 			fallbackAssignment(context.TODO(), bucketPool, sequence, leftSpace, d, itemIndex)
@@ -267,7 +267,7 @@ func TestBucketPoolBestFit_fallbackAssignment(t *testing.T) {
 			leftSpace := []int{1, 2, 12, 10}
 			itemIndex := 2
 
-			bucketPool := &BucketPool{[]int{0, 1, 2, 3}, 2}
+			bucketPool := &bucketPool{[]int{0, 1, 2, 3}, 2}
 
 			err := BucketPoolBestFit{FitnessFunc: bestfit.FitnessClassic}.
 				fallbackAssignment(context.TODO(), bucketPool, sequence, leftSpace, d, itemIndex)

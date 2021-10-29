@@ -12,7 +12,7 @@ func TestBucketPool_Expand(t *testing.T) {
 	t.Run("should expand pool with init size 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 0}
+		pool := bucketPool{[]int{1, 2, 3}, 0}
 		newItem, err := pool.Expand()
 
 		assert.NoError(t, err)
@@ -23,7 +23,7 @@ func TestBucketPool_Expand(t *testing.T) {
 	t.Run("should expand pool with init size > 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 2}
+		pool := bucketPool{[]int{1, 2, 3}, 2}
 		newItem, err := pool.Expand()
 
 		assert.NoError(t, err)
@@ -34,7 +34,7 @@ func TestBucketPool_Expand(t *testing.T) {
 	t.Run("should return error if there is no item to expand pool", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 3}
+		pool := bucketPool{[]int{1, 2, 3}, 3}
 		newItem, err := pool.Expand()
 
 		assert.Error(t, err)
@@ -48,7 +48,7 @@ func TestBucketPool_GetBuckets(t *testing.T) {
 	t.Run("should appropriately get buckets from pool with init size 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 0}
+		pool := bucketPool{[]int{1, 2, 3}, 0}
 
 		assert.Empty(t, pool.GetBuckets())
 	})
@@ -56,7 +56,7 @@ func TestBucketPool_GetBuckets(t *testing.T) {
 	t.Run("should appropriately get buckets from pool with init size > 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 2}
+		pool := bucketPool{[]int{1, 2, 3}, 2}
 
 		assert.Equal(t, []int{1, 2}, pool.GetBuckets())
 	})
@@ -68,7 +68,7 @@ func TestBucketPool_Size(t *testing.T) {
 	t.Run("should appropriately return size of pool with init size 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 0}
+		pool := bucketPool{[]int{1, 2, 3}, 0}
 
 		assert.Equal(t, 0, pool.Size())
 	})
@@ -76,7 +76,7 @@ func TestBucketPool_Size(t *testing.T) {
 	t.Run("should appropriately return size of pool with init size > 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 2}
+		pool := bucketPool{[]int{1, 2, 3}, 2}
 
 		assert.Equal(t, 2, pool.Size())
 	})
@@ -88,7 +88,7 @@ func TestBucketPool_MaxSize(t *testing.T) {
 	t.Run("should appropriately return size of pool with init size 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 0}
+		pool := bucketPool{[]int{1, 2, 3}, 0}
 
 		assert.Equal(t, 3, pool.MaxSize())
 	})
@@ -96,7 +96,7 @@ func TestBucketPool_MaxSize(t *testing.T) {
 	t.Run("should appropriately return size of pool with init size > 0", func(t *testing.T) {
 		t.Parallel()
 
-		pool := BucketPool{[]int{1, 2, 3}, 2}
+		pool := bucketPool{[]int{1, 2, 3}, 2}
 
 		assert.Equal(t, 3, pool.MaxSize())
 	})
