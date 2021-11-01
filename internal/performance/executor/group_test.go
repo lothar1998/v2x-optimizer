@@ -16,12 +16,11 @@ func TestGroupExecutor_Execute(t *testing.T) {
 	t.Run("should execute one executor and return its results", func(t *testing.T) {
 		t.Parallel()
 
-		executorMockName := "mock-executor"
-		expectedResult := map[string]int{executorMockName: 5}
-
 		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
-		executorMock.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMockName], nil).Times(1)
-		executorMock.EXPECT().Identifier().Return(executorMockName)
+
+		expectedResult := map[Executor]int{executorMock: 5}
+
+		executorMock.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMock], nil).Times(1)
 
 		e := GroupExecutor{[]Executor{executorMock}}
 
@@ -34,18 +33,14 @@ func TestGroupExecutor_Execute(t *testing.T) {
 	t.Run("should execute two executors concurrently and return their results", func(t *testing.T) {
 		t.Parallel()
 
-		executorMockName1 := "mock-executor-1"
-		executorMockName2 := "mock-executor-2"
-		expectedResult := map[string]int{executorMockName1: 2, executorMockName2: 13}
-
 		mockController := gomock.NewController(t)
 		executorMock1 := mocks.NewMockExecutor(mockController)
 		executorMock2 := mocks.NewMockExecutor(mockController)
 
-		executorMock1.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMockName1], nil).Times(1)
-		executorMock2.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMockName2], nil).Times(1)
-		executorMock1.EXPECT().Identifier().Return(executorMockName1)
-		executorMock2.EXPECT().Identifier().Return(executorMockName2)
+		expectedResult := map[Executor]int{executorMock1: 2, executorMock2: 13}
+
+		executorMock1.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMock1], nil).Times(1)
+		executorMock2.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMock2], nil).Times(1)
 
 		e := GroupExecutor{[]Executor{executorMock1, executorMock2}}
 
@@ -58,10 +53,6 @@ func TestGroupExecutor_Execute(t *testing.T) {
 	t.Run("should return error from one of executors", func(t *testing.T) {
 		t.Parallel()
 
-		executorMockName1 := "mock-executor-1"
-		executorMockName2 := "mock-executor-2"
-		executorMockName3 := "mock-executor-3"
-
 		expectedError := errors.New("test error")
 
 		mockController := gomock.NewController(t)
@@ -72,10 +63,6 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		executorMock1.EXPECT().Execute(gomock.Any()).Return(5, nil).MaxTimes(1)
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
 		executorMock3.EXPECT().Execute(gomock.Any()).Return(21, nil).MaxTimes(1)
-
-		executorMock1.EXPECT().Identifier().Return(executorMockName1)
-		executorMock2.EXPECT().Identifier().Return(executorMockName2)
-		executorMock3.EXPECT().Identifier().Return(executorMockName3)
 
 		e := GroupExecutor{[]Executor{executorMock1, executorMock2, executorMock3}}
 

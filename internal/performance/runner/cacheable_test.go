@@ -506,7 +506,17 @@ func Test_updateLocalCache(t *testing.T) {
 	localCache := cache.NewEmptyCache(dir)
 	err = localCache.AddFile(filename)
 	assert.NoError(t, err)
-	updates := map[string]int{"opt1": 1, "opt2": 2, "opt3": 3}
+
+	controller := gomock.NewController(t)
+	executor1 := mocks.NewMockExecutor(controller)
+	executor2 := mocks.NewMockExecutor(controller)
+	executor3 := mocks.NewMockExecutor(controller)
+
+	executor1.EXPECT().Identifier().Return("opt1")
+	executor2.EXPECT().Identifier().Return("opt2")
+	executor3.EXPECT().Identifier().Return("opt3")
+
+	updates := map[executor.Executor]int{executor1: 1, executor2: 2, executor3: 3}
 
 	updateLocalCache(localCache, filename, updates)
 

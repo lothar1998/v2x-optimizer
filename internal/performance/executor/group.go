@@ -7,8 +7,8 @@ import (
 	"github.com/lothar1998/v2x-optimizer/internal/concurrency"
 )
 
-type nameToExecutorResult struct {
-	Name   string
+type executorResultChan struct {
+	Executor
 	Result chan int
 }
 
@@ -19,24 +19,24 @@ type GroupExecutor struct {
 	Executors []Executor
 }
 
-func (ge *GroupExecutor) Execute(ctx context.Context) (map[string]int, error) {
+func (ge *GroupExecutor) Execute(ctx context.Context) (map[Executor]int, error) {
 	if ge.Executors == nil {
 		return nil, ErrUndefinedExecutors
 	}
 
 	if len(ge.Executors) == 0 {
-		return map[string]int{}, nil
+		return map[Executor]int{}, nil
 	}
 
 	cancelCtx, cancelFunc := context.WithCancel(ctx)
 	defer cancelFunc()
 
-	results := make([]nameToExecutorResult, len(ge.Executors))
+	results := make([]executorResultChan, len(ge.Executors))
 	errs := make([]chan error, len(ge.Executors))
 
 	for i, executor := range ge.Executors {
 		result, err := execute(cancelCtx, executor)
-		results[i] = nameToExecutorResult{executor.Identifier(), result}
+		results[i] = executorResultChan{executor, result}
 		errs[i] = err
 	}
 
@@ -45,10 +45,10 @@ func (ge *GroupExecutor) Execute(ctx context.Context) (map[string]int, error) {
 		return nil, err
 	}
 
-	result := make(map[string]int)
+	result := make(map[Executor]int)
 
 	for _, r := range results {
-		result[r.Name] = <-r.Result
+		result[r.Executor] = <-r.Result
 	}
 
 	return result, nil

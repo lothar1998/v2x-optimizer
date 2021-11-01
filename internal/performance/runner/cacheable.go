@@ -183,10 +183,10 @@ func (c *Cacheable) toFilesToResults(localCache *cache.Cache, files []string) Fi
 	return filesToResults
 }
 
-func updateLocalCache(localCache *cache.Cache, filename string, updates map[string]int) {
+func updateLocalCache(localCache *cache.Cache, filename string, updates map[executor.Executor]int) {
 	fileInfo := localCache.Get(filename)
-	for optimizerName, value := range updates {
-		fileInfo.Results[optimizerName] = value
+	for exec, value := range updates {
+		fileInfo.Results[exec.Identifier()] = value
 	}
 }
 
