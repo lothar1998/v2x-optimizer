@@ -35,7 +35,7 @@ func (p *pathRunner) Run(ctx context.Context) (PathsToResults, error) {
 	defer cancelFunc()
 
 	results := make([]pathToResult, len(p.DataPaths))
-	errs := make([]chan error, len(p.DataPaths))
+	errs := make([]<-chan error, len(p.DataPaths))
 
 	for i, path := range p.DataPaths {
 		stat, err := os.Stat(path)
@@ -78,7 +78,7 @@ func (p *pathRunner) Run(ctx context.Context) (PathsToResults, error) {
 		}(path, resultCh, errCh)
 	}
 
-	errorChannel := concurrency.JoinErrorChannels(errs...)
+	errorChannel := concurrency.MergeErrorChannels(errs...)
 	if err, ok := <-errorChannel; ok && err != nil {
 		return nil, err
 	}

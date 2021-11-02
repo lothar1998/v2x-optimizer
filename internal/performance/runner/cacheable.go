@@ -4,7 +4,6 @@ import (
 	"context"
 	"path/filepath"
 	"sync"
-	"sync/atomic"
 
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 
@@ -13,6 +12,12 @@ import (
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 )
+
+type Result struct {
+	Filename string
+	*executor.Result
+	Err error
+}
 
 type Cacheable struct {
 	pathRunner
@@ -61,8 +66,6 @@ func (c *Cacheable) Run(ctx context.Context) (PathsToResults, error) {
 }
 
 func (c *Cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesToResults, error) {
-	var changesCount uint32
-
 	dir := view.Dir()
 
 	localCache, err := cache.Load(dir)
@@ -70,15 +73,25 @@ func (c *Cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesT
 		return nil, err
 	}
 
-	var wg sync.WaitGroup
-	errs := make(chan error, len(view.Files()))
+	results := make([]<-chan *Result, 0)
 
 	for _, file := range view.Files() {
-		wg.Add(1)
-		go c.runForFile(ctx, &wg, &changesCount, localCache, dir, file, errs)
+		result := c.runForFile(ctx, localCache, dir, file)
+		results = append(results, result)
 	}
 
-	wg.Wait()
+	changesCount := 0
+	for result := range merge(results...) {
+		switch {
+		case result.Err != nil:
+			err = result.Err
+		case result.Result.Err != nil:
+			err = result.Result.Err
+		default:
+			updateLocalCache(localCache, result.Filename, result.Result)
+		}
+		changesCount++
+	}
 
 	if changesCount > 0 {
 		if err := localCache.Save(); err != nil {
@@ -86,18 +99,16 @@ func (c *Cacheable) handle(ctx context.Context, view view.DirectoryView) (FilesT
 		}
 	}
 
-	select {
-	case err := <-errs:
+	if err != nil {
 		return nil, err
-	default:
 	}
 
 	return c.toFilesToResults(localCache, view.Files()), nil
 }
 
-func (c *Cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesCount *uint32,
-	localCache *cache.Cache, dir, file string, errs chan error) {
-	defer wg.Done()
+func (c *Cacheable) runForFile(ctx context.Context, localCache *cache.Cache, dir, file string) <-chan *Result {
+	results := make(chan *Result)
+	defer close(results)
 
 	dataFilePath := filepath.Join(dir, file)
 
@@ -106,15 +117,15 @@ func (c *Cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesC
 	if !localCache.Has(file) {
 		err := localCache.AddFile(file)
 		if err != nil {
-			errs <- err
-			return
+			results <- &Result{Filename: file, Err: err}
+			return results
 		}
 		executors = c.getAllExecutors(dataFilePath)
 	} else {
 		change, err := localCache.Verify(file)
 		if err != nil {
-			errs <- err
-			return
+			results <- &Result{Filename: file, Err: err}
+			return results
 		}
 
 		if change != nil {
@@ -126,19 +137,14 @@ func (c *Cacheable) runForFile(ctx context.Context, wg *sync.WaitGroup, changesC
 	}
 
 	if executors == nil {
-		return
+		ch := make(chan *Result)
+		close(ch)
+		return ch
 	}
 
 	group := executor.GroupExecutor{Executors: executors}
-	results, err := group.Execute(ctx)
-	if err != nil {
-		errs <- err
-		return
-	}
 
-	updateLocalCache(localCache, file, results)
-
-	atomic.AddUint32(changesCount, 1)
+	return enrichWithFilename(group.Execute(ctx), file)
 }
 
 func (c *Cacheable) getAllExecutors(dataPath string) []executor.Executor {
@@ -183,11 +189,43 @@ func (c *Cacheable) toFilesToResults(localCache *cache.Cache, files []string) Fi
 	return filesToResults
 }
 
-func updateLocalCache(localCache *cache.Cache, filename string, updates map[executor.Executor]int) {
+func updateLocalCache(localCache *cache.Cache, filename string, update *executor.Result) {
 	fileInfo := localCache.Get(filename)
-	for exec, value := range updates {
-		fileInfo.Results[exec.Identifier()] = value
-	}
+	fileInfo.Results[update.Executor.Identifier()] = update.Value
+}
+
+func enrichWithFilename(in <-chan *executor.Result, filename string) <-chan *Result {
+	out := make(chan *Result)
+	go func() {
+		for v := range in {
+			out <- &Result{Filename: filename, Result: v}
+		}
+		close(out)
+	}()
+	return out
+}
+
+func merge(channels ...<-chan *Result) <-chan *Result {
+	out := make(chan *Result)
+
+	go func() {
+		var wg sync.WaitGroup
+
+		for _, c := range channels {
+			wg.Add(1)
+			go func(c <-chan *Result) {
+				for v := range c {
+					out <- v
+				}
+				wg.Done()
+			}(c)
+		}
+
+		wg.Wait()
+		close(out)
+	}()
+
+	return out
 }
 
 func buildDirectoryViewWithoutCacheFile(dir string) (view.DirectoryView, error) {

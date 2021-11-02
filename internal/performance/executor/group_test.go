@@ -13,41 +13,51 @@ import (
 func TestGroupExecutor_Execute(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should execute one executor and return its results", func(t *testing.T) {
+	t.Run("should execute one executor", func(t *testing.T) {
 		t.Parallel()
 
 		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
-
-		expectedResult := map[Executor]int{executorMock: 5}
-
-		executorMock.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMock], nil).Times(1)
+		executorMock.EXPECT().Execute(gomock.Any()).Return(5, nil).Times(1)
 
 		e := GroupExecutor{[]Executor{executorMock}}
 
-		result, err := e.Execute(context.TODO())
+		results := e.Execute(context.TODO())
 
-		assert.NoError(t, err)
-		assert.Equal(t, expectedResult, result)
+		count := 0
+		for result := range results {
+			assert.NoError(t, result.Err)
+			assert.Equal(t, 5, result.Value)
+			assert.Equal(t, executorMock, result.Executor)
+			count++
+		}
+		assert.Equal(t, 1, count)
 	})
 
-	t.Run("should execute two executors concurrently and return their results", func(t *testing.T) {
+	t.Run("should execute two executors concurrently", func(t *testing.T) {
 		t.Parallel()
 
 		mockController := gomock.NewController(t)
 		executorMock1 := mocks.NewMockExecutor(mockController)
 		executorMock2 := mocks.NewMockExecutor(mockController)
 
-		expectedResult := map[Executor]int{executorMock1: 2, executorMock2: 13}
+		expectedResults := []*Result{
+			{Executor: executorMock1, Value: 2, Err: nil},
+			{Executor: executorMock2, Value: 13, Err: nil},
+		}
 
-		executorMock1.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMock1], nil).Times(1)
-		executorMock2.EXPECT().Execute(gomock.Any()).Return(expectedResult[executorMock2], nil).Times(1)
+		executorMock1.EXPECT().Execute(gomock.Any()).Return(2, nil).Times(1)
+		executorMock2.EXPECT().Execute(gomock.Any()).Return(13, nil).Times(1)
 
 		e := GroupExecutor{[]Executor{executorMock1, executorMock2}}
 
-		result, err := e.Execute(context.TODO())
+		results := e.Execute(context.TODO())
 
-		assert.NoError(t, err)
-		assert.Equal(t, expectedResult, result)
+		count := 0
+		for result := range results {
+			assert.Contains(t, expectedResults, result)
+			count++
+		}
+		assert.Equal(t, 2, count)
 	})
 
 	t.Run("should return error from one of executors", func(t *testing.T) {
@@ -64,34 +74,50 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
 		executorMock3.EXPECT().Execute(gomock.Any()).Return(21, nil).MaxTimes(1)
 
+		expectedResults := []*Result{
+			{Executor: executorMock1, Value: 5, Err: nil},
+			{Executor: executorMock2, Value: 0, Err: expectedError},
+			{Executor: executorMock3, Value: 21, Err: nil},
+		}
+
 		e := GroupExecutor{[]Executor{executorMock1, executorMock2, executorMock3}}
 
-		result, err := e.Execute(context.TODO())
+		results := e.Execute(context.TODO())
 
-		assert.ErrorIs(t, err, expectedError)
-		assert.Zero(t, result)
+		count := 0
+		for result := range results {
+			assert.Contains(t, expectedResults, result)
+			count++
+		}
+		assert.Equal(t, 3, count)
 	})
 
-	t.Run("should return empty result for empty list of executors", func(t *testing.T) {
+	t.Run("should return no results for empty list of executors", func(t *testing.T) {
 		t.Parallel()
 
 		e := GroupExecutor{[]Executor{}}
 
-		result, err := e.Execute(context.TODO())
+		results := e.Execute(context.TODO())
 
-		assert.NoError(t, err)
-		assert.Empty(t, result)
+		count := 0
+		for range results {
+			count++
+		}
+		assert.Equal(t, 0, count)
 	})
 
-	t.Run("should return error if executors are undefined", func(t *testing.T) {
+	t.Run("should no results if executors are undefined", func(t *testing.T) {
 		t.Parallel()
 
 		e := GroupExecutor{nil}
 
-		result, err := e.Execute(context.TODO())
+		results := e.Execute(context.TODO())
 
-		assert.ErrorIs(t, err, ErrUndefinedExecutors)
-		assert.Zero(t, result)
+		count := 0
+		for range results {
+			count++
+		}
+		assert.Equal(t, 0, count)
 	})
 }
 
@@ -106,16 +132,15 @@ func Test_execute(t *testing.T) {
 		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
 		executorMock.EXPECT().Execute(gomock.Any()).Return(expectedResult, nil).Times(1)
 
-		result, err := execute(context.TODO(), executorMock)
+		result := execute(context.TODO(), executorMock)
 
-		assert.Equal(t, expectedResult, <-result)
-		_, isOpened := <-result
-		assert.False(t, isOpened)
-
-		assert.Empty(t, err)
-		assert.NoError(t, <-err)
-		_, isOpened = <-err
-		assert.False(t, isOpened)
+		count := 0
+		for v := range result {
+			assert.Equal(t, expectedResult, v.Value)
+			assert.Equal(t, executorMock, v.Executor)
+			assert.NoError(t, v.Err)
+		}
+		assert.Equal(t, 0, count)
 	})
 
 	t.Run("should pass error of execution to channel", func(t *testing.T) {
@@ -126,14 +151,14 @@ func Test_execute(t *testing.T) {
 		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
 		executorMock.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
 
-		result, err := execute(context.TODO(), executorMock)
+		result := execute(context.TODO(), executorMock)
 
-		assert.Empty(t, result)
-		_, isOpened := <-result
-		assert.False(t, isOpened)
-
-		assert.ErrorIs(t, <-err, expectedError)
-		_, isOpened = <-err
-		assert.False(t, isOpened)
+		count := 0
+		for v := range result {
+			assert.Zero(t, v.Value)
+			assert.Equal(t, executorMock, v.Executor)
+			assert.ErrorIs(t, v.Err, expectedError)
+		}
+		assert.Equal(t, 0, count)
 	})
 }

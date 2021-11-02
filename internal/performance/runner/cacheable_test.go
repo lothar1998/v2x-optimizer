@@ -229,7 +229,6 @@ func Test_cacheable_handle(t *testing.T) {
 
 		modelExecutorName := "modelOpt"
 		optimizerName := "opt1"
-		values := map[string]int{modelExecutorName: 1, optimizerName: 2}
 
 		dir, err := ioutil.TempDir("", "v2x-optimizer-performance-*")
 		assert.NoError(t, err)
@@ -274,8 +273,12 @@ func Test_cacheable_handle(t *testing.T) {
 		localCache, err := cache.Load(dir)
 		assert.NoError(t, err)
 
-		assert.Equal(t, values, map[string]int(localCache.Get(newFile).Results))
-		assert.Nil(t, localCache.Get(errorFile).Results)
+		assert.Equal(t,
+			map[string]int{modelExecutorName: 1, optimizerName: 2},
+			map[string]int(localCache.Get(newFile).Results))
+		assert.Equal(t,
+			map[string]int{optimizerName: 2},
+			map[string]int(localCache.Get(errorFile).Results))
 		assert.NotZero(t, localCache.Get(errorFile).Hash)
 	})
 
@@ -509,22 +512,16 @@ func Test_updateLocalCache(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	executor1 := mocks.NewMockExecutor(controller)
-	executor2 := mocks.NewMockExecutor(controller)
-	executor3 := mocks.NewMockExecutor(controller)
 
 	executor1.EXPECT().Identifier().Return("opt1")
-	executor2.EXPECT().Identifier().Return("opt2")
-	executor3.EXPECT().Identifier().Return("opt3")
 
-	updates := map[executor.Executor]int{executor1: 1, executor2: 2, executor3: 3}
+	update := &executor.Result{Executor: executor1, Value: 1}
 
-	updateLocalCache(localCache, filename, updates)
+	updateLocalCache(localCache, filename, update)
 
 	fileInfo := localCache.Get(filename)
 
 	assert.Equal(t, 1, fileInfo.Results["opt1"])
-	assert.Equal(t, 2, fileInfo.Results["opt2"])
-	assert.Equal(t, 3, fileInfo.Results["opt3"])
 }
 
 func setUpCache(cachedValues map[string]int) (dir string, filename string, err error) {
