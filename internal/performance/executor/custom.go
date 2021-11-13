@@ -12,10 +12,10 @@ import (
 // Custom is an Executor that allows for running optimization using the custom, self-written optimizer.
 type Custom struct {
 	Path      string
-	Optimizer optimizer.IdentifiableCacheableOptimizer
+	Optimizer optimizer.PerformanceOptimizer
 }
 
-func NewCustom(path string, optimizer optimizer.IdentifiableCacheableOptimizer) Executor {
+func NewCustom(path string, optimizer optimizer.PerformanceOptimizer) Executor {
 	return &Custom{Path: path, Optimizer: optimizer}
 }
 

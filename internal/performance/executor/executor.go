@@ -3,12 +3,11 @@ package executor
 import (
 	"context"
 
-	"github.com/lothar1998/v2x-optimizer/internal/identifiable"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/common"
 )
 
 type Executor interface {
-	identifiable.Identifiable
-	optimizer.Cacheable
+	common.Identifiable
+	common.Cacheable
 	Execute(ctx context.Context) (int, error)
 }

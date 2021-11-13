@@ -22,7 +22,7 @@ type BestFitWrapper struct {
 type BestFitConfigurator struct{}
 
 func (n BestFitConfigurator) Builder() BuildFunc {
-	return func(command *cobra.Command) (optimizer.IdentifiableCacheableOptimizer, error) {
+	return func(command *cobra.Command) (optimizer.PerformanceOptimizer, error) {
 		fitnessID, err := command.Flags().GetUint(bestFitParameterFunctionID)
 		if err != nil {
 			return nil, err
@@ -38,10 +38,7 @@ func (n BestFitConfigurator) Builder() BuildFunc {
 			BestFit:       bestfit.BestFit{FitnessFunc: intToFitness(fitnessID)},
 		}
 
-		return &optimizer.CacheableAdapter{
-			IsCacheEligible:       true,
-			IdentifiableOptimizer: &optimizer.IdentifiableAdapter{Optimizer: bf},
-		}, nil
+		return optimizer.NewPerformanceAdapter(bf, true), nil
 	}
 }
 

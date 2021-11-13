@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lothar1998/v2x-optimizer/internal/identifiable"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 )
 
@@ -25,11 +24,6 @@ type keyValue struct {
 
 func (p keyValue) toEntry() string {
 	return fmt.Sprintf("%s:%v", p.key, p.value)
-}
-
-type IdentifiableOptimizer interface {
-	identifiable.Identifiable
-	optimizer.Optimizer
 }
 
 type IdentifiableAdapter struct {

@@ -22,7 +22,7 @@ type NextKFitWrapper struct {
 type NextKFitConfigurator struct{}
 
 func (n NextKFitConfigurator) Builder() BuildFunc {
-	return func(command *cobra.Command) (optimizer.IdentifiableCacheableOptimizer, error) {
+	return func(command *cobra.Command) (optimizer.PerformanceOptimizer, error) {
 		k, err := command.Flags().GetUint(nextKFitParameterK)
 		if err != nil {
 			return nil, err
@@ -38,10 +38,7 @@ func (n NextKFitConfigurator) Builder() BuildFunc {
 			NextKFit: nextkfit.NextKFit{K: int(k)},
 		}
 
-		return &optimizer.CacheableAdapter{
-			IsCacheEligible:       true,
-			IdentifiableOptimizer: &optimizer.IdentifiableAdapter{Optimizer: nkf},
-		}, nil
+		return optimizer.NewPerformanceAdapter(nkf, true), nil
 	}
 }
 

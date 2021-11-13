@@ -7,24 +7,21 @@ import (
 )
 
 type Parameterless struct {
-	adapter.IdentifiableOptimizer
+	adapter.PerformanceOptimizer
 }
 
 func NewParameterless(optimizer optimizer.Optimizer) *Parameterless {
-	return &Parameterless{&adapter.IdentifiableAdapter{Optimizer: optimizer}}
+	return &Parameterless{adapter.NewPerformanceAdapter(optimizer, true)}
 }
 
 func (p *Parameterless) Builder() BuildFunc {
-	return func(_ *cobra.Command) (adapter.IdentifiableCacheableOptimizer, error) {
-		return &adapter.CacheableAdapter{
-			IsCacheEligible:       true,
-			IdentifiableOptimizer: p.IdentifiableOptimizer,
-		}, nil
+	return func(_ *cobra.Command) (adapter.PerformanceOptimizer, error) {
+		return p.PerformanceOptimizer, nil
 	}
 }
 
 func (p *Parameterless) SetUpFlags(_ *cobra.Command) {}
 
 func (p *Parameterless) TypeName() string {
-	return p.IdentifiableOptimizer.Identifier()
+	return p.PerformanceOptimizer.Identifier()
 }
