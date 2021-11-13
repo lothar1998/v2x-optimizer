@@ -4,14 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/file"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/path"
-
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/file"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/path"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 )
 

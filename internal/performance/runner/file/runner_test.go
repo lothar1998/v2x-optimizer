@@ -5,10 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
-
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	executorMock "github.com/lothar1998/v2x-optimizer/test/mocks/performance/executor"
 	"github.com/stretchr/testify/assert"
 )

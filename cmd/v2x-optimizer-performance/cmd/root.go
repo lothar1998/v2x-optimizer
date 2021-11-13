@@ -3,11 +3,10 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/concurrent"
-
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	optimizerConfigurator "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/concurrent"
 	"github.com/spf13/cobra"
 )
 
