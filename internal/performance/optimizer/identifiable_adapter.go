@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	TagIncludeKey   = "id_include"
-	TagIncludeValue = "true"
+	tagIncludeKey   = "id_include"
+	tagIncludeValue = "true"
 
-	TagRenameKey = "id_rename"
-	TagNameKey   = "id_name"
+	tagRenameKey = "id_rename"
+	tagNameKey   = "id_name"
 )
 
 type keyValue struct {
@@ -26,11 +26,11 @@ func (p keyValue) toEntry() string {
 	return fmt.Sprintf("%s:%v", p.key, p.value)
 }
 
-type IdentifiableAdapter struct {
+type identifiableAdapter struct {
 	optimizer.Optimizer
 }
 
-func (w *IdentifiableAdapter) Identifier() string {
+func (w *identifiableAdapter) Identifier() string {
 	rValue := reflect.ValueOf(w.Optimizer)
 	if rValue.Kind() == reflect.Ptr {
 		rValue = rValue.Elem()
@@ -43,8 +43,8 @@ func (w *IdentifiableAdapter) Identifier() string {
 		field := rValue.Field(i)
 		fieldType := rValue.Type().Field(i)
 
-		if includeTagValue, ok := fieldType.Tag.Lookup(TagIncludeKey); !ok || includeTagValue != TagIncludeValue {
-			if _, ok = fieldType.Tag.Lookup(TagNameKey); ok {
+		if includeTagValue, ok := fieldType.Tag.Lookup(tagIncludeKey); !ok || includeTagValue != tagIncludeValue {
+			if _, ok = fieldType.Tag.Lookup(tagNameKey); ok {
 				name = field.Interface().(string)
 			}
 			continue
@@ -52,7 +52,7 @@ func (w *IdentifiableAdapter) Identifier() string {
 
 		var p keyValue
 
-		if renameTagValue, ok := fieldType.Tag.Lookup(TagRenameKey); ok {
+		if renameTagValue, ok := fieldType.Tag.Lookup(tagRenameKey); ok {
 			p = keyValue{renameTagValue, field.Interface()}
 		} else {
 			p = keyValue{fieldType.Name, field.Interface()}

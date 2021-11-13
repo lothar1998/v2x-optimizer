@@ -12,21 +12,21 @@ type PerformanceOptimizer interface {
 }
 
 type performanceAdapter struct {
-	IdentifiableAdapter
-	IsCacheEligible bool
+	identifiableAdapter
+	isCacheEligible bool
 }
 
 func NewPerformanceAdapter(optimizer optimizer.Optimizer, isCacheEligible bool) PerformanceOptimizer {
 	return &performanceAdapter{
-		IdentifiableAdapter: IdentifiableAdapter{optimizer},
-		IsCacheEligible:     isCacheEligible,
+		identifiableAdapter: identifiableAdapter{optimizer},
+		isCacheEligible:     isCacheEligible,
 	}
 }
 
 func (p *performanceAdapter) Identifier() string {
-	return p.IdentifiableAdapter.Identifier()
+	return p.identifiableAdapter.Identifier()
 }
 
 func (p *performanceAdapter) CacheEligible() bool {
-	return p.IsCacheEligible
+	return p.isCacheEligible
 }

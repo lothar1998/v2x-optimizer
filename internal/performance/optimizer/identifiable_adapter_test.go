@@ -73,7 +73,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier from struct name and tagged values of struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableAdapter{Optimizer: valueReceiver{
+		o := identifiableAdapter{Optimizer: valueReceiver{
 			Name: "name1",
 			A:    "a",
 			B:    2,
@@ -86,7 +86,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier from struct name and tagged values of pointer to struct", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableAdapter{Optimizer: &pointerReceiver{Name: "name2", A: "a", B: 12}}
+		o := identifiableAdapter{Optimizer: &pointerReceiver{Name: "name2", A: "a", B: 12}}
 
 		assert.Equal(t, "name2,A:a", o.Identifier())
 	})
@@ -94,7 +94,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should make an identifier consisted of only struct name", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableAdapter{empty{Name: "name3"}}
+		o := identifiableAdapter{empty{Name: "name3"}}
 
 		assert.Equal(t, "name3", o.Identifier())
 	})
@@ -102,7 +102,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should override name of field", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableAdapter{overriddenNames{Name: "name4", A: false, B: 32}}
+		o := identifiableAdapter{overriddenNames{Name: "name4", A: false, B: 32}}
 
 		assert.Equal(t, "name4,A_renamed:false,B:32", o.Identifier())
 	})
@@ -110,7 +110,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should use default name if name field is empty", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableAdapter{defaultStructName{A: false}}
+		o := identifiableAdapter{defaultStructName{A: false}}
 
 		assert.Equal(t, "defaultStructName,A:false", o.Identifier())
 	})
@@ -118,7 +118,7 @@ func TestOptimizer_Identifier(t *testing.T) {
 	t.Run("should use default name if name field is not provided", func(t *testing.T) {
 		t.Parallel()
 
-		o := IdentifiableAdapter{defaultStructNameWithoutNameFieldDeclared{A: false}}
+		o := identifiableAdapter{defaultStructNameWithoutNameFieldDeclared{A: false}}
 
 		assert.Equal(t, "defaultStructNameWithoutNameFieldDeclared,A:false", o.Identifier())
 	})
