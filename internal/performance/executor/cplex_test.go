@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/lothar1998/v2x-optimizer/test/mocks"
+	executorMock "github.com/lothar1998/v2x-optimizer/test/mocks/performance/executor"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +18,7 @@ func Test_cplex_Execute(t *testing.T) {
 
 		expectedResult := 10
 
-		processMock := mocks.NewMockProcess(gomock.NewController(t))
+		processMock := executorMock.NewMockProcess(gomock.NewController(t))
 		processMock.EXPECT().Output().Return([]byte{}, nil)
 
 		parseOutput := func(output string) (int, error) {
@@ -38,7 +38,7 @@ func Test_cplex_Execute(t *testing.T) {
 
 		expectedError := errors.New("test error")
 
-		processMock := mocks.NewMockProcess(gomock.NewController(t))
+		processMock := executorMock.NewMockProcess(gomock.NewController(t))
 		processMock.EXPECT().Output().Return(nil, expectedError)
 
 		c := cplex{
@@ -57,7 +57,7 @@ func Test_cplex_Execute(t *testing.T) {
 
 		expectedError := errors.New("test error")
 
-		processMock := mocks.NewMockProcess(gomock.NewController(t))
+		processMock := executorMock.NewMockProcess(gomock.NewController(t))
 		processMock.EXPECT().Output().Return([]byte{}, nil)
 
 		c := cplex{

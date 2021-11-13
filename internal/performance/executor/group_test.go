@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/lothar1998/v2x-optimizer/test/mocks"
+	executorMock "github.com/lothar1998/v2x-optimizer/test/mocks/performance/executor"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,10 +16,10 @@ func TestGroupExecutor_Execute(t *testing.T) {
 	t.Run("should execute one executor", func(t *testing.T) {
 		t.Parallel()
 
-		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
-		executorMock.EXPECT().Execute(gomock.Any()).Return(5, nil).Times(1)
+		executor := executorMock.NewMockExecutor(gomock.NewController(t))
+		executor.EXPECT().Execute(gomock.Any()).Return(5, nil).Times(1)
 
-		e := GroupExecutor{[]Executor{executorMock}}
+		e := GroupExecutor{[]Executor{executor}}
 
 		results := e.Execute(context.TODO())
 
@@ -27,7 +27,7 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		for result := range results {
 			assert.NoError(t, result.Err)
 			assert.Equal(t, 5, result.Value)
-			assert.Equal(t, executorMock, result.Executor)
+			assert.Equal(t, executor, result.Executor)
 			count++
 		}
 		assert.Equal(t, 1, count)
@@ -37,8 +37,8 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		t.Parallel()
 
 		mockController := gomock.NewController(t)
-		executorMock1 := mocks.NewMockExecutor(mockController)
-		executorMock2 := mocks.NewMockExecutor(mockController)
+		executorMock1 := executorMock.NewMockExecutor(mockController)
+		executorMock2 := executorMock.NewMockExecutor(mockController)
 
 		expectedResults := []*Result{
 			{Executor: executorMock1, Value: 2, Err: nil},
@@ -66,9 +66,9 @@ func TestGroupExecutor_Execute(t *testing.T) {
 		expectedError := errors.New("test error")
 
 		mockController := gomock.NewController(t)
-		executorMock1 := mocks.NewMockExecutor(mockController)
-		executorMock2 := mocks.NewMockExecutor(mockController)
-		executorMock3 := mocks.NewMockExecutor(mockController)
+		executorMock1 := executorMock.NewMockExecutor(mockController)
+		executorMock2 := executorMock.NewMockExecutor(mockController)
+		executorMock3 := executorMock.NewMockExecutor(mockController)
 
 		executorMock1.EXPECT().Execute(gomock.Any()).Return(5, nil).MaxTimes(1)
 		executorMock2.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
@@ -129,15 +129,15 @@ func Test_execute(t *testing.T) {
 
 		expectedResult := 7
 
-		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
-		executorMock.EXPECT().Execute(gomock.Any()).Return(expectedResult, nil).Times(1)
+		executor := executorMock.NewMockExecutor(gomock.NewController(t))
+		executor.EXPECT().Execute(gomock.Any()).Return(expectedResult, nil).Times(1)
 
-		result := execute(context.TODO(), executorMock)
+		result := execute(context.TODO(), executor)
 
 		count := 0
 		for v := range result {
 			assert.Equal(t, expectedResult, v.Value)
-			assert.Equal(t, executorMock, v.Executor)
+			assert.Equal(t, executor, v.Executor)
 			assert.NoError(t, v.Err)
 		}
 		assert.Equal(t, 0, count)
@@ -148,15 +148,15 @@ func Test_execute(t *testing.T) {
 
 		expectedError := errors.New("test error")
 
-		executorMock := mocks.NewMockExecutor(gomock.NewController(t))
-		executorMock.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
+		executor := executorMock.NewMockExecutor(gomock.NewController(t))
+		executor.EXPECT().Execute(gomock.Any()).Return(0, expectedError).Times(1)
 
-		result := execute(context.TODO(), executorMock)
+		result := execute(context.TODO(), executor)
 
 		count := 0
 		for v := range result {
 			assert.Zero(t, v.Value)
-			assert.Equal(t, executorMock, v.Executor)
+			assert.Equal(t, executor, v.Executor)
 			assert.ErrorIs(t, v.Err, expectedError)
 		}
 		assert.Equal(t, 0, count)

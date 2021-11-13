@@ -13,54 +13,57 @@ import (
 	"sync"
 )
 
-// Filename defines the name of the local Cache file.
-// The file is created once for each directory with data files.
 const Filename = ".optimizer_cache"
 
-// Data is a mapping between filename and its properties.
+type Cache interface {
+	Has(key string) bool
+	Get(key string) *FileInfo
+	Put(key string, value *FileInfo)
+	Verify(file string) (*FileInfo, error)
+	AddFile(file string) error
+	Save() error
+	Dir() string
+}
+
 type Data map[string]*FileInfo
 
-// FileInfo stores Hash of the file and Results associated with the given data file.
 type FileInfo struct {
 	Hash    string              `json:"hash"`
 	Results OptimizersToResults `json:"results,omitempty"`
 }
 
-// OptimizersToResults maps optimizers' names to their optimization results.
 type OptimizersToResults map[string]int
 
-type Cache struct {
+type LocalCache struct {
 	mu   sync.RWMutex
 	data Data
 	dir  string
 }
 
-func NewEmptyCache(dir string) *Cache {
-	return &Cache{data: make(Data), dir: dir}
+func NewEmptyCache(dir string) *LocalCache {
+	return &LocalCache{data: make(Data), dir: dir}
 }
 
-func (c *Cache) Has(key string) bool {
+func (c *LocalCache) Has(key string) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	_, isInCache := c.data[key]
 	return isInCache
 }
 
-func (c *Cache) Get(key string) *FileInfo {
+func (c *LocalCache) Get(key string) *FileInfo {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.data[key]
 }
 
-func (c *Cache) Put(key string, value *FileInfo) {
+func (c *LocalCache) Put(key string, value *FileInfo) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.data[key] = value
 }
 
-// Load loads Cache from filesystem for a given directory.
-// If a local Cache file doesn't exist, it simply returns empty Data mapping.
-func Load(dir string) (*Cache, error) {
+func Load(dir string) (Cache, error) {
 	stat, err := os.Stat(dir)
 	if os.IsNotExist(err) {
 		return nil, ErrPathDoesNotExist
@@ -87,12 +90,10 @@ func Load(dir string) (*Cache, error) {
 		return nil, err
 	}
 
-	return &Cache{data: entries, dir: dir}, nil
+	return &LocalCache{data: entries, dir: dir}, nil
 }
 
-// Verify verifies whether the given file in the given directory didn't change based on its content hash value.
-// If the file has been changed, then it returns FileInfo with its new hash and empty OptimizersToResults mapping.
-func (c *Cache) Verify(file string) (*FileInfo, error) {
+func (c *LocalCache) Verify(file string) (*FileInfo, error) {
 	hash, err := computeHashFromFile(filepath.Join(c.dir, file))
 	if err != nil {
 		return nil, err
@@ -105,9 +106,7 @@ func (c *Cache) Verify(file string) (*FileInfo, error) {
 	return nil, nil
 }
 
-// AddFile creates an entry for a new file in data mapping.
-// It computes the hash for the file and provides empty OptimizersToResults mapping.
-func (c *Cache) AddFile(file string) error {
+func (c *LocalCache) AddFile(file string) error {
 	hash, err := computeHashFromFile(filepath.Join(c.dir, file))
 	if err != nil {
 		return err
@@ -118,8 +117,7 @@ func (c *Cache) AddFile(file string) error {
 	return nil
 }
 
-// Save simply writes data mapping to file inside the given directory.
-func (c *Cache) Save() error {
+func (c *LocalCache) Save() error {
 	file, err := os.OpenFile(filepath.Join(c.dir, Filename), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -129,6 +127,10 @@ func (c *Cache) Save() error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return json.NewEncoder(file).Encode(c.data)
+}
+
+func (c *LocalCache) Dir() string {
+	return c.dir
 }
 
 func computeHashFromFile(filepath string) (string, error) {

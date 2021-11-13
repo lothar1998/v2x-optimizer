@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/test/mocks"
+	encoderMock "github.com/lothar1998/v2x-optimizer/test/mocks/data"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +43,7 @@ func Test_generateWith(t *testing.T) {
 			filename := "data_file_" + strconv.Itoa(int(rand.Uint32()))
 			testPath := path.Join(dir, filename)
 
-			encoder := mocks.NewMockEncoderDecoder(gomock.NewController(t))
+			encoder := encoderMock.NewMockEncoderDecoder(gomock.NewController(t))
 			encoder.EXPECT().
 				Encode(gomock.Any(), gomock.Any()).
 				DoAndReturn(

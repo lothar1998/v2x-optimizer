@@ -3,10 +3,11 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/concurrent"
+
 	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	optimizerConfigurator "github.com/lothar1998/v2x-optimizer/internal/performance/optimizer/configurator"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
 	"github.com/spf13/cobra"
 )
 
@@ -80,9 +81,9 @@ func computePerformanceUsing(configurators []optimizerConfigurator.Configurator)
 			optimizers[i] = opt
 		}
 
-		cacheable := runner.NewCacheableWithConcurrencyLimits(modelFile, dataFiles, optimizers, threadLimit)
+		concurrentRunner := concurrent.NewRunnerWithLimits(dataFiles, optimizers, modelFile, threadLimit)
 
-		result, err := cacheable.Run(command.Context())
+		result, err := concurrentRunner.Run(command.Context())
 		if err != nil {
 			return err
 		}
