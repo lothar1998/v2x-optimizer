@@ -17,7 +17,10 @@ type ViewBuildFunc func(string) (view.DirectoryView, error)
 
 type CplexExecutorBuildFunc func(modelPath, dataPath string) executor.Executor
 
-type OptimizerExecutorBuildFunc func(dataPath string, optimizer optimizer.IdentifiableOptimizer) executor.Executor
+type OptimizerExecutorBuildFunc func(
+	dataPath string,
+	optimizer optimizer.IdentifiableCacheableOptimizer,
+) executor.Executor
 
 type cacheLoadFunc func(dir string) (cache.Cache, error)
 
@@ -31,7 +34,7 @@ type runForFileWithCacheFunc func(
 
 type Config struct {
 	ModelPath  string
-	Optimizers []optimizer.IdentifiableOptimizer
+	Optimizers []optimizer.IdentifiableCacheableOptimizer
 
 	DirectoryViewBuildFunc ViewBuildFunc
 	FileViewBuildFunc      ViewBuildFunc
@@ -121,9 +124,12 @@ func (pr *pathRunner) runForDir(ctx context.Context, view view.DirectoryView) (r
 		case result.Result.Err != nil:
 			err = result.Result.Err
 		default:
-			updateLocalCache(localCache, result.Filename, result.Result)
+			if result.Executor.CacheEligible() {
+				updateLocalCache(localCache, result.Filename, result.Result)
+				changesCount++
+			}
+
 			executionResults = append(executionResults, result)
-			changesCount++
 		}
 	}
 

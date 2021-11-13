@@ -220,13 +220,13 @@ func Test_pathRunner_getAllExecutors(t *testing.T) {
 
 		controller := gomock.NewController(t)
 
-		optimizer1 := optimizerMock.NewMockIdentifiableOptimizer(controller)
+		optimizer1 := optimizerMock.NewMockIdentifiableCacheableOptimizer(controller)
 		optimizer1.EXPECT().Identifier().Return(optimizerName1)
 
-		optimizer2 := optimizerMock.NewMockIdentifiableOptimizer(controller)
+		optimizer2 := optimizerMock.NewMockIdentifiableCacheableOptimizer(controller)
 		optimizer2.EXPECT().Identifier().Return(optimizerName2)
 
-		optimizers := []optimizer.IdentifiableOptimizer{optimizer1, optimizer2}
+		optimizers := []optimizer.IdentifiableCacheableOptimizer{optimizer1, optimizer2}
 
 		cplexExecutorBuildMock := func(modelPath, dataPath string) executor.Executor {
 			assert.Equal(t, expectedModelPath, modelPath)
@@ -236,7 +236,7 @@ func Test_pathRunner_getAllExecutors(t *testing.T) {
 			return e
 		}
 
-		optimizerExecutorBuildMock := func(dataPath string, o optimizer.IdentifiableOptimizer) executor.Executor {
+		optimizerExecutorBuildMock := func(dataPath string, o optimizer.IdentifiableCacheableOptimizer) executor.Executor {
 			assert.Equal(t, expectedDataPath, dataPath)
 			e := executorMock.NewMockExecutor(controller)
 			e.EXPECT().Identifier().Return(o.Identifier())
@@ -274,13 +274,13 @@ func Test_pathRunner_getNotCachedExecutors(t *testing.T) {
 	executorNames := []string{cplexOptimizerName, optimizerName1, optimizerName2}
 
 	controller := gomock.NewController(t)
-	optimizer1 := optimizerMock.NewMockIdentifiableOptimizer(controller)
-	optimizer2 := optimizerMock.NewMockIdentifiableOptimizer(controller)
+	optimizer1 := optimizerMock.NewMockIdentifiableCacheableOptimizer(controller)
+	optimizer2 := optimizerMock.NewMockIdentifiableCacheableOptimizer(controller)
 
 	optimizer1.EXPECT().Identifier().Return(optimizerName1).AnyTimes()
 	optimizer2.EXPECT().Identifier().Return(optimizerName2).AnyTimes()
 
-	optimizers := []optimizer.IdentifiableOptimizer{optimizer1, optimizer2}
+	optimizers := []optimizer.IdentifiableCacheableOptimizer{optimizer1, optimizer2}
 
 	cplexExecutorBuildMock := func(modelPath string, dataPath string) executor.Executor {
 		assert.Equal(t, expectedModelPath, modelPath)
@@ -290,7 +290,7 @@ func Test_pathRunner_getNotCachedExecutors(t *testing.T) {
 		return e
 	}
 
-	optimizerExecutorBuildMock := func(dataPath string, o optimizer.IdentifiableOptimizer) executor.Executor {
+	optimizerExecutorBuildMock := func(dataPath string, o optimizer.IdentifiableCacheableOptimizer) executor.Executor {
 		assert.Equal(t, expectedDataPath, dataPath)
 		e := executorMock.NewMockExecutor(controller)
 		e.EXPECT().Identifier().Return(o.Identifier()).AnyTimes()
@@ -402,6 +402,7 @@ func Test_pathRunner_runForDir(t *testing.T) {
 
 			executorMock1 := executorMock.NewMockExecutor(gomock.NewController(t))
 			executorMock1.EXPECT().Identifier().Return("identifier-1").AnyTimes()
+			executorMock1.EXPECT().CacheEligible().Return(true)
 			ch <- &runner.FileResult{
 				Filename: expectedFilename,
 				Result: &executor.Result{
@@ -412,6 +413,7 @@ func Test_pathRunner_runForDir(t *testing.T) {
 
 			executorMock2 := executorMock.NewMockExecutor(gomock.NewController(t))
 			executorMock2.EXPECT().Identifier().Return("identifier-2").AnyTimes()
+			executorMock2.EXPECT().CacheEligible().Return(true)
 			ch <- &runner.FileResult{
 				Filename: expectedFilename,
 				Result: &executor.Result{
@@ -447,6 +449,76 @@ func Test_pathRunner_runForDir(t *testing.T) {
 		assert.Equal(t, expectedCache, fileInfo)
 	})
 
+	t.Run("should respect cache eligibility", func(t *testing.T) {
+		t.Parallel()
+
+		expectedResults := runner.FilesToResults{
+			"my-file": runner.OptimizersToResults{
+				"identifier-1": 11,
+				"identifier-2": 22,
+			},
+		}
+
+		expectedCache := &cache.FileInfo{
+			Hash: "h1",
+			Results: cache.OptimizersToResults{
+				"identifier-1": 11,
+			},
+		}
+
+		runForFileWithCacheMock := func(_ context.Context, _ cache.Cache, filename string) <-chan *runner.FileResult {
+			assert.Equal(t, expectedFilename, filename)
+			ch := make(chan *runner.FileResult, 2)
+
+			executorMock1 := executorMock.NewMockExecutor(gomock.NewController(t))
+			executorMock1.EXPECT().Identifier().Return("identifier-1").AnyTimes()
+			executorMock1.EXPECT().CacheEligible().Return(true)
+			ch <- &runner.FileResult{
+				Filename: expectedFilename,
+				Result: &executor.Result{
+					Executor: executorMock1,
+					Value:    11,
+				},
+			}
+
+			executorMock2 := executorMock.NewMockExecutor(gomock.NewController(t))
+			executorMock2.EXPECT().Identifier().Return("identifier-2").AnyTimes()
+			executorMock2.EXPECT().CacheEligible().Return(false)
+			ch <- &runner.FileResult{
+				Filename: expectedFilename,
+				Result: &executor.Result{
+					Executor: executorMock2,
+					Value:    22,
+				},
+			}
+
+			close(ch)
+			return ch
+		}
+
+		fileInfo := &cache.FileInfo{
+			Hash:    "h1",
+			Results: cache.OptimizersToResults{},
+		}
+
+		localCacheMock := cacheMock.NewMockCache(gomock.NewController(t))
+		localCacheMock.EXPECT().Get(expectedFilename).Return(fileInfo).Times(1)
+		localCacheMock.EXPECT().Save().Return(nil)
+
+		r := pathRunner{
+			cacheLoadFunc: func(dir string) (cache.Cache, error) {
+				assert.Equal(t, expectedDir, dir)
+				return localCacheMock, nil
+			},
+			runForFileWithCacheFunc: runForFileWithCacheMock,
+		}
+
+		results, err := r.runForDir(context.TODO(), v)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResults, results)
+		assert.Equal(t, expectedCache, fileInfo)
+	})
+
 	t.Run("should handle error from executor by partially updating cache and returning error", func(t *testing.T) {
 		t.Parallel()
 
@@ -465,6 +537,7 @@ func Test_pathRunner_runForDir(t *testing.T) {
 
 			executorMock1 := executorMock.NewMockExecutor(gomock.NewController(t))
 			executorMock1.EXPECT().Identifier().Return("identifier-1").AnyTimes()
+			executorMock1.EXPECT().CacheEligible().Return(true)
 			ch <- &runner.FileResult{
 				Filename: expectedFilename,
 				Result: &executor.Result{
@@ -631,6 +704,7 @@ func Test_pathRunner_runForDir(t *testing.T) {
 
 			executorMock1 := executorMock.NewMockExecutor(gomock.NewController(t))
 			executorMock1.EXPECT().Identifier().Return("identifier-1").AnyTimes()
+			executorMock1.EXPECT().CacheEligible().Return(true)
 			ch <- &runner.FileResult{
 				Filename: expectedFilename,
 				Result: &executor.Result{
@@ -685,7 +759,7 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 	executorMock2.EXPECT().Identifier().Return(executorIdentifier2).AnyTimes()
 
 	optimizerIdentifier := executorIdentifier2
-	optimizerMock := optimizerMock.NewMockIdentifiableOptimizer(controller)
+	optimizerMock := optimizerMock.NewMockIdentifiableCacheableOptimizer(controller)
 	optimizerMock.EXPECT().Identifier().Return(optimizerIdentifier).AnyTimes()
 
 	result1 := &runner.FileResult{
@@ -739,14 +813,17 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 		r := pathRunner{
 			FileRunner: fileRunner,
 			Config: Config{
-				Optimizers: []optimizer.IdentifiableOptimizer{optimizerMock},
+				Optimizers: []optimizer.IdentifiableCacheableOptimizer{optimizerMock},
 				ModelPath:  expectedModelPath,
 				CplexExecutorBuildFunc: func(modelPath, dataPath string) executor.Executor {
 					assert.Equal(t, expectedModelPath, modelPath)
 					assert.Equal(t, expectedFilepath, dataPath)
 					return executorMock1
 				},
-				OptimizerExecutorBuildFunc: func(dataPath string, optimizer optimizer.IdentifiableOptimizer) executor.Executor {
+				OptimizerExecutorBuildFunc: func(
+					dataPath string,
+					optimizer optimizer.IdentifiableCacheableOptimizer,
+				) executor.Executor {
 					assert.Equal(t, expectedFilepath, dataPath)
 					assert.Equal(t, optimizerMock, optimizer)
 					return executorMock2
@@ -804,7 +881,7 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 		r := pathRunner{
 			FileRunner: fileRunner,
 			Config: Config{
-				Optimizers:         []optimizer.IdentifiableOptimizer{optimizerMock},
+				Optimizers:         []optimizer.IdentifiableCacheableOptimizer{optimizerMock},
 				CplexOptimizerName: executorIdentifier1,
 			},
 		}
@@ -855,14 +932,17 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 		r := pathRunner{
 			FileRunner: fileRunner,
 			Config: Config{
-				Optimizers: []optimizer.IdentifiableOptimizer{optimizerMock},
+				Optimizers: []optimizer.IdentifiableCacheableOptimizer{optimizerMock},
 				ModelPath:  expectedModelPath,
 				CplexExecutorBuildFunc: func(modelPath, dataPath string) executor.Executor {
 					assert.Equal(t, expectedModelPath, modelPath)
 					assert.Equal(t, expectedFilepath, dataPath)
 					return executorMock1
 				},
-				OptimizerExecutorBuildFunc: func(dataPath string, optimizer optimizer.IdentifiableOptimizer) executor.Executor {
+				OptimizerExecutorBuildFunc: func(
+					dataPath string,
+					optimizer optimizer.IdentifiableCacheableOptimizer,
+				) executor.Executor {
 					assert.Equal(t, expectedFilepath, dataPath)
 					assert.Equal(t, optimizerMock, optimizer)
 					return executorMock2

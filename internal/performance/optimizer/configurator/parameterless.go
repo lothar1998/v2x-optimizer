@@ -15,8 +15,11 @@ func NewParameterless(optimizer optimizer.Optimizer) *Parameterless {
 }
 
 func (p *Parameterless) Builder() BuildFunc {
-	return func(_ *cobra.Command) (adapter.IdentifiableOptimizer, error) {
-		return p.IdentifiableOptimizer, nil
+	return func(_ *cobra.Command) (adapter.IdentifiableCacheableOptimizer, error) {
+		return &adapter.CacheableAdapter{
+			IsCacheEligible:       true,
+			IdentifiableOptimizer: p.IdentifiableOptimizer,
+		}, nil
 	}
 }
 

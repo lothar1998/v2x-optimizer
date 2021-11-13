@@ -70,7 +70,7 @@ func computePerformanceUsing(configurators []optimizerConfigurator.Configurator)
 			return err
 		}
 
-		optimizers := make([]optimizer.IdentifiableOptimizer, len(configurators))
+		optimizers := make([]optimizer.IdentifiableCacheableOptimizer, len(configurators))
 		for i, configurator := range configurators {
 			build := configurator.Builder()
 			opt, err := build(command)

@@ -59,6 +59,10 @@ func (c *cplex) Identifier() string {
 	return config.CPLEXOptimizerName
 }
 
+func (c *cplex) CacheEligible() bool {
+	return true
+}
+
 func (c *cplex) buildProcess(ctx context.Context) Process {
 	return execabs.CommandContext(
 		ctx,

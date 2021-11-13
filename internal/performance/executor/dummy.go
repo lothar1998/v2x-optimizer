@@ -14,3 +14,7 @@ func (d *Dummy) Identifier() string {
 func (d *Dummy) Execute(_ context.Context) (int, error) {
 	return d.Result, nil
 }
+
+func (d *Dummy) CacheEligible() bool {
+	return false
+}

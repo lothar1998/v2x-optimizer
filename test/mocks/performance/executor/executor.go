@@ -34,6 +34,20 @@ func (m *MockExecutor) EXPECT() *MockExecutorMockRecorder {
 	return m.recorder
 }
 
+// CacheEligible mocks base method.
+func (m *MockExecutor) CacheEligible() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CacheEligible")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CacheEligible indicates an expected call of CacheEligible.
+func (mr *MockExecutorMockRecorder) CacheEligible() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CacheEligible", reflect.TypeOf((*MockExecutor)(nil).CacheEligible))
+}
+
 // Execute mocks base method.
 func (m *MockExecutor) Execute(arg0 context.Context) (int, error) {
 	m.ctrl.T.Helper()
