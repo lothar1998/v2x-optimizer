@@ -139,8 +139,9 @@ func Test_execute(t *testing.T) {
 			assert.Equal(t, expectedResult, v.Value)
 			assert.Equal(t, executor, v.Executor)
 			assert.NoError(t, v.Err)
+			count++
 		}
-		assert.Equal(t, 0, count)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("should pass error of execution to channel", func(t *testing.T) {
@@ -158,7 +159,8 @@ func Test_execute(t *testing.T) {
 			assert.Zero(t, v.Value)
 			assert.Equal(t, executor, v.Executor)
 			assert.ErrorIs(t, v.Err, expectedError)
+			count++
 		}
-		assert.Equal(t, 0, count)
+		assert.Equal(t, 1, count)
 	})
 }
