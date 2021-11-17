@@ -91,11 +91,9 @@ func Test_pathRunner_Run(t *testing.T) {
 		dirViewMock := viewMock.NewMockDirectoryView(gomock.NewController(t))
 
 		r := pathRunner{
-			Config: Config{
-				DirectoryViewBuildFunc: func(dir string) (view.DirectoryView, error) {
-					assert.Equal(t, expectedDir, dir)
-					return dirViewMock, nil
-				},
+			directoryViewBuildFunc: func(dir string) (view.DirectoryView, error) {
+				assert.Equal(t, expectedDir, dir)
+				return dirViewMock, nil
 			},
 			runForDirFunc: func(_ context.Context, view view.DirectoryView) (runner.FilesToResults, error) {
 				assert.Equal(t, dirViewMock, view)
@@ -121,12 +119,11 @@ func Test_pathRunner_Run(t *testing.T) {
 		dirViewMock := viewMock.NewMockDirectoryView(gomock.NewController(t))
 
 		r := pathRunner{
-			Config: Config{
-				FileViewBuildFunc: func(file string) (view.DirectoryView, error) {
-					assert.Equal(t, expectedFile, file)
-					return dirViewMock, nil
-				},
+			fileViewBuildFunc: func(file string) (view.DirectoryView, error) {
+				assert.Equal(t, expectedFile, file)
+				return dirViewMock, nil
 			},
+
 			runForDirFunc: func(_ context.Context, view view.DirectoryView) (runner.FilesToResults, error) {
 				assert.Equal(t, dirViewMock, view)
 				return expectedFilesToResults, nil
@@ -151,11 +148,9 @@ func Test_pathRunner_Run(t *testing.T) {
 		expectedError := errors.New("test error")
 
 		r := pathRunner{
-			Config: Config{
-				FileViewBuildFunc: func(file string) (view.DirectoryView, error) {
-					assert.Equal(t, expectedFile, file)
-					return nil, expectedError
-				},
+			fileViewBuildFunc: func(file string) (view.DirectoryView, error) {
+				assert.Equal(t, expectedFile, file)
+				return nil, expectedError
 			},
 		}
 
@@ -179,11 +174,9 @@ func Test_pathRunner_Run(t *testing.T) {
 		dirViewMock := viewMock.NewMockDirectoryView(gomock.NewController(t))
 
 		r := pathRunner{
-			Config: Config{
-				FileViewBuildFunc: func(file string) (view.DirectoryView, error) {
-					assert.Equal(t, expectedFile, file)
-					return dirViewMock, nil
-				},
+			fileViewBuildFunc: func(file string) (view.DirectoryView, error) {
+				assert.Equal(t, expectedFile, file)
+				return dirViewMock, nil
 			},
 			runForDirFunc: func(_ context.Context, view view.DirectoryView) (runner.FilesToResults, error) {
 				assert.Equal(t, dirViewMock, view)
@@ -244,12 +237,10 @@ func Test_pathRunner_getAllExecutors(t *testing.T) {
 		}
 
 		r := pathRunner{
-			Config: Config{
-				Optimizers:                 optimizers,
-				ModelPath:                  expectedModelPath,
-				CplexExecutorBuildFunc:     cplexExecutorBuildMock,
-				OptimizerExecutorBuildFunc: optimizerExecutorBuildMock,
-			},
+			optimizers:                 optimizers,
+			modelPath:                  expectedModelPath,
+			cplexExecutorBuildFunc:     cplexExecutorBuildMock,
+			optimizerExecutorBuildFunc: optimizerExecutorBuildMock,
 		}
 
 		executors := r.getAllExecutors(expectedDataPath)
@@ -298,13 +289,11 @@ func Test_pathRunner_getNotCachedExecutors(t *testing.T) {
 	}
 
 	r := pathRunner{
-		Config: Config{
-			Optimizers:                 optimizers,
-			ModelPath:                  expectedModelPath,
-			CplexExecutorBuildFunc:     cplexExecutorBuildMock,
-			CplexOptimizerName:         cplexOptimizerName,
-			OptimizerExecutorBuildFunc: optimizerExecutorBuildMock,
-		},
+		optimizers:                 optimizers,
+		modelPath:                  expectedModelPath,
+		cplexExecutorBuildFunc:     cplexExecutorBuildMock,
+		cplexOptimizerName:         cplexOptimizerName,
+		optimizerExecutorBuildFunc: optimizerExecutorBuildMock,
 	}
 
 	t.Run("shouldn't return any dummy executors since nothing is cached", func(t *testing.T) {
@@ -361,7 +350,7 @@ func Test_pathRunner_getNotCachedExecutors(t *testing.T) {
 		assert.Len(t, executors, 3)
 		for _, e := range executors {
 			assert.Contains(t, executorNames, e.Identifier())
-			if e.Identifier() == optimizerName2 || e.Identifier() == r.Config.CplexOptimizerName {
+			if e.Identifier() == optimizerName2 || e.Identifier() == r.cplexOptimizerName {
 				assert.IsType(t, &executor.Dummy{}, e)
 			}
 		}
@@ -812,22 +801,20 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 
 		r := pathRunner{
 			FileRunner: fileRunner,
-			Config: Config{
-				Optimizers: []optimizer.PerformanceSubjectOptimizer{optimizerMock},
-				ModelPath:  expectedModelPath,
-				CplexExecutorBuildFunc: func(modelPath, dataPath string) executor.Executor {
-					assert.Equal(t, expectedModelPath, modelPath)
-					assert.Equal(t, expectedFilepath, dataPath)
-					return executorMock1
-				},
-				OptimizerExecutorBuildFunc: func(
-					dataPath string,
-					optimizer optimizer.PerformanceSubjectOptimizer,
-				) executor.Executor {
-					assert.Equal(t, expectedFilepath, dataPath)
-					assert.Equal(t, optimizerMock, optimizer)
-					return executorMock2
-				},
+			optimizers: []optimizer.PerformanceSubjectOptimizer{optimizerMock},
+			modelPath:  expectedModelPath,
+			cplexExecutorBuildFunc: func(modelPath, dataPath string) executor.Executor {
+				assert.Equal(t, expectedModelPath, modelPath)
+				assert.Equal(t, expectedFilepath, dataPath)
+				return executorMock1
+			},
+			optimizerExecutorBuildFunc: func(
+				dataPath string,
+				optimizer optimizer.PerformanceSubjectOptimizer,
+			) executor.Executor {
+				assert.Equal(t, expectedFilepath, dataPath)
+				assert.Equal(t, optimizerMock, optimizer)
+				return executorMock2
 			},
 		}
 
@@ -879,11 +866,9 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 		fileRunner.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(fileRunnerRunMock)
 
 		r := pathRunner{
-			FileRunner: fileRunner,
-			Config: Config{
-				Optimizers:         []optimizer.PerformanceSubjectOptimizer{optimizerMock},
-				CplexOptimizerName: executorIdentifier1,
-			},
+			FileRunner:         fileRunner,
+			optimizers:         []optimizer.PerformanceSubjectOptimizer{optimizerMock},
+			cplexOptimizerName: executorIdentifier1,
 		}
 
 		results := r.runForFileWithCache(context.TODO(), localCacheMock, expectedFilename)
@@ -931,22 +916,20 @@ func Test_pathRunner_runForFileWithCache(t *testing.T) {
 
 		r := pathRunner{
 			FileRunner: fileRunner,
-			Config: Config{
-				Optimizers: []optimizer.PerformanceSubjectOptimizer{optimizerMock},
-				ModelPath:  expectedModelPath,
-				CplexExecutorBuildFunc: func(modelPath, dataPath string) executor.Executor {
-					assert.Equal(t, expectedModelPath, modelPath)
-					assert.Equal(t, expectedFilepath, dataPath)
-					return executorMock1
-				},
-				OptimizerExecutorBuildFunc: func(
-					dataPath string,
-					optimizer optimizer.PerformanceSubjectOptimizer,
-				) executor.Executor {
-					assert.Equal(t, expectedFilepath, dataPath)
-					assert.Equal(t, optimizerMock, optimizer)
-					return executorMock2
-				},
+			optimizers: []optimizer.PerformanceSubjectOptimizer{optimizerMock},
+			modelPath:  expectedModelPath,
+			cplexExecutorBuildFunc: func(modelPath, dataPath string) executor.Executor {
+				assert.Equal(t, expectedModelPath, modelPath)
+				assert.Equal(t, expectedFilepath, dataPath)
+				return executorMock1
+			},
+			optimizerExecutorBuildFunc: func(
+				dataPath string,
+				optimizer optimizer.PerformanceSubjectOptimizer,
+			) executor.Executor {
+				assert.Equal(t, expectedFilepath, dataPath)
+				assert.Equal(t, optimizerMock, optimizer)
+				return executorMock2
 			},
 		}
 

@@ -6,18 +6,20 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/lothar1998/v2x-optimizer/internal/config"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
+	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/file"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 )
 
-type ViewBuildFunc func(string) (view.DirectoryView, error)
+type viewBuildFunc func(string) (view.DirectoryView, error)
 
-type CplexExecutorBuildFunc func(modelPath, dataPath string) executor.Executor
+type cplexExecutorBuildFunc func(modelPath, dataPath string) executor.Executor
 
-type OptimizerExecutorBuildFunc func(
+type optimizerExecutorBuildFunc func(
 	dataPath string,
 	optimizer optimizer.PerformanceSubjectOptimizer,
 ) executor.Executor
@@ -32,32 +34,53 @@ type runForFileWithCacheFunc func(
 	filename string,
 ) <-chan *runner.FileResult
 
-type Config struct {
-	ModelPath  string
-	Optimizers []optimizer.PerformanceSubjectOptimizer
-
-	DirectoryViewBuildFunc ViewBuildFunc
-	FileViewBuildFunc      ViewBuildFunc
-
-	CplexExecutorBuildFunc CplexExecutorBuildFunc
-	CplexOptimizerName     string
-
-	OptimizerExecutorBuildFunc OptimizerExecutorBuildFunc
-}
-
 type pathRunner struct {
+	modelPath  string
+	optimizers []optimizer.PerformanceSubjectOptimizer
+
 	runner.FileRunner
-	Config
+
 	cacheLoadFunc
+
+	directoryViewBuildFunc viewBuildFunc
+	fileViewBuildFunc      viewBuildFunc
+
+	cplexExecutorBuildFunc
+	cplexOptimizerName string
+
+	optimizerExecutorBuildFunc
+
 	runForDirFunc
 	runForFileWithCacheFunc
 }
 
-func NewRunner(fileRunner runner.FileRunner, config Config) runner.PathRunner {
+func NewRunner(cplexModelFile string, optimizers []optimizer.PerformanceSubjectOptimizer) runner.PathRunner {
+	return newRunnerWithCplexBuilder(cplexModelFile, optimizers, executor.NewCplex)
+}
+
+func NewRunnerWithLimits(
+	cplexModelFile string,
+	optimizers []optimizer.PerformanceSubjectOptimizer,
+	cplexThreads uint,
+) runner.PathRunner {
+	return newRunnerWithCplexBuilder(cplexModelFile, optimizers, getModelExecutorBuilderWithThreadPool(cplexThreads))
+}
+
+func newRunnerWithCplexBuilder(
+	cplexModelFile string,
+	optimizers []optimizer.PerformanceSubjectOptimizer,
+	cplexExecutorBuilder cplexExecutorBuildFunc,
+) runner.PathRunner {
 	r := &pathRunner{
-		FileRunner:    fileRunner,
-		Config:        config,
-		cacheLoadFunc: cache.Load,
+		modelPath:                  cplexModelFile,
+		optimizers:                 optimizers,
+		FileRunner:                 &file.Runner{},
+		cacheLoadFunc:              cache.Load,
+		directoryViewBuildFunc:     buildDirectoryViewWithoutCacheFile,
+		fileViewBuildFunc:          view.NewFile,
+		cplexExecutorBuildFunc:     cplexExecutorBuilder,
+		cplexOptimizerName:         config.CPLEXOptimizerName,
+		optimizerExecutorBuildFunc: executor.NewCustom,
 	}
 	r.runForDirFunc = r.runForDir
 	r.runForFileWithCacheFunc = r.runForFileWithCache
@@ -79,9 +102,9 @@ func (pr *pathRunner) Run(ctx context.Context, path string) <-chan *runner.PathR
 		var v view.DirectoryView
 
 		if stat.IsDir() {
-			v, err = pr.Config.DirectoryViewBuildFunc(path)
+			v, err = pr.directoryViewBuildFunc(path)
 		} else {
-			v, err = pr.Config.FileViewBuildFunc(path)
+			v, err = pr.fileViewBuildFunc(path)
 		}
 
 		if err != nil {
@@ -109,8 +132,8 @@ func (pr *pathRunner) runForDir(ctx context.Context, view view.DirectoryView) (r
 
 	results := make([]<-chan *runner.FileResult, 0)
 
-	for _, file := range view.Files() {
-		result := pr.runForFileWithCacheFunc(ctx, localCache, file)
+	for _, filename := range view.Files() {
+		result := pr.runForFileWithCacheFunc(ctx, localCache, filename)
 		results = append(results, result)
 	}
 
@@ -186,10 +209,10 @@ func (pr *pathRunner) runForFileWithCache(
 
 func (pr *pathRunner) getAllExecutors(dataPath string) []executor.Executor {
 	var executors []executor.Executor
-	executors = append(executors, pr.Config.CplexExecutorBuildFunc(pr.Config.ModelPath, dataPath))
+	executors = append(executors, pr.cplexExecutorBuildFunc(pr.modelPath, dataPath))
 
-	for _, opt := range pr.Config.Optimizers {
-		executors = append(executors, pr.Config.OptimizerExecutorBuildFunc(dataPath, opt))
+	for _, opt := range pr.optimizers {
+		executors = append(executors, pr.optimizerExecutorBuildFunc(dataPath, opt))
 	}
 
 	return executors
@@ -198,17 +221,17 @@ func (pr *pathRunner) getAllExecutors(dataPath string) []executor.Executor {
 func (pr *pathRunner) getNotCachedExecutors(dataPath string, info *cache.FileInfo) []executor.Executor {
 	var executors []executor.Executor
 
-	if value, isCached := info.Results[pr.Config.CplexOptimizerName]; isCached {
-		executors = append(executors, &executor.Dummy{Name: pr.Config.CplexOptimizerName, Result: value})
+	if value, isCached := info.Results[pr.cplexOptimizerName]; isCached {
+		executors = append(executors, &executor.Dummy{Name: pr.cplexOptimizerName, Result: value})
 	} else {
-		executors = append(executors, pr.Config.CplexExecutorBuildFunc(pr.Config.ModelPath, dataPath))
+		executors = append(executors, pr.cplexExecutorBuildFunc(pr.modelPath, dataPath))
 	}
 
-	for _, opt := range pr.Config.Optimizers {
+	for _, opt := range pr.optimizers {
 		if value, isCached := info.Results[opt.Identifier()]; isCached {
 			executors = append(executors, &executor.Dummy{Name: opt.Identifier(), Result: value})
 		} else {
-			executors = append(executors, pr.Config.OptimizerExecutorBuildFunc(dataPath, opt))
+			executors = append(executors, pr.optimizerExecutorBuildFunc(dataPath, opt))
 		}
 	}
 
@@ -254,4 +277,16 @@ func mergeFileResults(channels ...<-chan *runner.FileResult) <-chan *runner.File
 	}()
 
 	return out
+}
+
+func getModelExecutorBuilderWithThreadPool(threads uint) func(string, string) executor.Executor {
+	return func(modelPath string, dataPath string) executor.Executor {
+		return executor.NewCplexWithThreadPool(modelPath, dataPath, threads)
+	}
+}
+
+func buildDirectoryViewWithoutCacheFile(dir string) (view.DirectoryView, error) {
+	return view.NewDirectoryWithExclusion(dir, func(filename string) bool {
+		return filename == cache.Filename
+	})
 }

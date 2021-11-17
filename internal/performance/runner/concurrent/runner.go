@@ -4,14 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/lothar1998/v2x-optimizer/internal/config"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/cache"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/executor"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/file"
 	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/path"
-	"github.com/lothar1998/v2x-optimizer/internal/performance/runner/view"
 )
 
 type Runner struct {
@@ -25,7 +20,10 @@ func NewRunner(
 	optimizers []optimizer.PerformanceSubjectOptimizer,
 	modelFile string,
 ) *Runner {
-	return newRunnerWithCplexBuilder(dataPaths, optimizers, modelFile, executor.NewCplex)
+	return &Runner{
+		PathRunner: path.NewRunner(modelFile, optimizers),
+		DataPaths:  dataPaths,
+	}
 }
 
 func NewRunnerWithLimits(
@@ -34,32 +32,8 @@ func NewRunnerWithLimits(
 	modelFile string,
 	cplexThreads uint,
 ) *Runner {
-	return newRunnerWithCplexBuilder(
-		dataPaths,
-		optimizers,
-		modelFile,
-		getModelExecutorBuilderWithThreadPool(cplexThreads),
-	)
-}
-
-func newRunnerWithCplexBuilder(dataPaths []string,
-	optimizers []optimizer.PerformanceSubjectOptimizer,
-	modelFile string,
-	cplexExecutorBuildFunc path.CplexExecutorBuildFunc) *Runner {
-	pathRunnerConfig := path.Config{
-		ModelPath:  modelFile,
-		Optimizers: optimizers,
-
-		DirectoryViewBuildFunc: buildDirectoryViewWithoutCacheFile,
-		FileViewBuildFunc:      view.NewFile,
-
-		CplexExecutorBuildFunc: cplexExecutorBuildFunc,
-		CplexOptimizerName:     config.CPLEXOptimizerName,
-
-		OptimizerExecutorBuildFunc: executor.NewCustom,
-	}
 	return &Runner{
-		PathRunner: path.NewRunner(&file.Runner{}, pathRunnerConfig),
+		PathRunner: path.NewRunnerWithLimits(modelFile, optimizers, cplexThreads),
 		DataPaths:  dataPaths,
 	}
 }
@@ -110,16 +84,4 @@ func mergePathResults(channels ...<-chan *runner.PathResult) <-chan *runner.Path
 	}()
 
 	return out
-}
-
-func getModelExecutorBuilderWithThreadPool(threads uint) func(string, string) executor.Executor {
-	return func(modelPath string, dataPath string) executor.Executor {
-		return executor.NewCplexWithThreadPool(modelPath, dataPath, threads)
-	}
-}
-
-func buildDirectoryViewWithoutCacheFile(dir string) (view.DirectoryView, error) {
-	return view.NewDirectoryWithExclusion(dir, func(filename string) bool {
-		return filename == cache.Filename
-	})
 }
