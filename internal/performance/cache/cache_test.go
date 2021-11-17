@@ -29,7 +29,7 @@ func TestLoad(t *testing.T) {
 
 		localCache := getLocalCache()
 
-		dir, err := ioutil.TempDir("", "v2x-optimizer-LocalCache-load-*")
+		dir, err := ioutil.TempDir("", "v2x-optimizer-cache-load-*")
 		assert.NoError(t, err)
 		err = ioutil.WriteFile(filepath.Join(dir, Filename), []byte(cacheFileContent), 0644)
 		assert.NoError(t, err)
@@ -167,7 +167,7 @@ func TestAddFile(t *testing.T) {
 func TestSave(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should save to LocalCache file", func(t *testing.T) {
+	t.Run("should save to cache file", func(t *testing.T) {
 		t.Parallel()
 
 		dir, err := ioutil.TempDir("", "v2x-optimizer-cache-save-*")
