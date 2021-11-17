@@ -169,42 +169,48 @@ func (pr *pathRunner) runForDir(ctx context.Context, view view.DirectoryView) (r
 	return toFilesToResults(executionResults), nil
 }
 
-// TODO can be concurrently executed
 func (pr *pathRunner) runForFileWithCache(
 	ctx context.Context,
 	localCache cache.Cache,
 	filename string,
 ) <-chan *runner.FileResult {
 	results := make(chan *runner.FileResult, 1)
-	defer close(results)
 
-	dataPath := filepath.Join(localCache.Dir(), filename)
+	go func() {
+		defer close(results)
 
-	var executors []executor.Executor
+		dataPath := filepath.Join(localCache.Dir(), filename)
 
-	if !localCache.Has(filename) {
-		err := localCache.AddFile(filename)
-		if err != nil {
-			results <- &runner.FileResult{Filename: filename, Err: err}
-			return results
-		}
-		executors = pr.getAllExecutors(dataPath)
-	} else {
-		change, err := localCache.Verify(filename)
-		if err != nil {
-			results <- &runner.FileResult{Filename: filename, Err: err}
-			return results
-		}
+		var executors []executor.Executor
 
-		if change != nil {
-			localCache.Put(filename, change)
+		if !localCache.Has(filename) {
+			err := localCache.AddFile(filename)
+			if err != nil {
+				results <- &runner.FileResult{Filename: filename, Err: err}
+				return
+			}
 			executors = pr.getAllExecutors(dataPath)
 		} else {
-			executors = pr.getNotCachedExecutors(dataPath, localCache.Get(filename))
-		}
-	}
+			change, err := localCache.Verify(filename)
+			if err != nil {
+				results <- &runner.FileResult{Filename: filename, Err: err}
+				return
+			}
 
-	return pr.FileRunner.Run(ctx, executors, filename)
+			if change != nil {
+				localCache.Put(filename, change)
+				executors = pr.getAllExecutors(dataPath)
+			} else {
+				executors = pr.getNotCachedExecutors(dataPath, localCache.Get(filename))
+			}
+		}
+
+		for v := range pr.FileRunner.Run(ctx, executors, filename) {
+			results <- v
+		}
+	}()
+
+	return results
 }
 
 func (pr *pathRunner) getAllExecutors(dataPath string) []executor.Executor {
