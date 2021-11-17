@@ -38,7 +38,7 @@ func (n BestFitConfigurator) Builder() BuildFunc {
 			BestFit:       bestfit.BestFit{FitnessFunc: intToFitness(fitnessID)},
 		}
 
-		return optimizer.NewPerformanceAdapter(bf, true), nil
+		return optimizer.NewPerformanceSubjectAdapter(bf, true), nil
 	}
 }
 

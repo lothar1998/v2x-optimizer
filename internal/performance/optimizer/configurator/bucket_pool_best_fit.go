@@ -62,7 +62,7 @@ func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
 			},
 		}
 
-		return optimizer.NewPerformanceAdapter(bpbf, bucketReorderID != 3), nil
+		return optimizer.NewPerformanceSubjectAdapter(bpbf, bucketReorderID != 3), nil
 	}
 }
 

@@ -11,7 +11,7 @@ type Parameterless struct {
 }
 
 func NewParameterless(optimizer optimizer.Optimizer) *Parameterless {
-	return &Parameterless{adapter.NewPerformanceAdapter(optimizer, true)}
+	return &Parameterless{adapter.NewPerformanceSubjectAdapter(optimizer, true)}
 }
 
 func (p *Parameterless) Builder() BuildFunc {

@@ -16,7 +16,7 @@ type performanceSubjectAdapter struct {
 	isCacheEligible bool
 }
 
-func NewPerformanceAdapter(optimizer optimizer.Optimizer, isCacheEligible bool) PerformanceSubjectOptimizer {
+func NewPerformanceSubjectAdapter(optimizer optimizer.Optimizer, isCacheEligible bool) PerformanceSubjectOptimizer {
 	return &performanceSubjectAdapter{
 		identifiableOptimizerAdapter: &identifiableOptimizerAdapter{optimizer},
 		isCacheEligible:              isCacheEligible,

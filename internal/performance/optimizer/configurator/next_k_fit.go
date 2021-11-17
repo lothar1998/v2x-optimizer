@@ -38,7 +38,7 @@ func (n NextKFitConfigurator) Builder() BuildFunc {
 			NextKFit: nextkfit.NextKFit{K: int(k)},
 		}
 
-		return optimizer.NewPerformanceAdapter(nkf, true), nil
+		return optimizer.NewPerformanceSubjectAdapter(nkf, true), nil
 	}
 }
 
