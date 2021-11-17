@@ -8,8 +8,7 @@
 ## Table of Contents
 
 * [About the Project](#about-the-project)
-* [Getting Started](#getting-started)
-    * [Prerequisites](#prerequisites)
+* [Prerequisites](#prerequisites)
 * [Usage](#usage)
 * [License](#license)
 * [Acknowledgements](#acknowledgements)
@@ -20,8 +19,7 @@
 
 <!-- GETTING STARTED -->
 
-## Getting Started
-### Prerequisites
+## Prerequisites
 
 Things you need to install before running:
 ```
