@@ -26,11 +26,11 @@ func (p keyValue) toEntry() string {
 	return fmt.Sprintf("%s:%v", p.key, p.value)
 }
 
-type identifiableAdapter struct {
+type identifiableOptimizerAdapter struct {
 	optimizer.Optimizer
 }
 
-func (w *identifiableAdapter) Identifier() string {
+func (w *identifiableOptimizerAdapter) Identifier() string {
 	rValue := reflect.ValueOf(w.Optimizer)
 	if rValue.Kind() == reflect.Ptr {
 		rValue = rValue.Elem()

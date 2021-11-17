@@ -19,7 +19,7 @@ type CplexExecutorBuildFunc func(modelPath, dataPath string) executor.Executor
 
 type OptimizerExecutorBuildFunc func(
 	dataPath string,
-	optimizer optimizer.PerformanceOptimizer,
+	optimizer optimizer.PerformanceSubjectOptimizer,
 ) executor.Executor
 
 type cacheLoadFunc func(dir string) (cache.Cache, error)
@@ -34,7 +34,7 @@ type runForFileWithCacheFunc func(
 
 type Config struct {
 	ModelPath  string
-	Optimizers []optimizer.PerformanceOptimizer
+	Optimizers []optimizer.PerformanceSubjectOptimizer
 
 	DirectoryViewBuildFunc ViewBuildFunc
 	FileViewBuildFunc      ViewBuildFunc

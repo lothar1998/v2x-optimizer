@@ -22,7 +22,7 @@ type NextKFitWrapper struct {
 type NextKFitConfigurator struct{}
 
 func (n NextKFitConfigurator) Builder() BuildFunc {
-	return func(command *cobra.Command) (optimizer.PerformanceOptimizer, error) {
+	return func(command *cobra.Command) (optimizer.PerformanceSubjectOptimizer, error) {
 		k, err := command.Flags().GetUint(nextKFitParameterK)
 		if err != nil {
 			return nil, err

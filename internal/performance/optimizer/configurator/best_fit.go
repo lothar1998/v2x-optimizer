@@ -22,7 +22,7 @@ type BestFitWrapper struct {
 type BestFitConfigurator struct{}
 
 func (n BestFitConfigurator) Builder() BuildFunc {
-	return func(command *cobra.Command) (optimizer.PerformanceOptimizer, error) {
+	return func(command *cobra.Command) (optimizer.PerformanceSubjectOptimizer, error) {
 		fitnessID, err := command.Flags().GetUint(bestFitParameterFunctionID)
 		if err != nil {
 			return nil, err

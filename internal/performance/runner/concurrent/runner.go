@@ -22,7 +22,7 @@ type Runner struct {
 
 func NewRunner(
 	dataPaths []string,
-	optimizers []optimizer.PerformanceOptimizer,
+	optimizers []optimizer.PerformanceSubjectOptimizer,
 	modelFile string,
 ) *Runner {
 	return newRunnerWithCplexBuilder(dataPaths, optimizers, modelFile, executor.NewCplex)
@@ -30,7 +30,7 @@ func NewRunner(
 
 func NewRunnerWithLimits(
 	dataPaths []string,
-	optimizers []optimizer.PerformanceOptimizer,
+	optimizers []optimizer.PerformanceSubjectOptimizer,
 	modelFile string,
 	cplexThreads uint,
 ) *Runner {
@@ -43,7 +43,7 @@ func NewRunnerWithLimits(
 }
 
 func newRunnerWithCplexBuilder(dataPaths []string,
-	optimizers []optimizer.PerformanceOptimizer,
+	optimizers []optimizer.PerformanceSubjectOptimizer,
 	modelFile string,
 	cplexExecutorBuildFunc path.CplexExecutorBuildFunc) *Runner {
 	pathRunnerConfig := path.Config{

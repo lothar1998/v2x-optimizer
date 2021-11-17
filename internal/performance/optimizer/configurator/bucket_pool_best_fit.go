@@ -26,7 +26,7 @@ type BucketPoolBestFitWrapper struct {
 type BucketPoolBestFitConfigurator struct{}
 
 func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
-	return func(command *cobra.Command) (optimizer.PerformanceOptimizer, error) {
+	return func(command *cobra.Command) (optimizer.PerformanceSubjectOptimizer, error) {
 		fitnessID, err := command.Flags().GetUint(bucketPoolBestFitParameterFunctionID)
 		if err != nil {
 			return nil, err

@@ -1,4 +1,4 @@
-package common
+package behavior
 
 type Cacheable interface {
 	CacheEligible() bool
