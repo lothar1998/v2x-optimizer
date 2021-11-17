@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type BuildFunc func(*cobra.Command) (optimizer.IdentifiableOptimizer, error)
+type BuildFunc func(*cobra.Command) (optimizer.PerformanceSubjectOptimizer, error)
 
 type Configurator interface {
 	TypeName() string

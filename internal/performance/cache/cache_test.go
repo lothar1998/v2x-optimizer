@@ -29,16 +29,17 @@ func TestLoad(t *testing.T) {
 
 		localCache := getLocalCache()
 
-		dir, err := ioutil.TempDir("", "v2x-optimizer-Cache-load-*")
+		dir, err := ioutil.TempDir("", "v2x-optimizer-cache-load-*")
 		assert.NoError(t, err)
 		err = ioutil.WriteFile(filepath.Join(dir, Filename), []byte(cacheFileContent), 0644)
 		assert.NoError(t, err)
 
 		c, err := Load(dir)
+		cache := c.(*LocalCache)
 
 		assert.NoError(t, err)
-		assert.Equal(t, localCache.data, c.data)
-		assert.Equal(t, dir, c.dir)
+		assert.Equal(t, localCache.data, cache.data)
+		assert.Equal(t, dir, cache.dir)
 	})
 
 	t.Run("should return empty cached data since cache file doesn't exist yet", func(t *testing.T) {
@@ -48,10 +49,11 @@ func TestLoad(t *testing.T) {
 		assert.NoError(t, err)
 
 		c, err := Load(dir)
+		cache := c.(*LocalCache)
 
-		assert.Empty(t, c.data)
+		assert.Empty(t, cache.data)
 		assert.NoError(t, err)
-		assert.Equal(t, dir, c.dir)
+		assert.Equal(t, dir, cache.dir)
 	})
 
 	t.Run("should return error that given path doesn't represent directory", func(t *testing.T) {
@@ -138,7 +140,7 @@ func TestAddFile(t *testing.T) {
 		dir, err := ioutil.TempDir("", "v2x-optimizer-cache-load-*")
 		assert.NoError(t, err)
 
-		c := Cache{
+		c := LocalCache{
 			data: Data{
 				"old_file": &FileInfo{
 					Hash: "example_hash",
@@ -165,7 +167,7 @@ func TestAddFile(t *testing.T) {
 func TestSave(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should save to Cache file", func(t *testing.T) {
+	t.Run("should save to cache file", func(t *testing.T) {
 		t.Parallel()
 
 		dir, err := ioutil.TempDir("", "v2x-optimizer-cache-save-*")
@@ -204,8 +206,8 @@ func Test_computeHashFromFile(t *testing.T) {
 	assert.Equal(t, expectedHash, hash)
 }
 
-func getLocalCache() *Cache {
-	return &Cache{
+func getLocalCache() *LocalCache {
+	return &LocalCache{
 		data: Data{
 			"data1.dat": &FileInfo{
 				"88ae80225f77e46c036310cc276a24a0",
