@@ -1,5 +1,5 @@
 <div align="center">
-  <img align="center" src="https://user-images.githubusercontent.com/33781380/142294699-d3135f9d-b5b5-4fae-89eb-e1aa5a9cbdc9.png" alt="Logo">
+  <img align="center" src="https://user-images.githubusercontent.com/33781380/142297427-aa1ff161-479a-4f5e-9f12-6e1c0a03e5a8.png" alt="Logo">
   <h3 align="center">Optimization of resource usage in V2X networks</h3>
 </div>
 
