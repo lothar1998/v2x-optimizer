@@ -1,16 +1,7 @@
-<div style="text-align: center;">
-  <a href="https://mouse-bb.pl">
-    <img src="https://user-images.githubusercontent.com/33781380/142292824-bc431001-e322-4652-8302-43cbca2e1b04.png" alt="Logo" width="240" height="240">
-  </a>
-
-<h3 align="center">Optimization of resource usage in V2X networks</h3>
+<div align="center">
+  <img align="center" src="https://user-images.githubusercontent.com/33781380/142294699-d3135f9d-b5b5-4fae-89eb-e1aa5a9cbdc9.png" alt="Logo">
+  <h3 align="center">Optimization of resource usage in V2X networks</h3>
 </div>
-
-<div style="text-align: center;">
-
-</div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 
@@ -68,7 +59,7 @@ My thesis supervisor:
 * [Piotr Chołda - Website](http://home.agh.edu.pl/~cholda/)
 
 <br>
-<div style="text-align: center;">
+<div align="center">
 Made with ❤️ by Lothar1998
 </div>
 
