@@ -1,6 +1,7 @@
 <div align="center">
   <img align="center" src="https://user-images.githubusercontent.com/33781380/142402501-16987edd-5eb6-46aa-b4a8-45fb271d2ecd.png" alt="V2X Gopher" height="240">
-  <h3 align="center">Optimization of resource usage in V2X networks</h3>
+<h3 align="center">V2X Optimizer </h3>
+<p align="center">Optimization of resource usage in V2X networks</p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
