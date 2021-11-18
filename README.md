@@ -58,6 +58,6 @@ My thesis supervisor:
 
 <br>
 <div align="center">
-Made with ❤️ by Lothar1998
+Made with ❤️ by lothar1998
 </div>
 
