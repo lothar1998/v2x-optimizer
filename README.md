@@ -43,11 +43,11 @@ v2x-optimizer help
 ```
 
 
-<!-- LICENSE -->
+<!-- LICENSE.md -->
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [`LICENSE.md`](LICENSE.md) for more information.
 
 <!-- ACKNOWLEDGEMENTS -->
 
