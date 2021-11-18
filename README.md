@@ -1,5 +1,5 @@
 <div align="center">
-  <img align="center" src="https://user-images.githubusercontent.com/33781380/142298418-ec6013ed-ac98-4ebe-a72e-7705d3307d56.png" alt="Logo">
+  <img align="center" src="https://user-images.githubusercontent.com/33781380/142402501-16987edd-5eb6-46aa-b4a8-45fb271d2ecd.png" alt="V2X Gopher" height="240">
   <h3 align="center">Optimization of resource usage in V2X networks</h3>
 </div>
 
