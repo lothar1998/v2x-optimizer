@@ -48,7 +48,7 @@ func (c *cplex) Execute(ctx context.Context) (int, error) {
 
 	bytes, err := cmd.Output()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("CPLEX optimizer error: %w\n%v", err, string(bytes))
 	}
 
 	return c.parseOutputFunc(string(bytes))

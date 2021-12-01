@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,10 +12,13 @@ import (
 )
 
 const (
-	nValue     = "rrhs"
-	vValue     = "vehicles"
-	timesValue = "times"
+	nValue            = "rrhs"
+	vValue            = "vehicles"
+	timesValue        = "times"
+	distributionValue = "distribution"
 )
+
+type generatorFunc func(v, n int) *data.Data
 
 // GenerateCmd returns cobra.Command which is able to generate data in specified format.
 // It should be registered in root command using AddCommand() method.
@@ -61,17 +65,27 @@ func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) er
 			return err
 		}
 
+		distribution, err := command.Flags().GetString(distributionValue)
+		if err != nil {
+			return err
+		}
+
+		generate := toGeneratorFunc(distribution)
+		if generate == nil {
+			return errors.New("unknown distribution")
+		}
+
 		count, err := command.Flags().GetUint(timesValue)
 		if err != nil {
 			return err
 		}
 
 		if count == 1 {
-			return generateDataFile(output, encoder, n, v)
+			return generateDataFile(output, encoder, n, v, generate)
 		}
 
 		for i := uint(0); i < count; i++ {
-			err := generateDataFile(toMultipleFilesFilepath(output, int(i)), encoder, n, v)
+			err := generateDataFile(toMultipleFilesFilepath(output, int(i)), encoder, n, v, generate)
 			if err != nil {
 				return err
 			}
@@ -81,14 +95,14 @@ func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) er
 	}
 }
 
-func generateDataFile(path string, encoder data.EncoderDecoder, n, v uint) error {
+func generateDataFile(path string, encoder data.EncoderDecoder, n, v uint, generate generatorFunc) error {
 	outputFile, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return fmt.Errorf("%w: %s", errCannotOpenFile, path)
 	}
 	defer outputFile.Close()
 
-	generatedData := data.Generate(int(v), int(n))
+	generatedData := generate(int(v), int(n))
 
 	err = encoder.Encode(generatedData, outputFile)
 	if err != nil {
@@ -104,8 +118,22 @@ func toMultipleFilesFilepath(path string, i int) string {
 	return filename + "_" + strconv.Itoa(i) + ext
 }
 
+func toGeneratorFunc(distributionName string) generatorFunc {
+	switch distributionName {
+	case "uniform":
+		return data.GenerateUniform
+	case "exp":
+		return data.GenerateExponential
+	case "norm":
+		return data.GenerateNormal
+	default:
+		return nil
+	}
+}
+
 func setUpGenerateFlags(command *cobra.Command) {
 	command.Flags().UintP(nValue, "n", 10, "amount of RRHs")
 	command.Flags().UintP(vValue, "v", 30, "amount of vehicles")
 	command.Flags().UintP(timesValue, "t", 1, "specify how many files should be generated")
+	command.Flags().StringP(distributionValue, "d", "uniform", "specify generator distribution (uniform, exp, norm)")
 }
