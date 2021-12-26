@@ -1,10 +1,11 @@
-package data
+package encoder
 
 import (
 	"bytes"
 	"strings"
 	"testing"
 
+	data2 "github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func TestDecode(t *testing.T) {
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
 	}
-	data := &Data{MRB: mrb, R: r}
+	data := &data2.Data{MRB: mrb, R: r}
 
 	jsonString := `{
 			  "MRB": [1, 2, 3, 4, 5],
@@ -49,7 +50,7 @@ func TestEncode(t *testing.T) {
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
 	}
-	data := &Data{MRB: mrb, R: r}
+	data := &data2.Data{MRB: mrb, R: r}
 
 	jsonString := `{
 			  "MRB": [1, 2, 3, 4, 5],

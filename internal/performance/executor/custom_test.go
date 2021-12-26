@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data/encoder"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	optimizerMock "github.com/lothar1998/v2x-optimizer/test/mocks/performance/optimizer"
 	"github.com/stretchr/testify/assert"
@@ -144,7 +145,7 @@ func setupDataFile(correct bool) (string, error) {
 		},
 	}
 
-	err = data.CPLEXEncoder{}.Encode(d, file)
+	err = encoder.CPLEXEncoder{}.Encode(d, file)
 	if err != nil {
 		return "", err
 	}

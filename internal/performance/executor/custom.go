@@ -5,8 +5,7 @@ import (
 	"os"
 
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
-
-	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data/encoder"
 )
 
 // Custom is an Executor that allows for running optimization using the custom, self-written optimizer.
@@ -27,7 +26,7 @@ func (c *Custom) Execute(ctx context.Context) (int, error) {
 	}
 	defer file.Close()
 
-	decodedData, err := data.CPLEXEncoder{}.Decode(file)
+	decodedData, err := encoder.CPLEXEncoder{}.Decode(file)
 	if err != nil {
 		return 0, err
 	}

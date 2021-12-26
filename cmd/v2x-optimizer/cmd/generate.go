@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data/generator"
 	"github.com/spf13/cobra"
 )
 
@@ -121,11 +122,13 @@ func toMultipleFilesFilepath(path string, i int) string {
 func toGeneratorFunc(distributionName string) generatorFunc {
 	switch distributionName {
 	case "uniform":
-		return data.GenerateUniform
+		return generator.GenerateUniform
 	case "exp":
-		return data.GenerateExponential
+		return generator.GenerateExponential
 	case "norm":
-		return data.GenerateNormal
+		return generator.GenerateNormal
+	case "env":
+		return generator.GenerateEnvironmental
 	default:
 		return nil
 	}
@@ -135,5 +138,5 @@ func setUpGenerateFlags(command *cobra.Command) {
 	command.Flags().UintP(nValue, "n", 10, "amount of RRHs")
 	command.Flags().UintP(vValue, "v", 30, "amount of vehicles")
 	command.Flags().UintP(timesValue, "t", 1, "specify how many files should be generated")
-	command.Flags().StringP(distributionValue, "d", "uniform", "specify generator distribution (uniform, exp, norm)")
+	command.Flags().StringP(distributionValue, "d", "uniform", "specify generator distribution (uniform, exp, norm, env)")
 }

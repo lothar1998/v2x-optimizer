@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data/encoder"
 )
 
 type encoderInfo struct {
@@ -19,9 +20,9 @@ const (
 
 var (
 	formatsToEncodersInfo = map[string]encoderInfo{
-		jsonFormat:  {"json", data.JSONEncoder{}},
-		plainFormat: {"plain (CSV-like)", data.PlainEncoder{}},
-		cplexFormat: {"CPLEX", data.CPLEXEncoder{}},
+		jsonFormat:  {"json", encoder.JSONEncoder{}},
+		plainFormat: {"plain (CSV-like)", encoder.PlainEncoder{}},
+		cplexFormat: {"CPLEX", encoder.CPLEXEncoder{}},
 	}
 
 	availableFileFormats = getAvailableFileFormats()
