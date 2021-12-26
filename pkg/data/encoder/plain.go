@@ -12,17 +12,17 @@ import (
 // DefaultDelimiter defines default delimiter expected in encoded data.
 var DefaultDelimiter = ','
 
-// PlainEncoder facilitates encoding/decoding Data into CSV-like format. For example:
+// Plain facilitates encoding/decoding Data into CSV-like format. For example:
 // 1,2,3,4,5
 // 6,7,8,9,2
 // 9,4,2,1,0
 // where the first line is MRB values and further lines are R values.
-type PlainEncoder struct{}
+type Plain struct{}
 
 // Encode allows for encoding data to writer into CSV-like format.
 // It returns ErrMalformedData if the lengths of R slices are not equal to MRB slice length.
 // It is possible to encode Data that consists only of MRB values.
-func (e PlainEncoder) Encode(input *data.Data, writer io.Writer) error {
+func (e Plain) Encode(input *data.Data, writer io.Writer) error {
 	if len(input.MRB) == 0 {
 		return data.ErrMalformedData
 	}
@@ -46,7 +46,7 @@ func (e PlainEncoder) Encode(input *data.Data, writer io.Writer) error {
 // It returns an error if the lengths of R slices are not equal to MRB slice length. It is possible to decode
 // data that consists only of MRB values. Input data line should be ended with newline '\n' character,
 // however, it is possible to do not use '\n' in the last line.
-func (e PlainEncoder) Decode(reader io.Reader) (*data.Data, error) {
+func (e Plain) Decode(reader io.Reader) (*data.Data, error) {
 	var output data.Data
 
 	lineReader := bufio.NewReader(reader)

@@ -33,7 +33,7 @@ func TestDecode(t *testing.T) {
 			  ]
              }`
 
-	decodedData, err := JSONEncoder{}.Decode(strings.NewReader(jsonString))
+	decodedData, err := JSON{}.Decode(strings.NewReader(jsonString))
 
 	assert.NoError(t, err)
 	assert.Equal(t, data, decodedData)
@@ -65,7 +65,7 @@ func TestEncode(t *testing.T) {
 
 	var buffer bytes.Buffer
 
-	err := JSONEncoder{}.Encode(data, &buffer)
+	err := JSON{}.Encode(data, &buffer)
 
 	assert.NoError(t, err)
 	assert.Equal(t, trimWhiteSigns(jsonString), trimWhiteSigns(buffer.String()))

@@ -20,9 +20,9 @@ const (
 
 var (
 	formatsToEncodersInfo = map[string]encoderInfo{
-		jsonFormat:  {"json", encoder.JSONEncoder{}},
-		plainFormat: {"plain (CSV-like)", encoder.PlainEncoder{}},
-		cplexFormat: {"CPLEX", encoder.CPLEXEncoder{}},
+		jsonFormat:  {"json", encoder.JSON{}},
+		plainFormat: {"plain (CSV-like)", encoder.Plain{}},
+		cplexFormat: {"CPLEX", encoder.CPLEX{}},
 	}
 
 	availableFileFormats = getAvailableFileFormats()

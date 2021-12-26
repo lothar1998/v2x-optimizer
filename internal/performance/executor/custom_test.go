@@ -145,7 +145,7 @@ func setupDataFile(correct bool) (string, error) {
 		},
 	}
 
-	err = encoder.CPLEXEncoder{}.Encode(d, file)
+	err = encoder.CPLEX{}.Encode(d, file)
 	if err != nil {
 		return "", err
 	}

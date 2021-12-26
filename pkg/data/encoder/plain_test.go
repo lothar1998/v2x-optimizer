@@ -21,7 +21,7 @@ func TestPlainEncoder_Encode_Decode_Compatibility(t *testing.T) {
 	}
 	data := &data2.Data{MRB: mrb, R: r}
 
-	encoder := PlainEncoder{}
+	encoder := Plain{}
 
 	var buffer bytes.Buffer
 
@@ -57,7 +57,7 @@ func TestPlainEncoder_Encode(t *testing.T) {
 
 		var buffer bytes.Buffer
 
-		err := PlainEncoder{}.Encode(data, &buffer)
+		err := Plain{}.Encode(data, &buffer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedEncodedData, buffer.String())
@@ -70,7 +70,7 @@ func TestPlainEncoder_Encode(t *testing.T) {
 
 		var buffer bytes.Buffer
 
-		err := PlainEncoder{}.Encode(data, &buffer)
+		err := Plain{}.Encode(data, &buffer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "1,2,3\n", buffer.String())
@@ -83,7 +83,7 @@ func TestPlainEncoder_Encode(t *testing.T) {
 
 		var buffer bytes.Buffer
 
-		err := PlainEncoder{}.Encode(data, &buffer)
+		err := Plain{}.Encode(data, &buffer)
 
 		assert.ErrorIs(t, err, data2.ErrMalformedData)
 		assert.Equal(t, 0, buffer.Len())
@@ -111,7 +111,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 		}
 		expectedData := &data2.Data{MRB: mrb, R: r}
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
+		data, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedData, data)
@@ -135,7 +135,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 		}
 		expectedData := &data2.Data{MRB: mrb, R: r}
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
+		data, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedData, data)
@@ -148,7 +148,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 			"11,12,13,14,15\n" +
 			"21,22,23,24,25,27\n"
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
+		data, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.ErrorIs(t, err, data2.ErrMalformedData)
 		assert.Zero(t, data)
@@ -161,7 +161,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 
 		expectedData := &data2.Data{MRB: []int{1, 2, 3, 4, 5}}
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
+		data, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedData, data)
@@ -174,7 +174,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 
 		expectedData := &data2.Data{MRB: []int{1, 2, 3, 4, 5}}
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader(dataString))
+		data, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedData, data)
@@ -183,7 +183,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 	t.Run("should decode empty string to empty data", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader(""))
+		data, err := Plain{}.Decode(strings.NewReader(""))
 
 		assert.NoError(t, err)
 		assert.Equal(t, &data2.Data{}, data)
@@ -192,7 +192,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 	t.Run("should decode empty string to empty data with new line at the end", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader("\n"))
+		data, err := Plain{}.Decode(strings.NewReader("\n"))
 
 		assert.NoError(t, err)
 		assert.Equal(t, &data2.Data{}, data)
@@ -201,7 +201,7 @@ func TestPlainEncoder_Decode(t *testing.T) {
 	t.Run("should not decode malformed data", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := PlainEncoder{}.Decode(strings.NewReader("11,a,2\n"))
+		data, err := Plain{}.Decode(strings.NewReader("11,a,2\n"))
 
 		assert.Error(t, err)
 		assert.Zero(t, data)

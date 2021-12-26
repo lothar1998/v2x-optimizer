@@ -11,11 +11,11 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
-// CPLEXEncoder facilitates encoding Data to CPLEX data format.
-type CPLEXEncoder struct{}
+// CPLEX facilitates encoding Data to CPLEX data format.
+type CPLEX struct{}
 
 // Encode allows for encoding Data to CPLEX data format.
-func (e CPLEXEncoder) Encode(input *data.Data, writer io.Writer) error {
+func (e CPLEX) Encode(input *data.Data, writer io.Writer) error {
 	lengths := fmt.Sprintf("V = %d;\nN = %d;\n", len(input.R), len(input.MRB))
 	_, err := writer.Write([]byte(lengths))
 	if err != nil {
@@ -50,7 +50,7 @@ func (e CPLEXEncoder) Encode(input *data.Data, writer io.Writer) error {
 // Decode allows for decoding CPLEX data format to Data.
 // It returns an error if the sizes of R and MRB are not equal to size variables [V, N].
 // It is possible to decode data with additional variables defined. In such a case Decode skips these values.
-func (e CPLEXEncoder) Decode(reader io.Reader) (*data.Data, error) {
+func (e CPLEX) Decode(reader io.Reader) (*data.Data, error) {
 	var output data.Data
 	bufferedReader := bufio.NewReader(reader)
 	var n, v int

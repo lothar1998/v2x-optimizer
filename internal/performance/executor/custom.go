@@ -26,7 +26,7 @@ func (c *Custom) Execute(ctx context.Context) (int, error) {
 	}
 	defer file.Close()
 
-	decodedData, err := encoder.CPLEXEncoder{}.Decode(file)
+	decodedData, err := encoder.CPLEX{}.Decode(file)
 	if err != nil {
 		return 0, err
 	}

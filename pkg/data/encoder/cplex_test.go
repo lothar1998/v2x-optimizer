@@ -22,7 +22,7 @@ func TestCPLEXEncoder_Encode_Decode_Compatibility(t *testing.T) {
 	}
 	data := &data2.Data{MRB: mrb, R: r}
 
-	encoder := CPLEXEncoder{}
+	encoder := CPLEX{}
 
 	var buffer bytes.Buffer
 
@@ -61,7 +61,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		}
 		data := &data2.Data{MRB: mrb, R: r}
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
 		assert.NoError(t, err)
 		assert.Equal(t, data, decodeData)
@@ -90,7 +90,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 		}
 		data := &data2.Data{MRB: mrb, R: r}
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
 		assert.NoError(t, err)
 		assert.Equal(t, data, decodeData)
@@ -107,7 +107,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			"[21 22 24 25]\n" +
 			"];\n"
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
 		assert.ErrorIs(t, err, data2.ErrMalformedData)
 		assert.Zero(t, decodeData)
@@ -123,7 +123,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			"[21 22 23 24 25]\n" +
 			"];\n"
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
 		assert.ErrorIs(t, err, data2.ErrMalformedData)
 		assert.Zero(t, decodeData)
@@ -143,7 +143,7 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			  ]
              }`
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(jsonString))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(jsonString))
 
 		assert.ErrorIs(t, err, data2.ErrMalformedData)
 		assert.Zero(t, decodeData)
@@ -177,7 +177,7 @@ func TestCPLEXEncoder_Encode(t *testing.T) {
 
 		var buffer bytes.Buffer
 
-		err := CPLEXEncoder{}.Encode(data, &buffer)
+		err := CPLEX{}.Encode(data, &buffer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedEncodedString, buffer.String())
