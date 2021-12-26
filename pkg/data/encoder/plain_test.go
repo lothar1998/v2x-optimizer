@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	data2 "github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,19 +19,19 @@ func TestPlainEncoder_Encode_Decode_Compatibility(t *testing.T) {
 		{31, 32, 33, 34, 35},
 		{41, 42, 43, 44, 45},
 	}
-	data := &data2.Data{MRB: mrb, R: r}
+	expectedData := &data.Data{MRB: mrb, R: r}
 
 	encoder := Plain{}
 
 	var buffer bytes.Buffer
 
-	err := encoder.Encode(data, &buffer)
+	err := encoder.Encode(expectedData, &buffer)
 	assert.NoError(t, err)
 
 	decodedData, err := encoder.Decode(&buffer)
 	assert.NoError(t, err)
 
-	assert.Equal(t, data, decodedData)
+	assert.Equal(t, expectedData, decodedData)
 }
 
 func TestPlainEncoder_Encode(t *testing.T) {
@@ -53,11 +53,11 @@ func TestPlainEncoder_Encode(t *testing.T) {
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &data2.Data{MRB: mrb, R: r}
+		expectedData := &data.Data{MRB: mrb, R: r}
 
 		var buffer bytes.Buffer
 
-		err := Plain{}.Encode(data, &buffer)
+		err := Plain{}.Encode(expectedData, &buffer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedEncodedData, buffer.String())
@@ -66,11 +66,11 @@ func TestPlainEncoder_Encode(t *testing.T) {
 	t.Run("should encode only MRB", func(t *testing.T) {
 		t.Parallel()
 
-		data := &data2.Data{MRB: []int{1, 2, 3}}
+		expectedData := &data.Data{MRB: []int{1, 2, 3}}
 
 		var buffer bytes.Buffer
 
-		err := Plain{}.Encode(data, &buffer)
+		err := Plain{}.Encode(expectedData, &buffer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "1,2,3\n", buffer.String())
@@ -79,13 +79,13 @@ func TestPlainEncoder_Encode(t *testing.T) {
 	t.Run("should not encode only R", func(t *testing.T) {
 		t.Parallel()
 
-		data := &data2.Data{R: [][]int{{1, 2, 3}}}
+		expectedData := &data.Data{R: [][]int{{1, 2, 3}}}
 
 		var buffer bytes.Buffer
 
-		err := Plain{}.Encode(data, &buffer)
+		err := Plain{}.Encode(expectedData, &buffer)
 
-		assert.ErrorIs(t, err, data2.ErrMalformedData)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
 		assert.Equal(t, 0, buffer.Len())
 	})
 }
@@ -109,12 +109,12 @@ func TestPlainEncoder_Decode(t *testing.T) {
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		expectedData := &data2.Data{MRB: mrb, R: r}
+		expectedData := &data.Data{MRB: mrb, R: r}
 
-		data, err := Plain{}.Decode(strings.NewReader(dataString))
+		decodedData, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedData, data)
+		assert.Equal(t, expectedData, decodedData)
 	})
 
 	t.Run("should decode data without new line at the end", func(t *testing.T) {
@@ -133,12 +133,12 @@ func TestPlainEncoder_Decode(t *testing.T) {
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		expectedData := &data2.Data{MRB: mrb, R: r}
+		expectedData := &data.Data{MRB: mrb, R: r}
 
-		data, err := Plain{}.Decode(strings.NewReader(dataString))
+		decodedData, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedData, data)
+		assert.Equal(t, expectedData, decodedData)
 	})
 
 	t.Run("should not decode incorrect data", func(t *testing.T) {
@@ -148,10 +148,10 @@ func TestPlainEncoder_Decode(t *testing.T) {
 			"11,12,13,14,15\n" +
 			"21,22,23,24,25,27\n"
 
-		data, err := Plain{}.Decode(strings.NewReader(dataString))
+		decodedData, err := Plain{}.Decode(strings.NewReader(dataString))
 
-		assert.ErrorIs(t, err, data2.ErrMalformedData)
-		assert.Zero(t, data)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
+		assert.Zero(t, decodedData)
 	})
 
 	t.Run("should decode only one line that represents MRB", func(t *testing.T) {
@@ -159,12 +159,12 @@ func TestPlainEncoder_Decode(t *testing.T) {
 
 		dataString := "1,2,3,4,5\n"
 
-		expectedData := &data2.Data{MRB: []int{1, 2, 3, 4, 5}}
+		expectedData := &data.Data{MRB: []int{1, 2, 3, 4, 5}}
 
-		data, err := Plain{}.Decode(strings.NewReader(dataString))
+		decodedData, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedData, data)
+		assert.Equal(t, expectedData, decodedData)
 	})
 
 	t.Run("should decode only one line that represents MRB without new line at the end", func(t *testing.T) {
@@ -172,39 +172,39 @@ func TestPlainEncoder_Decode(t *testing.T) {
 
 		dataString := "1,2,3,4,5"
 
-		expectedData := &data2.Data{MRB: []int{1, 2, 3, 4, 5}}
+		expectedData := &data.Data{MRB: []int{1, 2, 3, 4, 5}}
 
-		data, err := Plain{}.Decode(strings.NewReader(dataString))
+		decodedData, err := Plain{}.Decode(strings.NewReader(dataString))
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedData, data)
+		assert.Equal(t, expectedData, decodedData)
 	})
 
 	t.Run("should decode empty string to empty data", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := Plain{}.Decode(strings.NewReader(""))
+		decodedData, err := Plain{}.Decode(strings.NewReader(""))
 
 		assert.NoError(t, err)
-		assert.Equal(t, &data2.Data{}, data)
+		assert.Equal(t, &data.Data{}, decodedData)
 	})
 
 	t.Run("should decode empty string to empty data with new line at the end", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := Plain{}.Decode(strings.NewReader("\n"))
+		decodedData, err := Plain{}.Decode(strings.NewReader("\n"))
 
 		assert.NoError(t, err)
-		assert.Equal(t, &data2.Data{}, data)
+		assert.Equal(t, &data.Data{}, decodedData)
 	})
 
 	t.Run("should not decode malformed data", func(t *testing.T) {
 		t.Parallel()
 
-		data, err := Plain{}.Decode(strings.NewReader("11,a,2\n"))
+		decodedData, err := Plain{}.Decode(strings.NewReader("11,a,2\n"))
 
 		assert.Error(t, err)
-		assert.Zero(t, data)
+		assert.Zero(t, decodedData)
 	})
 }
 
@@ -276,7 +276,7 @@ func Test_splitIntString(t *testing.T) {
 
 		slice, err := splitIntString("1,2,a,b,3", ',')
 
-		assert.ErrorIs(t, err, data2.ErrMalformedData)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
 		assert.Zero(t, slice)
 	})
 
@@ -285,7 +285,7 @@ func Test_splitIntString(t *testing.T) {
 
 		slice, err := splitIntString("1,2,3,4,5", '.')
 
-		assert.ErrorIs(t, err, data2.ErrMalformedData)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
 		assert.Zero(t, slice)
 	})
 }

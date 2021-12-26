@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	data2 "github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +20,7 @@ func TestDecode(t *testing.T) {
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
 	}
-	data := &data2.Data{MRB: mrb, R: r}
+	expectedData := &data.Data{MRB: mrb, R: r}
 
 	jsonString := `{
 			  "MRB": [1, 2, 3, 4, 5],
@@ -36,7 +36,7 @@ func TestDecode(t *testing.T) {
 	decodedData, err := JSON{}.Decode(strings.NewReader(jsonString))
 
 	assert.NoError(t, err)
-	assert.Equal(t, data, decodedData)
+	assert.Equal(t, expectedData, decodedData)
 }
 
 func TestEncode(t *testing.T) {
@@ -50,7 +50,7 @@ func TestEncode(t *testing.T) {
 		{11, 22, 33, 44, 55},
 		{11, 22, 33, 44, 55},
 	}
-	data := &data2.Data{MRB: mrb, R: r}
+	expectedData := &data.Data{MRB: mrb, R: r}
 
 	jsonString := `{
 			  "MRB": [1, 2, 3, 4, 5],
@@ -65,7 +65,7 @@ func TestEncode(t *testing.T) {
 
 	var buffer bytes.Buffer
 
-	err := JSON{}.Encode(data, &buffer)
+	err := JSON{}.Encode(expectedData, &buffer)
 
 	assert.NoError(t, err)
 	assert.Equal(t, trimWhiteSigns(jsonString), trimWhiteSigns(buffer.String()))
