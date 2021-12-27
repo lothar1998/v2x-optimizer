@@ -5,7 +5,7 @@ import (
 	"math"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -57,5 +57,5 @@ func (b BestFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Resu
 		leftSpace[bestBucket] -= data.R[i][bestBucket]
 	}
 
-	return utils.ToResult(sequence, n), nil
+	return helper.ToResult(sequence, n), nil
 }

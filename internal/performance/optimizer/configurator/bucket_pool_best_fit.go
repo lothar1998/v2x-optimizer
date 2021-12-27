@@ -5,6 +5,7 @@ import (
 
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/bucketpoolbestfit"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -94,16 +95,16 @@ func (b BucketPoolBestFitConfigurator) TypeName() string {
 	return bucketPoolBestFitName
 }
 
-func intToBucketReorderFunc(intValue uint) bucketpoolbestfit.ReorderBucketsFunc {
+func intToBucketReorderFunc(intValue uint) helper.ReorderBucketsFunc {
 	switch intValue {
 	case 0:
-		return bucketpoolbestfit.NoOpReorder
+		return helper.NoOpReorder
 	case 1:
-		return bucketpoolbestfit.IncreasingSizeReorder
+		return helper.IncreasingSizeReorder
 	case 2:
-		return bucketpoolbestfit.DecreasingSizeReorder
+		return helper.DecreasingSizeReorder
 	case 3:
-		return bucketpoolbestfit.RandomReorder
+		return helper.RandomReorder
 	default:
 		return nil
 	}

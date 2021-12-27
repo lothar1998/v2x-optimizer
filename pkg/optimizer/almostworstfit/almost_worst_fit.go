@@ -4,10 +4,9 @@ import (
 	"context"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils/bucketqueue"
 )
 
 // AlmostWorstFit is an optimizer that implements the almost-worst-fit algorithm expanded to solve
@@ -23,7 +22,7 @@ func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*optimiz
 	n := len(data.MRB)
 	sequence := make([]int, v)
 
-	pq := bucketqueue.NewPriority(data.MRB)
+	pq := helper.NewPriorityBucketQueue(data.MRB)
 
 	for i := 0; i < v; i++ {
 		select {
@@ -76,5 +75,5 @@ func (a AlmostWorstFit) Optimize(ctx context.Context, data *data.Data) (*optimiz
 		pq.PushBucket(b2)
 	}
 
-	return utils.ToResult(sequence, n), nil
+	return helper.ToResult(sequence, n), nil
 }
