@@ -18,15 +18,15 @@ func NoOpReorder(bucketSizes []int) []int {
 	return result
 }
 
-// IncreasingSizeReorder sorts buckets by their size increasing.
-func IncreasingSizeReorder(bucketSizes []int) []int {
+// AscendingBucketSizeReorder sorts buckets by their size ascending.
+func AscendingBucketSizeReorder(bucketSizes []int) []int {
 	return sizeReorder(bucketSizes, func(s1 int, s2 int) bool {
 		return s1 < s2
 	})
 }
 
-// DecreasingSizeReorder sorts buckets by their size decreasing.
-func DecreasingSizeReorder(bucketSizes []int) []int {
+// DescendingBucketSizeReorder sorts buckets by their size descending.
+func DescendingBucketSizeReorder(bucketSizes []int) []int {
 	return sizeReorder(bucketSizes, func(s1 int, s2 int) bool {
 		return s1 > s2
 	})
@@ -79,9 +79,9 @@ func NoOpReorderByItems(bucketSizes []int, _ [][]int) []int {
 	return result
 }
 
-// IncreasingTotalSizeOfItemsInBucket sorts buckets by the total sum of possible items' sizes
-// in the bucket in increasing order.
-func IncreasingTotalSizeOfItemsInBucket(bucketSizes []int, items [][]int) []int {
+// AscendingTotalSizeOfItemsInBucketReorder sorts buckets by the total sum of possible items' sizes
+// in the bucket in ascending order.
+func AscendingTotalSizeOfItemsInBucketReorder(bucketSizes []int, items [][]int) []int {
 	return totalItemSizeReorder(
 		bucketSizes,
 		items,
@@ -94,9 +94,9 @@ func IncreasingTotalSizeOfItemsInBucket(bucketSizes []int, items [][]int) []int 
 	)
 }
 
-// DecreasingTotalSizeOfItemsInBucket sorts buckets by the total sum of possible items' sizes
-// in the bucket in decreasing order.
-func DecreasingTotalSizeOfItemsInBucket(bucketSizes []int, items [][]int) []int {
+// DescendingTotalSizeOfItemsInBucketReorder sorts buckets by the total sum of possible items' sizes
+// in the bucket in descending order.
+func DescendingTotalSizeOfItemsInBucketReorder(bucketSizes []int, items [][]int) []int {
 	return totalItemSizeReorder(
 		bucketSizes,
 		items,
@@ -109,10 +109,10 @@ func DecreasingTotalSizeOfItemsInBucket(bucketSizes []int, items [][]int) []int 
 	)
 }
 
-// IncreasingRelativeSize sorts buckets by the total sum of possible items' sizes divided by bucket size
-// in increasing order. Such an approach results in relative ordering: the lower the sum of possible items' sizes
+// AscendingRelativeSizeReorder sorts buckets by the total sum of possible items' sizes divided by bucket size
+// in ascending order. Such an approach results in relative ordering: the lower the sum of possible items' sizes
 // in the bucket and the bigger the bucket size, the better.
-func IncreasingRelativeSize(bucketSizes []int, items [][]int) []int {
+func AscendingRelativeSizeReorder(bucketSizes []int, items [][]int) []int {
 	return totalItemSizeReorder(
 		bucketSizes,
 		items,
@@ -125,10 +125,10 @@ func IncreasingRelativeSize(bucketSizes []int, items [][]int) []int {
 	)
 }
 
-// DecreasingRelativeSize sorts buckets by the total sum of possible items' sizes divided by bucket size
-// in decreasing order. Such an approach results in relative ordering: the higher the sum of possible items' sizes
+// DescendingRelativeSizeReorder sorts buckets by the total sum of possible items' sizes divided by bucket size
+// in descending order. Such an approach results in relative ordering: the higher the sum of possible items' sizes
 // in the bucket and the smaller the bucket size, the better.
-func DecreasingRelativeSize(bucketSizes []int, items [][]int) []int {
+func DescendingRelativeSizeReorder(bucketSizes []int, items [][]int) []int {
 	return totalItemSizeReorder(
 		bucketSizes,
 		items,
@@ -144,8 +144,8 @@ func DecreasingRelativeSize(bucketSizes []int, items [][]int) []int {
 func totalItemSizeReorder(
 	bucketSizes []int,
 	items [][]int,
-	totalItemSizeComparator func(float64, float64) bool,
-	toCompareValue func(totalSizeOfItems, bucketSize int) float64,
+	bucketsComparator func(float64, float64) bool,
+	toComparableValue func(totalSizeOfItems, bucketSize int) float64,
 ) []int {
 	buckets := make([]bucketIndexComparable, len(bucketSizes))
 	for i, size := range bucketSizes {
@@ -154,11 +154,11 @@ func totalItemSizeReorder(
 			totalSizeOfItems += itemBucket[i]
 		}
 
-		buckets[i] = bucketIndexComparable{index: i, comparable: toCompareValue(totalSizeOfItems, size)}
+		buckets[i] = bucketIndexComparable{index: i, comparable: toComparableValue(totalSizeOfItems, size)}
 	}
 
 	sort.Slice(buckets, func(i, j int) bool {
-		return totalItemSizeComparator(buckets[i].comparable, buckets[j].comparable)
+		return bucketsComparator(buckets[i].comparable, buckets[j].comparable)
 	})
 
 	result := make([]int, len(bucketSizes))

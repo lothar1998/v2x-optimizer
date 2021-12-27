@@ -21,7 +21,7 @@ func (b BucketOrientedFit) Optimize(ctx context.Context, data *data.Data) (*opti
 	leftSpace := make([]int, n)
 	copy(leftSpace, data.MRB)
 
-	buckets := b.ReorderBucketsByItemsFunc(data.MRB, data.R) // O(v*n)
+	buckets := b.ReorderBucketsByItemsFunc(data.MRB, data.R)
 
 	itemsContainer := NewContainer(data.R, b.ItemOrderComparatorFunc)
 

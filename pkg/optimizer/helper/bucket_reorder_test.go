@@ -11,7 +11,7 @@ func TestDecreasingSizeReorder(t *testing.T) {
 
 	bucketSizes := []int{10, 5, 18}
 
-	assert.Equal(t, []int{2, 0, 1}, DecreasingSizeReorder(bucketSizes))
+	assert.Equal(t, []int{2, 0, 1}, DescendingBucketSizeReorder(bucketSizes))
 }
 
 func TestIncreasingSizeReorder(t *testing.T) {
@@ -19,7 +19,7 @@ func TestIncreasingSizeReorder(t *testing.T) {
 
 	bucketSizes := []int{7, 9, 3}
 
-	assert.Equal(t, []int{2, 0, 1}, IncreasingSizeReorder(bucketSizes))
+	assert.Equal(t, []int{2, 0, 1}, AscendingBucketSizeReorder(bucketSizes))
 }
 
 func TestNoOpReorder(t *testing.T) {
@@ -58,7 +58,7 @@ func TestIncreasingTotalSizeOfItemsInBucket(t *testing.T) {
 		{5, 1, 2, 3},
 	}
 
-	reorder := IncreasingTotalSizeOfItemsInBucket(bucketSizes, items)
+	reorder := AscendingTotalSizeOfItemsInBucketReorder(bucketSizes, items)
 
 	assert.Equal(t, []int{2, 1, 3, 0}, reorder)
 }
@@ -73,7 +73,7 @@ func TestDecreasingTotalSizeOfItemsInBucket(t *testing.T) {
 		{5, 1, 2, 3},
 	}
 
-	reorder := DecreasingTotalSizeOfItemsInBucket(bucketSizes, items)
+	reorder := DescendingTotalSizeOfItemsInBucketReorder(bucketSizes, items)
 
 	assert.Equal(t, []int{0, 3, 1, 2}, reorder)
 }
@@ -88,7 +88,7 @@ func TestIncreasingRelativeSize(t *testing.T) {
 		{5, 1, 2, 3},
 	}
 
-	reorder := IncreasingRelativeSize(bucketSizes, items)
+	reorder := AscendingRelativeSizeReorder(bucketSizes, items)
 
 	assert.Equal(t, []int{1, 0, 3, 2}, reorder)
 }
@@ -103,7 +103,7 @@ func TestDecreasingRelativeSize(t *testing.T) {
 		{5, 1, 2, 3},
 	}
 
-	reorder := DecreasingRelativeSize(bucketSizes, items)
+	reorder := DescendingRelativeSizeReorder(bucketSizes, items)
 
 	assert.Equal(t, []int{2, 3, 0, 1}, reorder)
 }

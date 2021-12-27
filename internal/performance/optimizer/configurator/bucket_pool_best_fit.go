@@ -83,8 +83,8 @@ func (b BucketPoolBestFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bucketPoolBestFitParameterBucketReorderFunctionID, "", 0,
 		"BucketPoolBestFit bucket reorder function (defines order in which items are added to bucket pool):\n"+
 			"0 - no op (order defined by input data)\n"+
-			"1 - sort buckets increasing basing on their size\n"+
-			"2 - sort buckets decreasing basing on their size\n"+
+			"1 - sort buckets in ascending order by size\n"+
+			"2 - sort buckets in descending order by size\n"+
 			"3 - random order\n"+
 			"(default 0)")
 	command.Flags().UintP(bucketPoolBestFitParameterInitPoolSize, "", 1,
@@ -100,9 +100,9 @@ func intToBucketReorderFunc(intValue uint) helper.ReorderBucketsFunc {
 	case 0:
 		return helper.NoOpReorder
 	case 1:
-		return helper.IncreasingSizeReorder
+		return helper.AscendingBucketSizeReorder
 	case 2:
-		return helper.DecreasingSizeReorder
+		return helper.DescendingBucketSizeReorder
 	case 3:
 		return helper.RandomReorder
 	default:
