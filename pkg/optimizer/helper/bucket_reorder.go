@@ -5,8 +5,8 @@ import (
 	"sort"
 )
 
-// ReorderBucketsFunc is a function that defines the order in which buckets will be added to the bucket pool.
-// It defines the order based on size of buckets available.
+// ReorderBucketsFunc is a function that defines the order in which buckets will be used during optimization.
+// It defines the order based on the size of buckets available.
 type ReorderBucketsFunc func(bucketSizes []int) (orderOfBuckets []int)
 
 // NoOpReorder doesn't change anything in buckets' order. It returns the initial order of buckets.
@@ -66,7 +66,7 @@ type bucketIndexComparable struct {
 	comparable float64
 }
 
-// ReorderBucketsByItemsFunc is a function that defines the order in which buckets will be added to the bucket pool.
+// ReorderBucketsByItemsFunc is a function that defines the order in which buckets will be used during optimization.
 // It is similar to ReorderBucketsFunc but also takes into account items inside the buckets.
 type ReorderBucketsByItemsFunc func(bucketSizes []int, items [][]int) (orderOfBuckets []int)
 
