@@ -24,7 +24,7 @@ func TestNewContainer(t *testing.T) {
 			{{index: 2, size: 9}, {index: 2, size: 10}, {index: 2, size: 11}, {index: 2, size: 12}},
 		}
 
-		container := NewContainer(items, IncreasingItemSize)
+		container := NewContainer(items, AscendingItemSize)
 
 		assert.Equal(t, expectedInternalItems, container.items)
 		assert.Equal(t, make(map[int]struct{}), container.alreadyUsedItems)
@@ -47,7 +47,7 @@ func TestContainer_GetItems(t *testing.T) {
 		expectedItems0 := []Item{{index: 2, size: 2}, {index: 0, size: 4}, {index: 1, size: 5}}
 		expectedItems1 := []Item{{index: 2, size: 3}, {index: 1, size: 6}, {index: 0, size: 10}}
 
-		container := NewContainer(items, IncreasingItemSize)
+		container := NewContainer(items, AscendingItemSize)
 
 		assert.Equal(t, expectedItems0, container.GetItems(0))
 		assert.Equal(t, expectedItems1, container.GetItems(1))
@@ -59,7 +59,7 @@ func TestContainer_GetItems(t *testing.T) {
 		expectedItems0 := []Item{{index: 1, size: 5}, {index: 0, size: 4}, {index: 2, size: 2}}
 		expectedItems1 := []Item{{index: 0, size: 10}, {index: 1, size: 6}, {index: 2, size: 3}}
 
-		container := NewContainer(items, DecreasingItemSize)
+		container := NewContainer(items, DescendingItemSize)
 
 		assert.Equal(t, expectedItems0, container.GetItems(0))
 		assert.Equal(t, expectedItems1, container.GetItems(1))
@@ -83,7 +83,7 @@ func TestContainer_getItems(t *testing.T) {
 		expectedItems2 := []Item{{index: 0, size: 3}, {index: 1, size: 7}, {index: 2, size: 11}}
 		expectedItems3 := []Item{{index: 0, size: 4}, {index: 1, size: 8}, {index: 2, size: 12}}
 
-		container := NewContainer(items, IncreasingItemSize)
+		container := NewContainer(items, AscendingItemSize)
 
 		assert.Equal(t, expectedItems0, container.getItems(0))
 		assert.Equal(t, expectedItems1, container.getItems(1))
@@ -99,7 +99,7 @@ func TestContainer_getItems(t *testing.T) {
 		expectedItems2 := []Item{{index: 0, size: 3}, {index: 2, size: 11}}
 		expectedItems3 := []Item{{index: 0, size: 4}, {index: 2, size: 12}}
 
-		container := NewContainer(items, IncreasingItemSize)
+		container := NewContainer(items, AscendingItemSize)
 		container.MarkAsUsed(container.items[1][0])
 
 		assert.Equal(t, expectedItems0, container.getItems(0))
@@ -111,7 +111,7 @@ func TestContainer_getItems(t *testing.T) {
 	t.Run("should return no items since all are marked as already used", func(t *testing.T) {
 		t.Parallel()
 
-		container := NewContainer(items, IncreasingItemSize)
+		container := NewContainer(items, AscendingItemSize)
 
 		for i := 0; i < 3; i++ {
 			container.MarkAsUsed(container.items[i][0])
@@ -133,7 +133,7 @@ func TestContainer_MarkAsUsed(t *testing.T) {
 			{9, 10, 11, 12},
 		}
 
-		container := NewContainer(items, IncreasingItemSize)
+		container := NewContainer(items, AscendingItemSize)
 
 		itemToMark := container.items[1][3]
 

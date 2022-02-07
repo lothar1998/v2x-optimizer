@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDecreasingSizeReorder(t *testing.T) {
+func TestDescendingBucketSizeReorder(t *testing.T) {
 	t.Parallel()
 
 	bucketSizes := []int{10, 5, 18}
@@ -14,7 +14,7 @@ func TestDecreasingSizeReorder(t *testing.T) {
 	assert.Equal(t, []int{2, 0, 1}, DescendingBucketSizeReorder(bucketSizes))
 }
 
-func TestIncreasingSizeReorder(t *testing.T) {
+func TestAscendingBucketSizeReorder(t *testing.T) {
 	t.Parallel()
 
 	bucketSizes := []int{7, 9, 3}
@@ -48,7 +48,7 @@ func TestRandomReorder(t *testing.T) {
 	assert.Equal(t, []int{1, 1, 1, 1}, elementCount)
 }
 
-func TestIncreasingTotalSizeOfItemsInBucket(t *testing.T) {
+func TestAscendingTotalSizeOfItemsInBucketReorder(t *testing.T) {
 	t.Parallel()
 
 	bucketSizes := []int{1, 2, 3, 4}
@@ -63,7 +63,7 @@ func TestIncreasingTotalSizeOfItemsInBucket(t *testing.T) {
 	assert.Equal(t, []int{2, 1, 3, 0}, reorder)
 }
 
-func TestDecreasingTotalSizeOfItemsInBucket(t *testing.T) {
+func TestDescendingTotalSizeOfItemsInBucketReorder(t *testing.T) {
 	t.Parallel()
 
 	bucketSizes := []int{1, 2, 3, 4}
@@ -78,7 +78,7 @@ func TestDecreasingTotalSizeOfItemsInBucket(t *testing.T) {
 	assert.Equal(t, []int{0, 3, 1, 2}, reorder)
 }
 
-func TestIncreasingRelativeSize(t *testing.T) {
+func TestAscendingRelativeSizeReorder(t *testing.T) {
 	t.Parallel()
 
 	bucketSizes := []int{6, 7, 2, 4}
@@ -93,7 +93,7 @@ func TestIncreasingRelativeSize(t *testing.T) {
 	assert.Equal(t, []int{1, 0, 3, 2}, reorder)
 }
 
-func TestDecreasingRelativeSize(t *testing.T) {
+func TestDescendingRelativeSizeReorder(t *testing.T) {
 	t.Parallel()
 
 	bucketSizes := []int{6, 7, 2, 4}

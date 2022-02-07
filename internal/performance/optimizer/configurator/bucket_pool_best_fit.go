@@ -58,7 +58,7 @@ func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
 			InitPoolSize:        int(initPoolSize),
 			BucketPoolBestFit: bucketpoolbestfit.BucketPoolBestFit{
 				InitPoolSize:       int(initPoolSize),
-				ReorderBucketsFunc: intToBucketReorderFunc(bucketReorderID),
+				ReorderBucketsFunc: bucketPoolBestFitToBucketReorderFunc(bucketReorderID),
 				FitnessFunc:        intToFitness(fitnessID),
 			},
 		}
@@ -95,7 +95,7 @@ func (b BucketPoolBestFitConfigurator) TypeName() string {
 	return bucketPoolBestFitName
 }
 
-func intToBucketReorderFunc(intValue uint) helper.ReorderBucketsFunc {
+func bucketPoolBestFitToBucketReorderFunc(intValue uint) helper.ReorderBucketsFunc {
 	switch intValue {
 	case 0:
 		return helper.NoOpReorder

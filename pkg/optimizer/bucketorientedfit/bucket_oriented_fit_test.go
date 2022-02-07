@@ -30,7 +30,7 @@ func TestBucketOrientedFit_Optimize(t *testing.T) {
 
 		result, err := BucketOrientedFit{
 			ReorderBucketsByItemsFunc: helper.AscendingTotalSizeOfItemsInBucketReorder,
-			ItemOrderComparatorFunc:   IncreasingItemSize,
+			ItemOrderComparatorFunc:   AscendingItemSize,
 		}.Optimize(context.TODO(), d)
 
 		assert.NoError(t, err)
@@ -57,7 +57,7 @@ func TestBucketOrientedFit_Optimize(t *testing.T) {
 
 			result, err := BucketOrientedFit{
 				ReorderBucketsByItemsFunc: helper.AscendingTotalSizeOfItemsInBucketReorder,
-				ItemOrderComparatorFunc:   IncreasingItemSize,
+				ItemOrderComparatorFunc:   AscendingItemSize,
 			}.Optimize(context.TODO(), d)
 
 			assert.ErrorIs(t, optimizer.ErrCannotAssignToBucket, err)

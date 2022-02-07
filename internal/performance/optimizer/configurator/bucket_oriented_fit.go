@@ -49,8 +49,8 @@ func (b BucketOrientedFitConfigurator) Builder() BuildFunc {
 			BucketReorderFuncID: int(bucketReorderID),
 			ItemReorderFuncID:   int(itemReorderID),
 			BucketOrientedFit: bucketorientedfit.BucketOrientedFit{
-				ReorderBucketsByItemsFunc: intToBucketByItemsReorderFunc(bucketReorderID),
-				ItemOrderComparatorFunc:   intToItemOrderComparatorFunc(itemReorderID),
+				ReorderBucketsByItemsFunc: bucketOrientedFitToBucketReorderFunc(bucketReorderID),
+				ItemOrderComparatorFunc:   bucketOrientedFitToItemOrderComparatorFunc(itemReorderID),
 			},
 		}
 
@@ -60,7 +60,7 @@ func (b BucketOrientedFitConfigurator) Builder() BuildFunc {
 
 func (b BucketOrientedFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bucketOrientedFitParameterBucketReorderFunctionID, "", 0,
-		"BucketPoolBestFit bucket reorder function (defines order in which items are added to bucket pool):\n"+
+		"BucketOrientedFit buckets reorder function (defines order in which buckets are used):\n"+
 			"0 - no op (order defined by input data)\n"+
 			"1 - sort buckets in ascending order by the total sum of possible items' sizes in the bucket\n"+
 			"2 - sort buckets in descending order by the total sum of possible items' sizes in the bucket\n"+
@@ -68,7 +68,7 @@ func (b BucketOrientedFitConfigurator) SetUpFlags(command *cobra.Command) {
 			"4 - sort buckets in descending order by the total sum of possible items' sizes divided by bucket size\n"+
 			"(default 0)")
 	command.Flags().UintP(bucketOrientedFitParameterItemsReorderFunctionID, "", 0,
-		"BucketPoolBestFit bucket reorder function (defines order in which items are added to bucket pool):\n"+
+		"BucketOrientedFit items reorder function (defines order in which items are added to bucket):\n"+
 			"0 - ascending order of items by their size\n"+
 			"1 - descending order of items by their size\n"+
 			"(default 0)")
@@ -78,7 +78,7 @@ func (b BucketOrientedFitConfigurator) TypeName() string {
 	return bucketOrientedFitName
 }
 
-func intToBucketByItemsReorderFunc(intValue uint) helper.ReorderBucketsByItemsFunc {
+func bucketOrientedFitToBucketReorderFunc(intValue uint) helper.ReorderBucketsByItemsFunc {
 	switch intValue {
 	case 0:
 		return helper.NoOpReorderByItems
@@ -95,12 +95,12 @@ func intToBucketByItemsReorderFunc(intValue uint) helper.ReorderBucketsByItemsFu
 	}
 }
 
-func intToItemOrderComparatorFunc(intValue uint) bucketorientedfit.ItemOrderComparatorFunc {
+func bucketOrientedFitToItemOrderComparatorFunc(intValue uint) bucketorientedfit.ItemOrderComparatorFunc {
 	switch intValue {
 	case 0:
-		return bucketorientedfit.IncreasingItemSize
+		return bucketorientedfit.AscendingItemSize
 	case 1:
-		return bucketorientedfit.DecreasingItemSize
+		return bucketorientedfit.DescendingItemSize
 	default:
 		return nil
 	}
