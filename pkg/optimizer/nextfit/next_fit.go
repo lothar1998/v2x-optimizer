@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
@@ -47,5 +47,5 @@ func (nf NextFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Res
 		}
 	}
 
-	return utils.ToResult(sequence, n), nil
+	return helper.ToResult(sequence, n), nil
 }

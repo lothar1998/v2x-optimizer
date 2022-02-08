@@ -6,7 +6,7 @@ import (
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 )
 
 // NextKFit is an optimizer that implements the next-k-fit algorithm expanded to solve the bin packing problem
@@ -80,5 +80,5 @@ func (nkf NextKFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.R
 		}
 	}
 
-	return utils.ToResult(sequence, n), nil
+	return helper.ToResult(sequence, n), nil
 }

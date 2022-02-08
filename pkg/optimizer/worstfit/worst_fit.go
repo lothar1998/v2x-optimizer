@@ -5,8 +5,7 @@ import (
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils/bucketqueue"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 )
 
 // WorstFit is an optimizer that implements the worst-fit algorithm expanded to solve the bin packing problem
@@ -21,7 +20,7 @@ func (w WorstFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Res
 	n := len(data.MRB)
 	sequence := make([]int, v)
 
-	pq := bucketqueue.NewPriority(data.MRB)
+	pq := helper.NewPriorityBucketQueue(data.MRB)
 
 	for i := 0; i < v; i++ {
 		j := 0
@@ -46,5 +45,5 @@ func (w WorstFit) Optimize(ctx context.Context, data *data.Data) (*optimizer.Res
 		}
 	}
 
-	return utils.ToResult(sequence, n), nil
+	return helper.ToResult(sequence, n), nil
 }

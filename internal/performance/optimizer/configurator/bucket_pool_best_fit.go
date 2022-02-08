@@ -5,6 +5,7 @@ import (
 
 	"github.com/lothar1998/v2x-optimizer/internal/performance/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/bucketpoolbestfit"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +58,7 @@ func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
 			InitPoolSize:        int(initPoolSize),
 			BucketPoolBestFit: bucketpoolbestfit.BucketPoolBestFit{
 				InitPoolSize:       int(initPoolSize),
-				ReorderBucketsFunc: intToBucketReorderFunc(bucketReorderID),
+				ReorderBucketsFunc: bucketPoolBestFitToBucketReorderFunc(bucketReorderID),
 				FitnessFunc:        intToFitness(fitnessID),
 			},
 		}
@@ -82,8 +83,8 @@ func (b BucketPoolBestFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bucketPoolBestFitParameterBucketReorderFunctionID, "", 0,
 		"BucketPoolBestFit bucket reorder function (defines order in which items are added to bucket pool):\n"+
 			"0 - no op (order defined by input data)\n"+
-			"1 - sort buckets increasing basing on their size\n"+
-			"2 - sort buckets decreasing basing on their size\n"+
+			"1 - sort buckets in ascending order by size\n"+
+			"2 - sort buckets in descending order by size\n"+
 			"3 - random order\n"+
 			"(default 0)")
 	command.Flags().UintP(bucketPoolBestFitParameterInitPoolSize, "", 1,
@@ -94,16 +95,16 @@ func (b BucketPoolBestFitConfigurator) TypeName() string {
 	return bucketPoolBestFitName
 }
 
-func intToBucketReorderFunc(intValue uint) bucketpoolbestfit.ReorderBucketsFunc {
+func bucketPoolBestFitToBucketReorderFunc(intValue uint) helper.ReorderBucketsFunc {
 	switch intValue {
 	case 0:
-		return bucketpoolbestfit.NoOpReorder
+		return helper.NoOpReorder
 	case 1:
-		return bucketpoolbestfit.IncreasingSizeReorder
+		return helper.AscendingBucketSizeReorder
 	case 2:
-		return bucketpoolbestfit.DecreasingSizeReorder
+		return helper.DescendingBucketSizeReorder
 	case 3:
-		return bucketpoolbestfit.RandomReorder
+		return helper.RandomReorder
 	default:
 		return nil
 	}

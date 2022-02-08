@@ -8,7 +8,7 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/bestfit"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/utils"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 )
 
 // BucketPoolBestFit is an optimizer that implements the enhanced best-fit algorithm with bucket pool,
@@ -19,7 +19,7 @@ import (
 // InitPoolSize sets the initial size of a pool. The implementation works in O(v*n) time.
 type BucketPoolBestFit struct {
 	InitPoolSize int
-	ReorderBucketsFunc
+	helper.ReorderBucketsFunc
 	bestfit.FitnessFunc
 }
 
@@ -53,7 +53,7 @@ func (b BucketPoolBestFit) Optimize(ctx context.Context, data *data.Data) (*opti
 		}
 	}
 
-	return utils.ToResult(sequence, n), nil
+	return helper.ToResult(sequence, n), nil
 }
 
 func (b BucketPoolBestFit) assignBucket(
