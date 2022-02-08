@@ -61,17 +61,17 @@ func (b BucketOrientedFitConfigurator) Builder() BuildFunc {
 func (b BucketOrientedFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bucketOrientedFitParameterBucketReorderFunctionID, "", 0,
 		"BucketOrientedFit buckets reorder function (defines order in which buckets are used):\n"+
-			"0 - no op (order defined by input data)\n"+
-			"1 - sort buckets in ascending order by the total sum of possible items' sizes in the bucket\n"+
-			"2 - sort buckets in descending order by the total sum of possible items' sizes in the bucket\n"+
-			"3 - sort buckets in ascending order by the total sum of possible items' sizes divided by bucket size\n"+
-			"4 - sort buckets in descending order by the total sum of possible items' sizes divided by bucket size\n"+
-			"(default 0)")
+			"\t0 - no op (order defined by input data)\n"+
+			"\t1 - sort buckets in ascending order by the total sum of possible items' sizes in the bucket\n"+
+			"\t2 - sort buckets in descending order by the total sum of possible items' sizes in the bucket\n"+
+			"\t3 - sort buckets in ascending order by the total sum of possible items' sizes divided by bucket size\n"+
+			"\t4 - sort buckets in descending order by the total sum of possible items' sizes divided by bucket size\n"+
+			"\t(default 0)")
 	command.Flags().UintP(bucketOrientedFitParameterItemsReorderFunctionID, "", 0,
 		"BucketOrientedFit items reorder function (defines order in which items are added to bucket):\n"+
-			"0 - ascending order of items by their size\n"+
-			"1 - descending order of items by their size\n"+
-			"(default 0)")
+			"\t0 - ascending order of items by their size\n"+
+			"\t1 - descending order of items by their size\n"+
+			"\t(default 0)")
 }
 
 func (b BucketOrientedFitConfigurator) TypeName() string {
