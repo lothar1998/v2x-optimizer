@@ -7,6 +7,7 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/bestfit"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,7 +32,7 @@ func TestBucketPoolBestFit_Optimize(t *testing.T) {
 
 			result, err := BucketPoolBestFit{
 				InitPoolSize:       2,
-				ReorderBucketsFunc: NoOpReorder,
+				ReorderBucketsFunc: helper.NoOpReorder,
 				FitnessFunc:        bestfit.FitnessClassic,
 			}.Optimize(context.TODO(), d)
 
@@ -59,7 +60,7 @@ func TestBucketPoolBestFit_Optimize(t *testing.T) {
 
 			result, err := BucketPoolBestFit{
 				InitPoolSize:       2,
-				ReorderBucketsFunc: NoOpReorder,
+				ReorderBucketsFunc: helper.NoOpReorder,
 				FitnessFunc:        bestfit.FitnessClassic,
 			}.Optimize(context.TODO(), d)
 
@@ -78,7 +79,7 @@ func TestBucketPoolBestFit_Optimize(t *testing.T) {
 
 		result, err := BucketPoolBestFit{
 			InitPoolSize:       5,
-			ReorderBucketsFunc: NoOpReorder,
+			ReorderBucketsFunc: helper.NoOpReorder,
 			FitnessFunc:        bestfit.FitnessClassic,
 		}.Optimize(context.TODO(), d)
 
@@ -95,7 +96,7 @@ func TestBucketPoolBestFit_Optimize(t *testing.T) {
 
 		result, err := BucketPoolBestFit{
 			InitPoolSize:       0,
-			ReorderBucketsFunc: NoOpReorder,
+			ReorderBucketsFunc: helper.NoOpReorder,
 			FitnessFunc:        bestfit.FitnessClassic,
 		}.Optimize(context.TODO(), d)
 

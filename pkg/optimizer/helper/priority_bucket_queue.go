@@ -1,4 +1,4 @@
-package bucketqueue
+package helper
 
 import "container/heap"
 
@@ -10,7 +10,7 @@ type Bucket struct {
 
 type PriorityBucketQueue []*Bucket
 
-func NewPriority(bucketSizes []int) PriorityBucketQueue {
+func NewPriorityBucketQueue(bucketSizes []int) PriorityBucketQueue {
 	pq := make(PriorityBucketQueue, len(bucketSizes))
 
 	for i, bucketSize := range bucketSizes {

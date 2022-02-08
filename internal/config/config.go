@@ -21,4 +21,5 @@ var RegisteredOptimizerConfigurators = []optimizerConfigurator.Configurator{
 	optimizerConfigurator.NextKFitConfigurator{},
 	optimizerConfigurator.BestFitConfigurator{},
 	optimizerConfigurator.BucketPoolBestFitConfigurator{},
+	optimizerConfigurator.BucketOrientedFitConfigurator{},
 }
