@@ -70,23 +70,23 @@ func (b BucketPoolBestFitConfigurator) Builder() BuildFunc {
 func (b BucketPoolBestFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bucketPoolBestFitParameterFunctionID, "", 0,
 		"BucketPoolBestFit fitness function:\n"+
-			"0 - classic fitness function\n"+
-			"1 - take into account bucket size\n"+
-			"2 - take into account left space in bucket and prefer big items\n"+
-			"3 - take into account left space in bucket and prefer small items\n"+
-			"4 - take into account left space in bucket and prefer small items and punish perfectly fitted items\n"+
-			"5 - take into account left space in bucket and prefer as little space left as possible"+
+			"\t0 - classic fitness function\n"+
+			"\t1 - take into account bucket size\n"+
+			"\t2 - take into account left space in bucket and prefer big items\n"+
+			"\t3 - take into account left space in bucket and prefer small items\n"+
+			"\t4 - take into account left space in bucket and prefer small items and punish perfectly fitted items\n"+
+			"\t5 - take into account left space in bucket and prefer as little space left as possible"+
 			" before and after item assignment\n"+
-			"6 - take into account left space in bucket and prefer as little space left as possible"+
+			"\t6 - take into account left space in bucket and prefer as little space left as possible"+
 			" before and after item assignment and punish perfectly fitted items\n"+
-			"(default 0)")
+			"\t(default 0)")
 	command.Flags().UintP(bucketPoolBestFitParameterBucketReorderFunctionID, "", 0,
 		"BucketPoolBestFit bucket reorder function (defines order in which items are added to bucket pool):\n"+
-			"0 - no op (order defined by input data)\n"+
-			"1 - sort buckets in ascending order by size\n"+
-			"2 - sort buckets in descending order by size\n"+
-			"3 - random order\n"+
-			"(default 0)")
+			"\t0 - no op (order defined by input data)\n"+
+			"\t1 - sort buckets in ascending order by size\n"+
+			"\t2 - sort buckets in descending order by size\n"+
+			"\t3 - random order\n"+
+			"\t(default 0)")
 	command.Flags().UintP(bucketPoolBestFitParameterInitPoolSize, "", 1,
 		"BucketPoolBestFit init bucket pool size (default 1)")
 }

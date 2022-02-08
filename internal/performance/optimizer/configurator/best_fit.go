@@ -45,16 +45,16 @@ func (n BestFitConfigurator) Builder() BuildFunc {
 func (n BestFitConfigurator) SetUpFlags(command *cobra.Command) {
 	command.Flags().UintP(bestFitParameterFunctionID, "", 0,
 		"BestFit fitness function:\n"+
-			"0 - classic fitness function\n"+
-			"1 - take into account bucket size\n"+
-			"2 - take into account left space in bucket and prefer big items\n"+
-			"3 - take into account left space in bucket and prefer small items\n"+
-			"4 - take into account left space in bucket and prefer small items and punish perfectly fitted items\n"+
-			"5 - take into account left space in bucket and prefer as little space left as possible"+
+			"\t0 - classic fitness function\n"+
+			"\t1 - take into account bucket size\n"+
+			"\t2 - take into account left space in bucket and prefer big items\n"+
+			"\t3 - take into account left space in bucket and prefer small items\n"+
+			"\t4 - take into account left space in bucket and prefer small items and punish perfectly fitted items\n"+
+			"\t5 - take into account left space in bucket and prefer as little space left as possible"+
 			" before and after item assignment\n"+
-			"6 - take into account left space in bucket and prefer as little space left as possible"+
+			"\t6 - take into account left space in bucket and prefer as little space left as possible"+
 			" before and after item assignment and punish perfectly fitted items\n"+
-			"(default 0)")
+			"\t(default 0)")
 }
 
 func (n BestFitConfigurator) TypeName() string {
