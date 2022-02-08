@@ -8,6 +8,11 @@ import (
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/helper"
 )
 
+// BucketOrientedFit is an optimizer that implements the heuristic algorithm applying items to buckets
+// in specific order defined by bucket order function and item order function. helper.ReorderBucketsByItemsFunc
+// defines the order in which buckets will be filled. ItemOrderComparatorFunc defines the order in which items will be
+// placed into the current bucket. The heuristic name comprises "bucket oriented" since it first reorders buckets,
+// then fills them in defined order using items. The implementation works in O(v*n + v*n*lgv) time.
 type BucketOrientedFit struct {
 	helper.ReorderBucketsByItemsFunc
 	ItemOrderComparatorFunc
