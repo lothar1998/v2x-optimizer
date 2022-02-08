@@ -39,7 +39,7 @@ func FromOutput(output string) (*optimizer.Result, error) {
 
 		switch {
 		case strings.HasPrefix(line, rrhCount):
-			parsedInt, err := strconv.ParseInt(value, 10, 32)
+			parsedInt, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
 			}

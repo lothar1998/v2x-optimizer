@@ -17,9 +17,9 @@ var (
 func generate(v, n int, generate generateFunc) *data.Data {
 	r := make([][]int, v)
 
-	for i := 0; i < v; i++ {
+	for i := range r {
 		r[i] = make([]int, n)
-		for j := 0; j < n; j++ {
+		for j := range r[i] {
 			r[i][j] = generate(RLimit)
 		}
 	}
@@ -27,7 +27,7 @@ func generate(v, n int, generate generateFunc) *data.Data {
 	mrb := make([]int, n)
 	mrbLimit := RLimit * v / n * 2
 
-	for i := 0; i < n; i++ {
+	for i := range mrb {
 		mrb[i] = gen.Intn(mrbLimit)
 	}
 

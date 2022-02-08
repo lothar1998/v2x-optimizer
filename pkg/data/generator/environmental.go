@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
@@ -8,98 +9,78 @@ import (
 )
 
 const (
-	integrationSteps = 20
-	xSizeKm          = 1
-	ySizeKm          = 1
+	squareSideLength = 1
+	bigP             = 2
+	alpha            = 3.5
+	rate             = 1 * 1024
 )
 
 func GenerateEnvironmental(v, n int) *data.Data {
-	mrbLocations := make([]utils.Point, n)
-	rLocations := make([]utils.Point, v)
-
-	for i := 0; i < n; i++ {
-		x := gen.Float64() * xSizeKm
-		y := gen.Float64() * ySizeKm
-		mrbLocations[i] = utils.Point{X: x, Y: y}
-	}
-
-	for i := 0; i < v; i++ {
-		x := gen.Float64() * xSizeKm
-		y := gen.Float64() * ySizeKm
-		rLocations[i] = utils.Point{X: x, Y: y}
-	}
-
-	mrbSum := make([]int, n)
+	stationPoints := generateStationPoints(n)
+	vehiclePoints := generateVehiclePoints(v)
 
 	r := make([][]int, v)
-
-	for i := 0; i < v; i++ {
+	for i := range r {
 		r[i] = make([]int, n)
-		for j := 0; j < n; j++ {
-			d := utils.ComputeEuclideanDistance(&mrbLocations[j], &rLocations[i])
-			rValue := getR(d, n)
-			r[i][j] = rValue
-			mrbSum[j] += rValue
+		for j := range r[i] {
+			r[i][j] = computeR(vehiclePoints[i], stationPoints[j])
 		}
 	}
 
 	mrb := make([]int, n)
-	for i := 0; i < n; i++ {
-		mrb[i] = 100
+	for i := range mrb {
+		mrb[i] = gen.Intn(50)
 	}
 
 	return &data.Data{R: r, MRB: mrb}
 }
 
-func getR(d float64, n int) int {
-	return computeR(
-		1024,
-		3.5,
-		23,
-		d,
-		1,
-		-174,
-		0,
-		1,
-		0,
-		2*math.Pi,
-		n,
-	)
-}
+func generateStationPoints(n int) []utils.Point {
+	stationsCountInOneDimension := int(math.Ceil(math.Sqrt(float64(n))))
+	radius := squareSideLength / float64(2*stationsCountInOneDimension)
+	totalStationCount := int(math.Pow(float64(stationsCountInOneDimension), 2))
 
-func computeR(uplinkDataRate, alpha, p, d, c, noc, rMin, rMax, thetaMin, thetaMax float64, n int) int {
-	sinr := computeSINR(alpha, p, d, c, noc, rMin, rMax, thetaMin, thetaMax, n)
-	r := uplinkDataRate / toRBDataRate(sinr)
-	return int(math.Ceil(r))
-}
+	stationIndices := gen.Perm(totalStationCount)[0:n]
 
-func computeSINR(alpha, p, d, c, noc, rMin, rMax, thetaMin, thetaMax float64, n int) float64 {
-	numerator := p * math.Pow(d, -alpha)
-	denominator := noc + computeISum(alpha, p, c, rMin, rMax, thetaMin, thetaMax, n)
-	return numerator / denominator
-}
-
-func computeISum(alpha, p, c, rMin, rMax, thetaMin, thetaMax float64, n int) float64 {
-	return float64(n) * computeIn(alpha, p, c, rMin, rMax, thetaMin, thetaMax)
-}
-
-func computeIn(alpha, p, c, rMin, rMax, thetaMin, thetaMax float64) float64 {
-	f := func(r, theta float64) float64 {
-		numerator := p * math.Pow(c, -(alpha+1)) * math.Pow(r, alpha+1)
-		denominator := math.Pi * math.Pow(math.Sqrt(math.Pow(r, 2)+4+4*r*math.Cos(theta)), alpha)
-		return numerator / denominator
+	stationPoints := make([]utils.Point, len(stationIndices))
+	for i, index := range stationIndices {
+		stationPoints[i] = toStationPoint(radius, stationsCountInOneDimension, index)
 	}
 
-	integral, _ := utils.ComputeDoubleIntegral(
-		thetaMin, thetaMax, rMin, rMax, integrationSteps, integrationSteps, f)
-	return integral
+	return stationPoints
 }
 
-// kbps
+func generateVehiclePoints(v int) []utils.Point {
+	vehiclePoints := make([]utils.Point, v)
+	for i := range vehiclePoints {
+		x := gen.Float64() * squareSideLength
+		y := gen.Float64() * squareSideLength
+		vehiclePoints[i] = utils.Point{X: x, Y: y}
+	}
+
+	return vehiclePoints
+}
+
+func toStationPoint(radius float64, stationCount, i int) utils.Point {
+	x := radius * float64((1+2*i)%(2*stationCount))
+	y := radius + 2*(math.Floor(float64(i)/float64(stationCount)))*radius
+	return utils.Point{X: x, Y: y}
+}
+
+func computeR(p1, p2 utils.Point) int {
+	d := p1.Distance(p2)
+	s := bigP * math.Pow(d, -alpha)
+
+	// compute using discrete table
+	fmt.Println(toRBDataRate(s))
+
+	return int(math.Ceil(rate / toRBDataRate(s)))
+}
+
 func toRBDataRate(sinr float64) float64 {
 	switch {
-	// case sinr <= -9.5:
-	//	return 21 // TODO not sure what to return
+	case sinr <= -9.5:
+		return 0.001 // TODO not sure what to return
 	case sinr <= -6.7:
 		return 25.59
 	case sinr <= -4.1:

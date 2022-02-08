@@ -148,7 +148,7 @@ func parseIntArray(array string) (result []int, err error) {
 			length++
 			isPreviousSpace = false
 		case unicode.IsSpace(c) && !isPreviousSpace:
-			parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
+			parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 64)
 			if err != nil {
 				return nil, err
 			}
@@ -164,7 +164,7 @@ func parseIntArray(array string) (result []int, err error) {
 	}
 
 	if leftIndex < len(array) {
-		parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
+		parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +195,7 @@ func parseArrayOfArrays(str string) []string {
 
 func parseInt(str string) (int, error) {
 	value := findValue(str)
-	parsedInt, err := strconv.ParseInt(value, 10, 32)
+	parsedInt, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return 0, err
 	}
