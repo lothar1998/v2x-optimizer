@@ -13,7 +13,7 @@ func GenerateNormal(itemCount, maxItemSize, bucketCount, maxBucketSize int) *dat
 	return &data.Data{R: itemSizes, MRB: bucketSizes}
 }
 
-func GenerateNormalConstantCapacity(itemCount, maxItemSize, bucketCount, bucketSize int) *data.Data {
+func GenerateNormalConstantBucketSize(itemCount, maxItemSize, bucketCount, bucketSize int) *data.Data {
 	itemSizes := generateItemSizes(itemCount, maxItemSize, bucketCount, generateItemSizeNormal)
 	bucketSizes := generateBucketsOfConstantSize(bucketCount, bucketSize)
 

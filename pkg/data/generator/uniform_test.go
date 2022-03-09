@@ -10,8 +10,8 @@ func TestUniform_Generate(t *testing.T) {
 	verifyGenerate(t, GenerateUniform)
 }
 
-func TestUniform_GenerateConstantCapacity(t *testing.T) {
+func TestUniform_GenerateConstantBucketSize(t *testing.T) {
 	t.Parallel()
 
-	verifyGenerateConstantCapacity(t, GenerateUniformConstantCapacity)
+	verifyGenerateConstantCapacity(t, GenerateUniformConstantBucketSize)
 }

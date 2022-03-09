@@ -13,7 +13,7 @@ func GenerateExponential(itemCount, maxItemSize, bucketCount, maxBucketSize int)
 	return &data.Data{R: itemSizes, MRB: bucketSizes}
 }
 
-func GenerateExponentialConstantCapacity(itemCount, maxItemSize, bucketCount, bucketSize int) *data.Data {
+func GenerateExponentialConstantBucketSize(itemCount, maxItemSize, bucketCount, bucketSize int) *data.Data {
 	itemSizes := generateItemSizes(itemCount, maxItemSize, bucketCount, generateItemSizeExponential)
 	bucketSizes := generateBucketsOfConstantSize(bucketCount, bucketSize)
 

@@ -10,8 +10,8 @@ func TestNormal_Generate(t *testing.T) {
 	verifyGenerate(t, GenerateNormal)
 }
 
-func TestNormal_GenerateConstantCapacity(t *testing.T) {
+func TestNormal_GenerateConstantBucketSize(t *testing.T) {
 	t.Parallel()
 
-	verifyGenerateConstantCapacity(t, GenerateNormalConstantCapacity)
+	verifyGenerateConstantCapacity(t, GenerateNormalConstantBucketSize)
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestV2XEnvironmental_Generate(t *testing.T) {
+func TestGenerateV2XEnvironmental(t *testing.T) {
 	t.Parallel()
 
 	itemCount := 10
@@ -38,7 +38,7 @@ func TestV2XEnvironmental_Generate(t *testing.T) {
 	}
 }
 
-func TestV2XEnvironmental_GenerateConstantBucketSize(t *testing.T) {
+func TestGenerateV2XEnvironmentalConstantBucketSize(t *testing.T) {
 	t.Parallel()
 
 	itemCount := 10
@@ -48,7 +48,7 @@ func TestV2XEnvironmental_GenerateConstantBucketSize(t *testing.T) {
 
 	expectedMaxItemSize := rate / toRBDataRate(0)
 
-	result := GenerateV2XEnvironmentalConstantCapacity(itemCount, maxItemSize, bucketCount, bucketSize)
+	result := GenerateV2XEnvironmentalConstantBucketSize(itemCount, maxItemSize, bucketCount, bucketSize)
 
 	assert.Len(t, result.MRB, bucketCount)
 	assert.Len(t, result.R, itemCount)

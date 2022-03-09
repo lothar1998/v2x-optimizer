@@ -20,7 +20,7 @@ func GenerateV2XEnvironmental(itemCount, _, bucketCount, maxBucketSize int) *dat
 	return &data.Data{R: itemSizes, MRB: bucketSizes}
 }
 
-func GenerateV2XEnvironmentalConstantCapacity(itemCount, _, bucketCount, bucketSize int) *data.Data {
+func GenerateV2XEnvironmentalConstantBucketSize(itemCount, _, bucketCount, bucketSize int) *data.Data {
 	itemSizes := generateItemSizesV2XEnvironmental(itemCount, bucketCount)
 	bucketSizes := generateBucketsOfConstantSize(bucketCount, bucketSize)
 

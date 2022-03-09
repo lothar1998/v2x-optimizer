@@ -21,7 +21,7 @@ func Test_generateWith(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		times int
+		count int
 	}
 	tests := []struct {
 		name string
@@ -55,7 +55,7 @@ func Test_generateWith(t *testing.T) {
 						assert.NoError(t, err)
 						return nil
 					}).
-				Times(tt.args.times)
+				Times(tt.args.count)
 
 			runnable := generateWith(encoder)
 
@@ -65,13 +65,13 @@ func Test_generateWith(t *testing.T) {
 			assert.NoError(t, err)
 			err = command.Flags().Set(itemCountValue, strconv.Itoa(expectedV))
 			assert.NoError(t, err)
-			err = command.Flags().Set(timesValue, strconv.Itoa(tt.args.times))
+			err = command.Flags().Set(countValue, strconv.Itoa(tt.args.count))
 			assert.NoError(t, err)
 
 			err = runnable(command, []string{testPath})
 			assert.NoError(t, err)
 
-			for i := 0; i < tt.args.times; i++ {
+			for i := 0; i < tt.args.count; i++ {
 				expectedFilepath := filepath.Join(testPath, fmt.Sprintf(outputFilePattern, i))
 				assert.FileExists(t, expectedFilepath)
 

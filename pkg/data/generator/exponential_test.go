@@ -10,8 +10,8 @@ func TestExponential_Generate(t *testing.T) {
 	verifyGenerate(t, GenerateExponential)
 }
 
-func TestExponential_GenerateConstantCapacity(t *testing.T) {
+func TestExponential_GenerateConstantBucketSize(t *testing.T) {
 	t.Parallel()
 
-	verifyGenerateConstantCapacity(t, GenerateExponentialConstantCapacity)
+	verifyGenerateConstantCapacity(t, GenerateExponentialConstantBucketSize)
 }

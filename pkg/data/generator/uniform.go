@@ -9,7 +9,7 @@ func GenerateUniform(itemCount, maxItemSize, bucketCount, maxBucketSize int) *da
 	return &data.Data{R: itemSizes, MRB: bucketSizes}
 }
 
-func GenerateUniformConstantCapacity(itemCount, maxItemSize, bucketCount, bucketSize int) *data.Data {
+func GenerateUniformConstantBucketSize(itemCount, maxItemSize, bucketCount, bucketSize int) *data.Data {
 	itemSizes := generateItemSizes(itemCount, maxItemSize, bucketCount, generateItemSizeUniform)
 	bucketSizes := generateBucketsOfConstantSize(bucketCount, bucketSize)
 
