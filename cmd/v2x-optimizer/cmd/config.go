@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/data/encoder"
 )
 
 type encoderInfo struct {
@@ -19,15 +20,16 @@ const (
 
 var (
 	formatsToEncodersInfo = map[string]encoderInfo{
-		jsonFormat:  {"json", data.JSONEncoder{}},
-		plainFormat: {"plain (CSV-like)", data.PlainEncoder{}},
-		cplexFormat: {"CPLEX", data.CPLEXEncoder{}},
+		jsonFormat:  {"json", encoder.JSON{}},
+		plainFormat: {"plain (CSV-like)", encoder.Plain{}},
+		cplexFormat: {"CPLEX", encoder.CPLEX{}},
 	}
 
 	availableFileFormats = getAvailableFileFormats()
 )
 
 var (
+	errCannotCreatePath  = errors.New("cannot create path")
 	errCannotOpenFile    = errors.New("cannot open file")
 	errCannotParseData   = errors.New("cannot parse data")
 	errCannotEncodeData  = errors.New("cannot encode data")

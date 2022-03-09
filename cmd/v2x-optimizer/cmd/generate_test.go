@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"path"
+	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -19,15 +21,14 @@ func Test_generateWith(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		times            int
-		expectedSuffixes []string
+		count int
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
-		{"should generate single file", args{1, []string{""}}},
-		{"should generate multiple files", args{3, []string{"_0", "_1", "_2"}}},
+		{"should generate single file", args{1}},
+		{"should generate multiple files", args{3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -54,76 +55,29 @@ func Test_generateWith(t *testing.T) {
 						assert.NoError(t, err)
 						return nil
 					}).
-				Times(tt.args.times)
+				Times(tt.args.count)
 
 			runnable := generateWith(encoder)
 
 			command := &cobra.Command{}
 			setUpGenerateFlags(command)
-			err = command.Flags().Set(nValue, strconv.Itoa(expectedN))
+			err = command.Flags().Set(bucketCountValue, strconv.Itoa(expectedN))
 			assert.NoError(t, err)
-			err = command.Flags().Set(vValue, strconv.Itoa(expectedV))
+			err = command.Flags().Set(itemCountValue, strconv.Itoa(expectedV))
 			assert.NoError(t, err)
-			err = command.Flags().Set(timesValue, strconv.Itoa(tt.args.times))
-			assert.NoError(t, err)
-
-			err = runnable(command, []string{testPath + ".txt"})
+			err = command.Flags().Set(countValue, strconv.Itoa(tt.args.count))
 			assert.NoError(t, err)
 
-			for _, suffix := range tt.args.expectedSuffixes {
-				expectedFilepath := testPath + suffix + ".txt"
+			err = runnable(command, []string{testPath})
+			assert.NoError(t, err)
+
+			for i := 0; i < tt.args.count; i++ {
+				expectedFilepath := filepath.Join(testPath, fmt.Sprintf(outputFilePattern, i))
 				assert.FileExists(t, expectedFilepath)
 
 				readData, err := ioutil.ReadFile(expectedFilepath)
 				assert.NoError(t, err)
 				assert.Equal(t, expectedContent, string(readData))
-			}
-		})
-	}
-}
-
-func Test_toMultipleFilesFilepath(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		path string
-		i    int
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			"should create filepath for file",
-			args{"file", 2},
-			"file_2",
-		},
-		{
-			"should create filepath for file with extension",
-			args{"file.txt", 2},
-			"file_2.txt",
-		},
-		{
-			"should create filepath for filepath",
-			args{"/dir1/dir2/file", 2},
-			"/dir1/dir2/file_2",
-		},
-		{
-			"should create filepath for filepath with extension",
-			args{"/dir1/dir2/file.txt", 2},
-			"/dir1/dir2/file_2.txt",
-		},
-		{
-			"should create filepath for same filename and extension",
-			args{"./third_party/cplex/data/data.dat", 2},
-			"./third_party/cplex/data/data_2.dat",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := toMultipleFilesFilepath(tt.args.path, tt.args.i); got != tt.want {
-				t.Errorf("toMultipleFilesFilepath() = %v, want %v", got, tt.want)
 			}
 		})
 	}

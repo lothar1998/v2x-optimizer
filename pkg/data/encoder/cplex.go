@@ -1,4 +1,4 @@
-package data
+package encoder
 
 import (
 	"bufio"
@@ -7,20 +7,22 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
-// CPLEXEncoder facilitates encoding Data to CPLEX data format.
-type CPLEXEncoder struct{}
+// CPLEX facilitates encoding Data to CPLEX data format.
+type CPLEX struct{}
 
 // Encode allows for encoding Data to CPLEX data format.
-func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
-	lengths := fmt.Sprintf("V = %d;\nN = %d;\n", len(data.R), len(data.MRB))
+func (e CPLEX) Encode(input *data.Data, writer io.Writer) error {
+	lengths := fmt.Sprintf("V = %d;\nN = %d;\n", len(input.R), len(input.MRB))
 	_, err := writer.Write([]byte(lengths))
 	if err != nil {
 		return err
 	}
 
-	_, err = writer.Write([]byte("MRB = " + toIntArray(data.MRB) + ";\n"))
+	_, err = writer.Write([]byte("MRB = " + toIntArray(input.MRB) + ";\n"))
 	if err != nil {
 		return err
 	}
@@ -30,7 +32,7 @@ func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
 		return err
 	}
 
-	for _, elems := range data.R {
+	for _, elems := range input.R {
 		_, err = writer.Write([]byte(toIntArray(elems) + "\n"))
 		if err != nil {
 			return err
@@ -48,8 +50,8 @@ func (e CPLEXEncoder) Encode(data *Data, writer io.Writer) error {
 // Decode allows for decoding CPLEX data format to Data.
 // It returns an error if the sizes of R and MRB are not equal to size variables [V, N].
 // It is possible to decode data with additional variables defined. In such a case Decode skips these values.
-func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
-	var data Data
+func (e CPLEX) Decode(reader io.Reader) (*data.Data, error) {
+	var output data.Data
 	bufferedReader := bufio.NewReader(reader)
 	var n, v int
 
@@ -89,7 +91,7 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 				}
 				r = append(r, intArray)
 			}
-			data.R = r
+			output.R = r
 
 		case strings.HasPrefix(line, "MRB"):
 			variable := findValue(line)
@@ -97,17 +99,17 @@ func (e CPLEXEncoder) Decode(reader io.Reader) (*Data, error) {
 			if err != nil {
 				return nil, err
 			}
-			data.MRB = mrb
+			output.MRB = mrb
 
 		default:
 		}
 	}
 
-	if err := verifyDecodedData(&data, n, v); err != nil {
+	if err := verifyDecodedData(&output, n, v); err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	return &output, nil
 }
 
 func toIntArray(elems []int) string {
@@ -146,7 +148,7 @@ func parseIntArray(array string) (result []int, err error) {
 			length++
 			isPreviousSpace = false
 		case unicode.IsSpace(c) && !isPreviousSpace:
-			parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
+			parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 64)
 			if err != nil {
 				return nil, err
 			}
@@ -162,7 +164,7 @@ func parseIntArray(array string) (result []int, err error) {
 	}
 
 	if leftIndex < len(array) {
-		parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 32)
+		parsedInt, err := strconv.ParseInt(array[leftIndex:leftIndex+length], 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +195,7 @@ func parseArrayOfArrays(str string) []string {
 
 func parseInt(str string) (int, error) {
 	value := findValue(str)
-	parsedInt, err := strconv.ParseInt(value, 10, 32)
+	parsedInt, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return 0, err
 	}
@@ -208,18 +210,18 @@ func findValue(str string) string {
 	return strings.ReplaceAll(str, "\n", "")
 }
 
-func verifyDecodedData(data *Data, n, v int) error {
-	if data.MRB == nil || data.R == nil {
-		return ErrMalformedData
+func verifyDecodedData(output *data.Data, n, v int) error {
+	if output.MRB == nil || output.R == nil {
+		return data.ErrMalformedData
 	}
 
-	if len(data.MRB) != n && len(data.R) != v {
-		return ErrMalformedData
+	if len(output.MRB) != n && len(output.R) != v {
+		return data.ErrMalformedData
 	}
 
-	for _, e := range data.R {
+	for _, e := range output.R {
 		if len(e) != n {
-			return ErrMalformedData
+			return data.ErrMalformedData
 		}
 	}
 

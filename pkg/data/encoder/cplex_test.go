@@ -1,4 +1,4 @@
-package data
+package encoder
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,20 +20,20 @@ func TestCPLEXEncoder_Encode_Decode_Compatibility(t *testing.T) {
 		{31, 32, 33, 34, 35},
 		{41, 42, 43, 44, 45},
 	}
-	data := &Data{MRB: mrb, R: r}
+	expectedData := &data.Data{MRB: mrb, R: r}
 
-	encoder := CPLEXEncoder{}
+	encoder := CPLEX{}
 
 	var buffer bytes.Buffer
 
-	err := encoder.Encode(data, &buffer)
+	err := encoder.Encode(expectedData, &buffer)
 
 	assert.NoError(t, err)
 
 	decodedData, err := encoder.Decode(&buffer)
 	assert.NoError(t, err)
 
-	assert.Equal(t, data, decodedData)
+	assert.Equal(t, expectedData, decodedData)
 }
 
 func TestCPLEXEncoder_Decode(t *testing.T) {
@@ -58,12 +59,12 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MRB: mrb, R: r}
+		expectedData := &data.Data{MRB: mrb, R: r}
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
 		assert.NoError(t, err)
-		assert.Equal(t, data, decodeData)
+		assert.Equal(t, expectedData, decodeData)
 	})
 
 	t.Run("should skip unknown variables", func(t *testing.T) {
@@ -87,12 +88,12 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MRB: mrb, R: r}
+		expectedData := &data.Data{MRB: mrb, R: r}
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
 		assert.NoError(t, err)
-		assert.Equal(t, data, decodeData)
+		assert.Equal(t, expectedData, decodeData)
 	})
 
 	t.Run("should not decode incorrect data", func(t *testing.T) {
@@ -106,9 +107,9 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			"[21 22 24 25]\n" +
 			"];\n"
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
-		assert.ErrorIs(t, err, ErrMalformedData)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
 		assert.Zero(t, decodeData)
 	})
 
@@ -122,9 +123,9 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			"[21 22 23 24 25]\n" +
 			"];\n"
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(cplexStr))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(cplexStr))
 
-		assert.ErrorIs(t, err, ErrMalformedData)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
 		assert.Zero(t, decodeData)
 	})
 
@@ -142,9 +143,9 @@ func TestCPLEXEncoder_Decode(t *testing.T) {
 			  ]
              }`
 
-		decodeData, err := CPLEXEncoder{}.Decode(strings.NewReader(jsonString))
+		decodeData, err := CPLEX{}.Decode(strings.NewReader(jsonString))
 
-		assert.ErrorIs(t, err, ErrMalformedData)
+		assert.ErrorIs(t, err, data.ErrMalformedData)
 		assert.Zero(t, decodeData)
 	})
 }
@@ -162,7 +163,7 @@ func TestCPLEXEncoder_Encode(t *testing.T) {
 			{31, 32, 33, 34, 35},
 			{41, 42, 43, 44, 45},
 		}
-		data := &Data{MRB: mrb, R: r}
+		expectedData := &data.Data{MRB: mrb, R: r}
 
 		expectedEncodedString := "V = 4;\n" +
 			"N = 5;\n" +
@@ -176,7 +177,7 @@ func TestCPLEXEncoder_Encode(t *testing.T) {
 
 		var buffer bytes.Buffer
 
-		err := CPLEXEncoder{}.Encode(data, &buffer)
+		err := CPLEX{}.Encode(expectedData, &buffer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedEncodedString, buffer.String())
