@@ -3,33 +3,37 @@ package generator
 import (
 	"math/rand"
 	"time"
-
-	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
-type generateFunc = func(limit int) int
+var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-var (
-	RLimit = 100
-	gen    = rand.New(rand.NewSource(time.Now().UnixNano()))
-)
+type generateItemSizeFunc func(int) int
 
-func generate(v, n int, generate generateFunc) *data.Data {
-	r := make([][]int, v)
+func generateItemSizes(itemCount, maxItemSize, bucketCount int, generateItemSize generateItemSizeFunc) [][]int {
+	itemsSizes := make([][]int, itemCount)
 
-	for i := range r {
-		r[i] = make([]int, n)
-		for j := range r[i] {
-			r[i][j] = generate(RLimit)
+	for i := range itemsSizes {
+		itemsSizes[i] = make([]int, bucketCount)
+		for j := range itemsSizes[i] {
+			itemsSizes[i][j] = generateItemSize(maxItemSize)
 		}
 	}
 
-	mrb := make([]int, n)
-	mrbLimit := RLimit * v / n * 2
+	return itemsSizes
+}
 
-	for i := range mrb {
-		mrb[i] = gen.Intn(mrbLimit)
+func generateBucketsOfConstantSize(bucketCount, bucketSize int) []int {
+	bucketSizes := make([]int, bucketCount)
+	for i := range bucketSizes {
+		bucketSizes[i] = bucketSize
 	}
+	return bucketSizes
+}
 
-	return &data.Data{R: r, MRB: mrb}
+func generateBucketsWithSizes(bucketCount, maxBucketSize int) []int {
+	bucketSizes := make([]int, bucketCount)
+	for i := range bucketSizes {
+		bucketSizes[i] = random.Intn(maxBucketSize) + 1
+	}
+	return bucketSizes
 }

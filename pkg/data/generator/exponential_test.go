@@ -2,23 +2,16 @@ package generator
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateExponential(t *testing.T) {
+func TestExponential_Generate(t *testing.T) {
 	t.Parallel()
 
-	v := 10
-	n := 5
+	verifyGenerate(t, GenerateExponential)
+}
 
-	data := GenerateExponential(v, n)
+func TestExponential_GenerateConstantCapacity(t *testing.T) {
+	t.Parallel()
 
-	assert.Len(t, data.MRB, n)
-	assert.Len(t, data.R, v)
-	assert.Len(t, data.R[0], n)
-	assert.GreaterOrEqual(t, sum(data.MRB), len(data.MRB))
-	for _, s := range data.R {
-		assert.GreaterOrEqual(t, sum(s), len(s))
-	}
+	verifyGenerateConstantCapacity(t, GenerateExponentialConstantCapacity)
 }

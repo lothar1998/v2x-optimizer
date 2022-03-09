@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
-	"strconv"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/data/generator"
@@ -13,13 +13,23 @@ import (
 )
 
 const (
-	nValue            = "rrhs"
-	vValue            = "vehicles"
-	timesValue        = "times"
-	distributionValue = "distribution"
+	itemCountValue          = "items"
+	itemSizeValue           = "item_size"
+	bucketCountValue        = "buckets"
+	bucketSizeValue         = "bucket_size"
+	constantBucketSizeValue = "constant_bucket_size"
+	timesValue              = "times"
+	kindValue               = "kind"
+
+	exponentialKind = "exponential"
+	normalKind      = "normal"
+	uniformKind     = "uniform"
+	v2xKind         = "v2x"
+
+	outputFilePattern = "data_%d.v2x"
 )
 
-type generatorFunc func(v, n int) *data.Data
+type generateFunc func(itemCount, maxItemSize, bucketCount, maxBucketSize int) *data.Data
 
 // GenerateCmd returns cobra.Command which is able to generate data in specified format.
 // It should be registered in root command using AddCommand() method.
@@ -56,24 +66,39 @@ func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) er
 	return func(command *cobra.Command, args []string) error {
 		output := args[0]
 
-		n, err := command.Flags().GetUint(nValue)
+		itemCount, err := command.Flags().GetUint(itemCountValue)
 		if err != nil {
 			return err
 		}
 
-		v, err := command.Flags().GetUint(vValue)
+		itemSize, err := command.Flags().GetUint(itemSizeValue)
 		if err != nil {
 			return err
 		}
 
-		distribution, err := command.Flags().GetString(distributionValue)
+		bucketCount, err := command.Flags().GetUint(bucketCountValue)
 		if err != nil {
 			return err
 		}
 
-		generate := toGeneratorFunc(distribution)
+		bucketSize, err := command.Flags().GetUint(bucketSizeValue)
+		if err != nil {
+			return err
+		}
+
+		kind, err := command.Flags().GetString(kindValue)
+		if err != nil {
+			return err
+		}
+
+		isCapacityConstant, err := command.Flags().GetBool(constantBucketSizeValue)
+		if err != nil {
+			return err
+		}
+
+		generate := toGeneratorFunc(kind, isCapacityConstant)
 		if generate == nil {
-			return errors.New("unknown distribution")
+			return errors.New("unknown kind")
 		}
 
 		count, err := command.Flags().GetUint(timesValue)
@@ -81,12 +106,8 @@ func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) er
 			return err
 		}
 
-		if count == 1 {
-			return generateDataFile(output, encoder, n, v, generate)
-		}
-
 		for i := uint(0); i < count; i++ {
-			err := generateDataFile(toMultipleFilesFilepath(output, int(i)), encoder, n, v, generate)
+			err := generateDataFile(output, int(i), encoder, itemCount, itemSize, bucketCount, bucketSize, generate)
 			if err != nil {
 				return err
 			}
@@ -96,14 +117,32 @@ func generateWith(encoder data.EncoderDecoder) func(*cobra.Command, []string) er
 	}
 }
 
-func generateDataFile(path string, encoder data.EncoderDecoder, n, v uint, generate generatorFunc) error {
-	outputFile, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+func generateDataFile(
+	outputPath string,
+	id int,
+	encoder data.EncoderDecoder,
+	itemCount, itemSize, bucketCount, bucketSize uint,
+	generate generateFunc,
+) error {
+	err := os.MkdirAll(outputPath, 0775)
 	if err != nil {
-		return fmt.Errorf("%w: %s", errCannotOpenFile, path)
+		return fmt.Errorf("%w: %s", errCannotCreatePath, outputPath)
+	}
+
+	outputPath, err = filepath.Abs(outputPath)
+	if err != nil {
+		return err
+	}
+
+	filePath := path.Join(outputPath, fmt.Sprintf(outputFilePattern, id))
+
+	outputFile, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("%w: %s", errCannotOpenFile, outputPath)
 	}
 	defer outputFile.Close()
 
-	generatedData := generate(int(v), int(n))
+	generatedData := generate(int(itemCount), int(itemSize), int(bucketCount), int(bucketSize))
 
 	err = encoder.Encode(generatedData, outputFile)
 	if err != nil {
@@ -113,30 +152,38 @@ func generateDataFile(path string, encoder data.EncoderDecoder, n, v uint, gener
 	return nil
 }
 
-func toMultipleFilesFilepath(path string, i int) string {
-	ext := filepath.Ext(path)
-	filename := path[:len(path)-len(ext)]
-	return filename + "_" + strconv.Itoa(i) + ext
-}
-
-func toGeneratorFunc(distributionName string) generatorFunc {
-	switch distributionName {
-	case "uniform":
+func toGeneratorFunc(kind string, isCapacityConstant bool) generateFunc {
+	switch {
+	case kind == uniformKind && isCapacityConstant:
+		return generator.GenerateUniformConstantCapacity
+	case kind == uniformKind && !isCapacityConstant:
 		return generator.GenerateUniform
-	case "exp":
+	case kind == exponentialKind && isCapacityConstant:
+		return generator.GenerateExponentialConstantCapacity
+	case kind == exponentialKind && !isCapacityConstant:
 		return generator.GenerateExponential
-	case "norm":
+	case kind == normalKind && isCapacityConstant:
+		return generator.GenerateNormalConstantCapacity
+	case kind == normalKind && !isCapacityConstant:
 		return generator.GenerateNormal
-	case "env":
-		return generator.GenerateEnvironmental
+	case kind == v2xKind && isCapacityConstant:
+		return generator.GenerateV2XEnvironmentalConstantCapacity
+	case kind == v2xKind && !isCapacityConstant:
+		return generator.GenerateV2XEnvironmental
 	default:
 		return nil
 	}
 }
 
 func setUpGenerateFlags(command *cobra.Command) {
-	command.Flags().UintP(nValue, "n", 10, "amount of RRHs")
-	command.Flags().UintP(vValue, "v", 30, "amount of vehicles")
-	command.Flags().UintP(timesValue, "t", 1, "specify how many files should be generated")
-	command.Flags().StringP(distributionValue, "d", "uniform", "specify generator distribution (uniform, exp, norm, env)")
+	command.Flags().UintP(itemCountValue, "", 30, "count of items")
+	command.Flags().UintP(itemSizeValue, "", 20, "maximum size of single item")
+	command.Flags().UintP(bucketCountValue, "", 10, "count of buckets")
+	command.Flags().UintP(bucketSizeValue, "", 50, "size of bucket (if "+
+		constantBucketSizeValue+" is not specified, the value will be randomly generated from range [1 - "+
+		bucketSizeValue+"])")
+	command.Flags().BoolP(constantBucketSizeValue, "", false,
+		"disables random bucket sizes and enables constant size for all buckets")
+	command.Flags().UintP(timesValue, "", 1, "specify how many files should be generated")
+	command.Flags().StringP(kindValue, "", "uniform", "specify generator kind (uniform, exponential, normal, v2x)")
 }

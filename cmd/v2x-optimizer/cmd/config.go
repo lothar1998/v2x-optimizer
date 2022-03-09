@@ -29,6 +29,7 @@ var (
 )
 
 var (
+	errCannotCreatePath  = errors.New("cannot create path")
 	errCannotOpenFile    = errors.New("cannot open file")
 	errCannotParseData   = errors.New("cannot parse data")
 	errCannotEncodeData  = errors.New("cannot encode data")
