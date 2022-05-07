@@ -2,16 +2,16 @@ package genetic
 
 import (
 	"errors"
+	"fmt"
 
-	"github.com/lothar1998/v2x-optimizer/pkg/data"
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
 )
 
 var ErrCrossoverFailed = errors.New("unable to perform crossover")
 
 type CrossoverMaker struct {
-	ItemPool *genetictype.ItemPool
-	Data     *data.Data
+	ItemPool      *genetictype.ItemPool
+	BucketFactory *genetictype.BucketFactory
 }
 
 func (c *CrossoverMaker) DoCrossover(parent1, parent2 *genetictype.Chromosome) (
@@ -65,59 +65,10 @@ func (c *CrossoverMaker) doHalfCrossover(
 		}
 	}
 
-	missingItems = c.assignMissingItems(child, missingItems)
-	err := c.doFallbackAssignment(child, missingItems)
-	return child, err
-}
-
-func (c *CrossoverMaker) assignMissingItems(
-	child *genetictype.Chromosome,
-	missingItems map[int]struct{},
-) map[int]struct{} {
-	for i := 0; i < child.Len(); i++ {
-		bucket := child.At(i)
-		for itemID := range missingItems {
-			item := c.ItemPool.Get(itemID, bucket.ID())
-			if err := bucket.AddItem(item); err == nil {
-				delete(missingItems, itemID)
-			}
-		}
+	if err := assignMissingItems(child, missingItems, c.BucketFactory, c.ItemPool); err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrCrossoverFailed, err.Error())
 	}
-	return missingItems
-}
-
-func (c *CrossoverMaker) doFallbackAssignment(child *genetictype.Chromosome, missingItems map[int]struct{}) error {
-	if len(missingItems) == 0 {
-		return nil
-	}
-
-	for bucketID, capacity := range c.Data.MRB {
-		if child.ContainsBucket(bucketID) {
-			continue
-		}
-
-		bucket := genetictype.NewBucket(bucketID, capacity)
-
-		for itemID := range missingItems {
-			item := c.ItemPool.Get(itemID, bucketID)
-			if err := bucket.AddItem(item); err == nil {
-				delete(missingItems, itemID)
-			}
-		}
-
-		if !bucket.IsEmpty() {
-			child.Append(bucket)
-		}
-
-		if len(missingItems) == 0 {
-			break
-		}
-	}
-
-	if len(missingItems) > 0 {
-		return ErrCrossoverFailed
-	}
-	return nil
+	return child, nil
 }
 
 func getTransplantImpact(

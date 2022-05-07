@@ -12,33 +12,6 @@ func Test_doHalfCrossover(t *testing.T) {
 
 	t.Run("should insert transplant before skipped buckets", func(t *testing.T) {
 		t.Parallel()
-		//
-		//d := &data.Data{
-		//	MRB: []int{14, 15, 8, 10},
-		//	R: [][]int{
-		//		{6, 3, 2, 1},
-		//		{7, 8, 5, 3},
-		//		{9, 10, 7, 8},
-		//		{6, 3, 2, 1},
-		//		{7, 8, 1, 5},
-		//	},
-		//}
-		//
-		//c1 := makeChromosome(
-		//	makeBucket(d, 2, 2),
-		//	makeBucket(d, 3, 0, 1, 3, 4),
-		//)
-		//
-		//c2 := makeChromosome(
-		//	makeBucket(d, 1, 0, 1),
-		//	makeBucket(d, 0, 2),
-		//	makeBucket(d, 3, 3, 4),
-		//)
-		//
-		//maker := CrossoverMaker{ItemPool: genetictype.NewItemPool(d), Data: d}
-		//
-		//_, err := maker.doHalfCrossover(c1, c2.Slice(1, 3), 1)
-		//assert.NoError(t, err)
 	})
 
 	t.Run("should insert transplant after skipped buckets", func(t *testing.T) {
@@ -313,30 +286,4 @@ func Test_shouldSkipBucket(t *testing.T) {
 		result := shouldSkipBucket(bucketsToSkip, bucket)
 		assert.False(t, result)
 	})
-}
-
-func makeBucket(bucketID int, itemIDToSize map[int]int) *genetictype.Bucket {
-	var items []*genetictype.Item
-
-	sizeSum := 0
-	for id, size := range itemIDToSize {
-		items = append(items, genetictype.NewItem(id, size))
-		sizeSum += size
-	}
-
-	bucket := genetictype.NewBucket(bucketID, sizeSum)
-
-	for _, item := range items {
-		_ = bucket.AddItem(item)
-	}
-
-	return bucket
-}
-
-func makeChromosome(buckets ...*genetictype.Bucket) *genetictype.Chromosome {
-	c := genetictype.NewChromosome(0)
-	for _, bucket := range buckets {
-		c.Append(bucket)
-	}
-	return c
 }

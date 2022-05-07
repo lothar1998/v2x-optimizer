@@ -3,6 +3,8 @@ package genetictype
 import (
 	"errors"
 	"fmt"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
 )
 
 var (
@@ -79,4 +81,20 @@ func (b *Bucket) FreeSpace() int {
 
 func (b *Bucket) Map() map[int]*Item {
 	return b.itemMapping
+}
+
+type BucketFactory struct {
+	data *data.Data
+}
+
+func NewBucketFactory(data *data.Data) *BucketFactory {
+	return &BucketFactory{data: data}
+}
+
+func (bf *BucketFactory) CreateBucket(id int) *Bucket {
+	return NewBucket(id, bf.data.MRB[id])
+}
+
+func (bf *BucketFactory) MaxID() int {
+	return len(bf.data.MRB) - 1
 }
