@@ -148,19 +148,6 @@ func getTransplantImpact(
 	return skippedBuckets, missingItems
 }
 
-func addMissingItemsIfNotInTransplant(
-	missingItems map[int]struct{},
-	bucket *genetictype.Bucket,
-	transplantItems map[int]struct{},
-) {
-	for itemID := range bucket.Map() {
-		if _, ok := transplantItems[itemID]; ok {
-			continue
-		}
-		missingItems[itemID] = struct{}{}
-	}
-}
-
 func toTransplantDetails(transplant []*genetictype.Bucket) (items map[int]struct{}, buckets map[int]struct{}) {
 	items = make(map[int]struct{})
 	buckets = make(map[int]struct{})
@@ -174,6 +161,19 @@ func toTransplantDetails(transplant []*genetictype.Bucket) (items map[int]struct
 	}
 
 	return items, buckets
+}
+
+func addMissingItemsIfNotInTransplant(
+	missingItems map[int]struct{},
+	bucket *genetictype.Bucket,
+	transplantItems map[int]struct{},
+) {
+	for itemID := range bucket.Map() {
+		if _, ok := transplantItems[itemID]; ok {
+			continue
+		}
+		missingItems[itemID] = struct{}{}
+	}
 }
 
 func getRandomCrossoverBoundaries(c *genetictype.Chromosome) (int, int) {
