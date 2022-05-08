@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
+func TestCrossoverOperator_doHalfCrossover(t *testing.T) {
 	t.Parallel()
 
 	inputData := &data.Data{
@@ -26,7 +26,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 	itemPool := genetictype.NewItemPool(inputData)
 	bucketFactory := genetictype.NewBucketFactory(inputData)
 
-	crossoverMaker := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
+	crossoverOperator := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
 
 	bucket0 := bucketFactory.CreateBucket(0)
 	_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -50,7 +50,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 
 		transplant := []*genetictype.Bucket{transplantBucket}
 
-		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 0)
+		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 0)
 
 		assert.NoError(t, err)
 		assertCompletenessOfChromosome(t, child, inputData)
@@ -66,7 +66,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 
 		transplant := []*genetictype.Bucket{transplantBucket}
 
-		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 1)
+		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 1)
 
 		assert.NoError(t, err)
 		assertCompletenessOfChromosome(t, child, inputData)
@@ -82,7 +82,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 
 		transplant := []*genetictype.Bucket{transplantBucket}
 
-		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 3)
+		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 3)
 
 		assert.NoError(t, err)
 		assertCompletenessOfChromosome(t, child, inputData)
@@ -104,7 +104,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 
 		transplant := []*genetictype.Bucket{transplantBucket1, transplantBucket2, transplantBucket3}
 
-		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 0)
+		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 0)
 
 		assert.ErrorIs(t, err, ErrCrossoverFailed)
 		assert.Zero(t, child)
@@ -113,7 +113,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 	t.Run("should handle empty transplant by copying the parent chromosome", func(t *testing.T) {
 		t.Parallel()
 
-		child, err := crossoverMaker.doHalfCrossover(parent, nil, 0)
+		child, err := crossoverOperator.doHalfCrossover(parent, nil, 0)
 
 		assert.NoError(t, err)
 		assertCompletenessOfChromosome(t, child, inputData)
@@ -397,11 +397,11 @@ func BenchmarkCrossoverOperator_DoCrossover(b *testing.B) {
 
 	parent2 := makeChromosome(bucket2p2, bucket3p2, bucket1p2)
 
-	crossoverMaker := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
+	crossoverOperator := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, _, _ = crossoverMaker.DoCrossover(parent1, parent2)
+		_, _, _ = crossoverOperator.DoCrossover(parent1, parent2)
 	}
 }
