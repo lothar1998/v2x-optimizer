@@ -3,27 +3,121 @@ package genetic
 import (
 	"testing"
 
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
+
 	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_doHalfCrossover(t *testing.T) {
+func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should insert transplant before skipped buckets", func(t *testing.T) {
+	inputData := &data.Data{
+		MRB: []int{14, 15, 8, 10},
+		R: [][]int{
+			{6, 3, 2, 8},
+			{7, 8, 5, 3},
+			{9, 10, 7, 8},
+			{6, 3, 8, 1},
+			{8, 8, 1, 5},
+		},
+	}
+
+	itemPool := genetictype.NewItemPool(inputData)
+	bucketFactory := genetictype.NewBucketFactory(inputData)
+
+	crossoverMaker := CrossoverMaker{ItemPool: itemPool, BucketFactory: bucketFactory}
+
+	bucket0 := bucketFactory.CreateBucket(0)
+	_ = bucket0.AddItem(itemPool.Get(0, 0))
+	_ = bucket0.AddItem(itemPool.Get(1, 0))
+
+	bucket1 := bucketFactory.CreateBucket(1)
+	_ = bucket1.AddItem(itemPool.Get(2, 1))
+	_ = bucket1.AddItem(itemPool.Get(3, 1))
+
+	bucket2 := bucketFactory.CreateBucket(2)
+	_ = bucket2.AddItem(itemPool.Get(4, 2))
+
+	parent := makeChromosome(bucket0, bucket1, bucket2)
+
+	t.Run("should make half crossover by injecting at the beginning of chromosome", func(t *testing.T) {
 		t.Parallel()
+
+		transplantBucket := bucketFactory.CreateBucket(1)
+		_ = transplantBucket.AddItem(itemPool.Get(2, 1))
+		_ = transplantBucket.AddItem(itemPool.Get(0, 1))
+
+		transplant := []*genetictype.Bucket{transplantBucket}
+
+		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 0)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, child, inputData)
+		assert.Contains(t, child.At(0).Map(), 0)
+		assert.Contains(t, child.At(0).Map(), 2)
 	})
 
-	t.Run("should insert transplant after skipped buckets", func(t *testing.T) {
+	t.Run("should make half crossover by injecting in the middle of chromosome", func(t *testing.T) {
+		t.Parallel()
 
+		transplantBucket := bucketFactory.CreateBucket(1)
+		_ = transplantBucket.AddItem(itemPool.Get(2, 1))
+
+		transplant := []*genetictype.Bucket{transplantBucket}
+
+		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 1)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, child, inputData)
+		assert.Contains(t, child.At(1).Map(), 2)
 	})
 
-	t.Run("should insert transplant between skipped buckets", func(t *testing.T) {
+	t.Run("should make half crossover by injecting at the end of chromosome", func(t *testing.T) {
+		t.Parallel()
 
+		transplantBucket := bucketFactory.CreateBucket(1)
+		_ = transplantBucket.AddItem(itemPool.Get(2, 1))
+		_ = transplantBucket.AddItem(itemPool.Get(0, 1))
+
+		transplant := []*genetictype.Bucket{transplantBucket}
+
+		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 3)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, child, inputData)
+		assert.Contains(t, child.At(1).Map(), 0)
+		assert.Contains(t, child.At(1).Map(), 2)
 	})
 
-	t.Run("should insert transplant - mixed case", func(t *testing.T) {
+	t.Run("should return error since there is no way to assign missing items", func(t *testing.T) {
+		t.Parallel()
 
+		transplantBucket1 := bucketFactory.CreateBucket(1)
+		_ = transplantBucket1.AddItem(itemPool.Get(2, 1))
+
+		transplantBucket2 := bucketFactory.CreateBucket(2)
+		_ = transplantBucket2.AddItem(itemPool.Get(3, 2))
+
+		transplantBucket3 := bucketFactory.CreateBucket(3)
+		_ = transplantBucket3.AddItem(itemPool.Get(0, 3))
+
+		transplant := []*genetictype.Bucket{transplantBucket1, transplantBucket2, transplantBucket3}
+
+		child, err := crossoverMaker.doHalfCrossover(parent, transplant, 0)
+
+		assert.ErrorIs(t, err, ErrCrossoverFailed)
+		assert.Zero(t, child)
+	})
+
+	t.Run("should handle empty transplant by copying the parent chromosome", func(t *testing.T) {
+		t.Parallel()
+
+		child, err := crossoverMaker.doHalfCrossover(parent, nil, 0)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, child, inputData)
+		assert.Equal(t, parent, child)
 	})
 }
 

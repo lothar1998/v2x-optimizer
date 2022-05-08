@@ -184,6 +184,19 @@ func Test_reassignMissingItems(t *testing.T) {
 		assert.Contains(t, missingItems, 3)
 		assert.Equal(t, originalChromosome, chromosome)
 	})
+
+	t.Run("should handle empty chromosome by skipping assignment", func(t *testing.T) {
+		t.Parallel()
+
+		missingItems := map[int]struct{}{1: {}}
+
+		chromosome := genetictype.NewChromosome(0)
+
+		missingItems = reassignMissingItems(chromosome, missingItems, nil)
+
+		assert.Len(t, missingItems, 1)
+		assert.Contains(t, missingItems, 1)
+	})
 }
 
 func Test_doFallbackAssignment(t *testing.T) {
@@ -237,6 +250,8 @@ func Test_doFallbackAssignment(t *testing.T) {
 	})
 
 	t.Run("should return error if after all tries there are still missing items", func(t *testing.T) {
+		t.Parallel()
+
 		inputData := &data.Data{
 			MRB: []int{10, 5, 3},
 			R: [][]int{
@@ -259,5 +274,17 @@ func Test_doFallbackAssignment(t *testing.T) {
 		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
 
 		assert.ErrorIs(t, err, ErrFallbackAssignmentFailed)
+	})
+
+	t.Run("should handle empty chromosome by adding new buckets to it", func(t *testing.T) {
+		t.Parallel()
+
+		chromosome := genetictype.NewChromosome(0)
+		missingItems := map[int]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}}
+
+		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, chromosome, inputData)
 	})
 }

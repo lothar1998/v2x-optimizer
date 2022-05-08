@@ -65,6 +65,13 @@ func (c *CrossoverMaker) doHalfCrossover(
 		}
 	}
 
+	if !transplantInjected {
+		for _, bucket := range transplant {
+			child.SetAt(j, bucket.DeepCopy())
+			j++
+		}
+	}
+
 	if err := assignMissingItems(child, missingItems, c.BucketFactory, c.ItemPool); err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrCrossoverFailed, err.Error())
 	}
