@@ -359,3 +359,49 @@ func Test_getRandomCrossoverBoundaries1(t *testing.T) {
 		assert.LessOrEqual(t, left, right)
 	})
 }
+
+func BenchmarkCrossoverOperator_DoCrossover(b *testing.B) {
+	inputData := &data.Data{
+		MRB: []int{14, 15, 8, 10},
+		R: [][]int{
+			{6, 3, 2, 8},
+			{7, 8, 5, 3},
+			{9, 10, 7, 8},
+			{6, 3, 8, 1},
+			{8, 8, 1, 5},
+		},
+	}
+
+	itemPool := genetictype.NewItemPool(inputData)
+	bucketFactory := genetictype.NewBucketFactory(inputData)
+
+	bucket0p1 := bucketFactory.CreateBucket(0)
+	_ = bucket0p1.AddItem(itemPool.Get(0, 0))
+	_ = bucket0p1.AddItem(itemPool.Get(1, 0))
+	bucket1p1 := bucketFactory.CreateBucket(1)
+	_ = bucket1p1.AddItem(itemPool.Get(2, 1))
+	_ = bucket1p1.AddItem(itemPool.Get(3, 1))
+	bucket2p1 := bucketFactory.CreateBucket(2)
+	_ = bucket2p1.AddItem(itemPool.Get(4, 2))
+
+	parent1 := makeChromosome(bucket0p1, bucket1p1, bucket2p1)
+
+	bucket2p2 := bucketFactory.CreateBucket(2)
+	_ = bucket2p2.AddItem(itemPool.Get(0, 2))
+	_ = bucket2p2.AddItem(itemPool.Get(1, 2))
+	bucket3p2 := bucketFactory.CreateBucket(3)
+	_ = bucket3p2.AddItem(itemPool.Get(2, 3))
+	bucket1p2 := bucketFactory.CreateBucket(1)
+	_ = bucket1p2.AddItem(itemPool.Get(3, 1))
+	_ = bucket1p2.AddItem(itemPool.Get(4, 1))
+
+	parent2 := makeChromosome(bucket2p2, bucket3p2, bucket1p2)
+
+	crossoverMaker := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, _, _ = crossoverMaker.DoCrossover(parent1, parent2)
+	}
+}
