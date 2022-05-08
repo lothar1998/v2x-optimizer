@@ -1,6 +1,10 @@
 package genetictype
 
-import "github.com/lothar1998/v2x-optimizer/pkg/data"
+import (
+	"sync"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
+)
 
 type Item struct {
 	id   int
@@ -27,6 +31,7 @@ type itemPoolKey struct {
 type ItemPool struct {
 	items map[itemPoolKey]*Item
 	data  *data.Data
+	mu    sync.RWMutex
 }
 
 func NewItemPool(data *data.Data) *ItemPool {
@@ -35,9 +40,23 @@ func NewItemPool(data *data.Data) *ItemPool {
 
 func (ip *ItemPool) Get(itemID, bucketID int) *Item {
 	key := itemPoolKey{itemID: itemID, bucketID: bucketID}
-	if item, ok := ip.items[key]; ok {
+	if item := ip.getExistingItem(key); item != nil {
 		return item
 	}
+
+	return ip.createAndGetNewItem(key, itemID, bucketID)
+}
+
+func (ip *ItemPool) getExistingItem(key itemPoolKey) *Item {
+	ip.mu.RLock()
+	defer ip.mu.RUnlock()
+
+	return ip.items[key]
+}
+
+func (ip *ItemPool) createAndGetNewItem(key itemPoolKey, itemID, bucketID int) *Item {
+	ip.mu.Lock()
+	defer ip.mu.Unlock()
 
 	item := NewItem(itemID, ip.data.R[itemID][bucketID])
 	ip.items[key] = item

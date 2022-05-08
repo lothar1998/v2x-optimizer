@@ -9,12 +9,12 @@ import (
 
 var ErrCrossoverFailed = errors.New("unable to perform crossover")
 
-type CrossoverMaker struct {
+type CrossoverOperator struct {
 	ItemPool      *genetictype.ItemPool
 	BucketFactory *genetictype.BucketFactory
 }
 
-func (c *CrossoverMaker) DoCrossover(parent1, parent2 *genetictype.Chromosome) (
+func (c *CrossoverOperator) DoCrossover(parent1, parent2 *genetictype.Chromosome) (
 	*genetictype.Chromosome,
 	*genetictype.Chromosome,
 	error,
@@ -34,7 +34,7 @@ func (c *CrossoverMaker) DoCrossover(parent1, parent2 *genetictype.Chromosome) (
 	return child1, child2, nil
 }
 
-func (c *CrossoverMaker) doHalfCrossover(
+func (c *CrossoverOperator) doHalfCrossover(
 	parent *genetictype.Chromosome,
 	transplant []*genetictype.Bucket,
 	injectionIndex int,
@@ -142,9 +142,4 @@ func getRandomCrossoverBoundaries(c *genetictype.Chromosome) (int, int) {
 		return p1, p2
 	}
 	return p2, p1
-}
-
-func shouldSkipBucket(bucketsToSkip map[int]struct{}, bucket *genetictype.Bucket) bool {
-	_, ok := bucketsToSkip[bucket.ID()]
-	return ok
 }

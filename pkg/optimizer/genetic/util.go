@@ -73,3 +73,8 @@ func doFallbackAssignment(
 	}
 	return nil
 }
+
+func shouldSkipBucket(bucketsToSkip map[int]struct{}, bucket *genetictype.Bucket) bool {
+	_, ok := bucketsToSkip[bucket.ID()]
+	return ok
+}

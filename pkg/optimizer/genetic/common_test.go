@@ -68,6 +68,9 @@ func assertAllItemsInChromosome(t *testing.T, chromosome *genetictype.Chromosome
 		for itemID, item := range bucket.Map() {
 			assert.Equal(t, itemID, item.ID())
 			assert.Equal(t, data.R[itemID][bucket.ID()], item.Size())
+			if _, ok := itemIDs[itemID]; ok {
+				assert.FailNowf(t, "duplicated item", "itemID = %d", itemID)
+			}
 			itemIDs[itemID] = struct{}{}
 		}
 	}

@@ -288,3 +288,25 @@ func Test_doFallbackAssignment(t *testing.T) {
 		assertCompletenessOfChromosome(t, chromosome, inputData)
 	})
 }
+
+func Test_shouldSkipBucket(t *testing.T) {
+	t.Parallel()
+
+	bucketsToSkip := map[int]struct{}{1: {}}
+
+	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
+		t.Parallel()
+
+		bucket := genetictype.NewBucket(1, 0)
+		result := shouldSkipBucket(bucketsToSkip, bucket)
+		assert.True(t, result)
+	})
+
+	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
+		t.Parallel()
+
+		bucket := genetictype.NewBucket(2, 0)
+		result := shouldSkipBucket(bucketsToSkip, bucket)
+		assert.False(t, result)
+	})
+}

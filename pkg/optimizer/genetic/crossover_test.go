@@ -26,7 +26,7 @@ func TestCrossoverMaker_doHalfCrossover(t *testing.T) {
 	itemPool := genetictype.NewItemPool(inputData)
 	bucketFactory := genetictype.NewBucketFactory(inputData)
 
-	crossoverMaker := CrossoverMaker{ItemPool: itemPool, BucketFactory: bucketFactory}
+	crossoverMaker := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
 
 	bucket0 := bucketFactory.CreateBucket(0)
 	_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -357,27 +357,5 @@ func Test_getRandomCrossoverBoundaries1(t *testing.T) {
 
 		left, right := getRandomCrossoverBoundaries(c)
 		assert.LessOrEqual(t, left, right)
-	})
-}
-
-func Test_shouldSkipBucket(t *testing.T) {
-	t.Parallel()
-
-	bucketsToSkip := map[int]struct{}{1: {}}
-
-	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
-		t.Parallel()
-
-		bucket := genetictype.NewBucket(1, 0)
-		result := shouldSkipBucket(bucketsToSkip, bucket)
-		assert.True(t, result)
-	})
-
-	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
-		t.Parallel()
-
-		bucket := genetictype.NewBucket(2, 0)
-		result := shouldSkipBucket(bucketsToSkip, bucket)
-		assert.False(t, result)
 	})
 }
