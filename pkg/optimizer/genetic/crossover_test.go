@@ -337,29 +337,6 @@ func Test_addMissingItemsIfNotInTransplant(t *testing.T) {
 	})
 }
 
-func Test_getRandomCrossoverBoundaries1(t *testing.T) {
-	t.Parallel()
-
-	c := genetictype.NewChromosome(10)
-
-	t.Run("should return indexes in scope of chromosome", func(t *testing.T) {
-		t.Parallel()
-
-		left, right := getRandomCrossoverBoundaries(c)
-		assert.Less(t, left, c.Len())
-		assert.GreaterOrEqual(t, left, 0)
-		assert.Less(t, right, c.Len())
-		assert.GreaterOrEqual(t, right, 0)
-	})
-
-	t.Run("should return first value lower or equal to right value", func(t *testing.T) {
-		t.Parallel()
-
-		left, right := getRandomCrossoverBoundaries(c)
-		assert.LessOrEqual(t, left, right)
-	})
-}
-
 func BenchmarkCrossoverOperator_DoCrossover(b *testing.B) {
 	inputData := &data.Data{
 		MRB: []int{14, 15, 8, 10},

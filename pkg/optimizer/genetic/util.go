@@ -78,3 +78,13 @@ func shouldSkipBucket(bucketsToSkip map[int]struct{}, bucket *genetictype.Bucket
 	_, ok := bucketsToSkip[bucket.ID()]
 	return ok
 }
+
+func getRandomChromosomeSliceBoundaries(chromosome *genetictype.Chromosome) (int, int) {
+	b1 := random.Intn(chromosome.Len())
+	b2 := random.Intn(chromosome.Len())
+
+	if b1 < b2 {
+		return b1, b2
+	}
+	return b2, b1
+}

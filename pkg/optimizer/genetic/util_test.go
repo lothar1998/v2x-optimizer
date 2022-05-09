@@ -310,3 +310,26 @@ func Test_shouldSkipBucket(t *testing.T) {
 		assert.False(t, result)
 	})
 }
+
+func Test_getRandomChromosomeSliceBoundaries(t *testing.T) {
+	t.Parallel()
+
+	c := genetictype.NewChromosome(10)
+
+	t.Run("should return indexes in scope of chromosome", func(t *testing.T) {
+		t.Parallel()
+
+		left, right := getRandomChromosomeSliceBoundaries(c)
+		assert.Less(t, left, c.Len())
+		assert.GreaterOrEqual(t, left, 0)
+		assert.Less(t, right, c.Len())
+		assert.GreaterOrEqual(t, right, 0)
+	})
+
+	t.Run("should return first value lower or equal to right value", func(t *testing.T) {
+		t.Parallel()
+
+		left, right := getRandomChromosomeSliceBoundaries(c)
+		assert.LessOrEqual(t, left, right)
+	})
+}

@@ -19,8 +19,8 @@ func (c *CrossoverOperator) DoCrossover(parent1, parent2 *genetictype.Chromosome
 	*genetictype.Chromosome,
 	error,
 ) {
-	l1, r1 := getRandomCrossoverBoundaries(parent1)
-	l2, r2 := getRandomCrossoverBoundaries(parent2)
+	l1, r1 := getRandomChromosomeSliceBoundaries(parent1)
+	l2, r2 := getRandomChromosomeSliceBoundaries(parent2)
 
 	child1, err := c.doHalfCrossover(parent1, parent2.Slice(l2, r2), l1)
 	if err != nil {
@@ -132,14 +132,4 @@ func addMissingItemsIfNotInTransplant(
 		}
 		missingItems[itemID] = struct{}{}
 	}
-}
-
-func getRandomCrossoverBoundaries(c *genetictype.Chromosome) (int, int) {
-	p1 := random.Intn(c.Len())
-	p2 := random.Intn(c.Len())
-
-	if p1 < p2 {
-		return p1, p2
-	}
-	return p2, p1
 }
