@@ -1,6 +1,7 @@
 package genetic
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
@@ -40,7 +41,18 @@ func TestMutationOperator_DoMutation(t *testing.T) {
 	t.Run("should mutate chromosome", func(t *testing.T) {
 		t.Parallel()
 
-		mutationOperator := MutationOperator{ItemPool: itemPool, BucketFactory: bucketFactory, MaxGenesToMutate: 2}
+		maxGenesToMutate := 2
+
+		generator := newGeneratorStub().
+			WithNextInt(maxGenesToMutate, 1).
+			WithNextPermutation([]int{0, 1, 2})
+
+		mutationOperator := MutationOperator{
+			ItemPool:         itemPool,
+			BucketFactory:    bucketFactory,
+			MaxGenesToMutate: 2,
+			RandomGenerator:  generator,
+		}
 
 		err := mutationOperator.DoMutation(chromosome)
 
@@ -48,18 +60,47 @@ func TestMutationOperator_DoMutation(t *testing.T) {
 		assertCompletenessOfChromosome(t, chromosome, inputData)
 	})
 
-	// t.Run("should return error since impact of mutation showed that mutation is impossible", func(t *testing.T) {
-	//	t.Parallel()
-	//
-	//	mutationOperator := MutationOperator{
-	//		ItemPool:         itemPool,
-	//		BucketFactory:    bucketFactory,
-	//		MaxGenesToMutate: chromosome.Len() + 1,
-	//	}
-	//
-	//	err := mutationOperator.DoMutation(chromosome)
-	//	assert.Equal(t, errors.Unwrap(err).Error(), ErrMutationFailed.Error())
-	// })
+	t.Run("should mutate all chromosome genes", func(t *testing.T) {
+		t.Parallel()
+
+		maxGenesToMutate := chromosome.Len()
+
+		generator := newGeneratorStub().
+			WithNextInt(maxGenesToMutate, maxGenesToMutate-1).
+			WithNextPermutation([]int{0, 1, 2})
+
+		mutationOperator := MutationOperator{
+			ItemPool:         itemPool,
+			BucketFactory:    bucketFactory,
+			MaxGenesToMutate: maxGenesToMutate,
+			RandomGenerator:  generator,
+		}
+
+		err := mutationOperator.DoMutation(chromosome)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, chromosome, inputData)
+	})
+
+	t.Run("should return error since impact of mutation showed that mutation is impossible", func(t *testing.T) {
+		t.Parallel()
+
+		maxGenesToMutate := chromosome.Len() + 1
+
+		generator := newGeneratorStub().
+			WithNextInt(maxGenesToMutate, maxGenesToMutate-1).
+			WithNextPermutation([]int{0, 1, 2})
+
+		mutationOperator := MutationOperator{
+			ItemPool:         itemPool,
+			BucketFactory:    bucketFactory,
+			MaxGenesToMutate: maxGenesToMutate,
+			RandomGenerator:  generator,
+		}
+
+		err := mutationOperator.DoMutation(chromosome)
+		assert.Equal(t, errors.Unwrap(err).Error(), ErrMutationFailed.Error())
+	})
 }
 
 func Test_getMutationImpact(t *testing.T) {
@@ -71,10 +112,12 @@ func Test_getMutationImpact(t *testing.T) {
 	buckets := []*genetictype.Bucket{bucket0, bucket1, bucket2}
 	chromosome := makeChromosome(buckets...)
 
+	mutationOperator := MutationOperator{RandomGenerator: commonRandom}
+
 	t.Run("should return mutation impact", func(t *testing.T) {
 		t.Parallel()
 
-		skippedBuckets, missingItems, err := getMutationImpact(chromosome, 2)
+		skippedBuckets, missingItems, err := mutationOperator.getMutationImpact(chromosome, 2)
 
 		assert.NoError(t, err)
 		assert.Len(t, skippedBuckets, 2)
@@ -90,7 +133,7 @@ func Test_getMutationImpact(t *testing.T) {
 	t.Run("should return error if mutation is impossible", func(t *testing.T) {
 		t.Parallel()
 
-		skippedBuckets, missingItems, err := getMutationImpact(chromosome, chromosome.Len()+1)
+		skippedBuckets, missingItems, err := mutationOperator.getMutationImpact(chromosome, chromosome.Len()+1)
 
 		assert.ErrorIs(t, err, ErrChromosomeShorterThanMutationSize)
 		assert.Zero(t, skippedBuckets)
@@ -101,20 +144,21 @@ func Test_getMutationImpact(t *testing.T) {
 func Test_getBucketOrdinalsToSkip(t *testing.T) {
 	t.Parallel()
 
-	t.Run("should return ordinals to skip according to size of mutation an chromosome length", func(t *testing.T) {
+	t.Run("should return ordinals to skip according to size of mutation and chromosome length", func(t *testing.T) {
 		t.Parallel()
 
 		sizeOfMutation := 5
 		chromosomeLength := 10
 
-		skippedBucketOrdinals, err := getBucketOrdinalsToSkip(sizeOfMutation, chromosomeLength)
+		permutation := []int{9, 5, 1, 3, 4, 7, 0, 2, 6, 8}
+		generator := newGeneratorStub().WithNextPermutation(permutation)
+
+		mutationOperator := MutationOperator{RandomGenerator: generator}
+
+		skippedBucketOrdinals, err := mutationOperator.getBucketOrdinalsToSkip(sizeOfMutation, chromosomeLength)
 
 		assert.NoError(t, err)
-		assert.Len(t, skippedBucketOrdinals, sizeOfMutation)
-		for _, skippedOrdinal := range skippedBucketOrdinals {
-			assert.Less(t, skippedOrdinal, chromosomeLength)
-			assert.GreaterOrEqual(t, skippedOrdinal, 0)
-		}
+		assert.Equal(t, permutation[:sizeOfMutation], skippedBucketOrdinals)
 	})
 
 	t.Run("should return all ordinals to skip since size of mutation is equal to chromosome length", func(t *testing.T) {
@@ -122,17 +166,24 @@ func Test_getBucketOrdinalsToSkip(t *testing.T) {
 
 		chromosomeLength := 3
 
-		skippedBucketOrdinals, err := getBucketOrdinalsToSkip(chromosomeLength, chromosomeLength)
+		permutation := []int{1, 0, 2}
+		generator := newGeneratorStub().WithNextPermutation(permutation)
+
+		mutationOperator := MutationOperator{RandomGenerator: generator}
+
+		skippedBucketOrdinals, err := mutationOperator.getBucketOrdinalsToSkip(chromosomeLength, chromosomeLength)
 
 		assert.NoError(t, err)
-		assert.ElementsMatch(t, []int{0, 1, 2}, skippedBucketOrdinals)
+		assert.Equal(t, permutation, skippedBucketOrdinals)
 	})
 
 	t.Run("should return error since mutation of size n is impossible"+
 		" on chromosome of length shorter than n", func(t *testing.T) {
 		t.Parallel()
 
-		skippedBucketOrdinals, err := getBucketOrdinalsToSkip(5, 4)
+		mutationOperator := MutationOperator{}
+
+		skippedBucketOrdinals, err := mutationOperator.getBucketOrdinalsToSkip(5, 4)
 
 		assert.ErrorIs(t, err, ErrChromosomeShorterThanMutationSize)
 		assert.Zero(t, skippedBucketOrdinals)

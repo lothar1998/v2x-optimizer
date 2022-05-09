@@ -16,11 +16,12 @@ type MutationOperator struct {
 	ItemPool         *genetictype.ItemPool
 	BucketFactory    *genetictype.BucketFactory
 	MaxGenesToMutate int
+	RandomGenerator  RandomGenerator
 }
 
 func (m *MutationOperator) DoMutation(chromosome *genetictype.Chromosome) error {
-	sizeOfMutation := random.Intn(m.MaxGenesToMutate) + 1
-	skippedBuckets, missingItems, err := getMutationImpact(chromosome, sizeOfMutation)
+	sizeOfMutation := m.RandomGenerator.Intn(m.MaxGenesToMutate) + 1
+	skippedBuckets, missingItems, err := m.getMutationImpact(chromosome, sizeOfMutation)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrMutationFailed, err.Error())
 	}
@@ -43,11 +44,11 @@ func (m *MutationOperator) DoMutation(chromosome *genetictype.Chromosome) error 
 	return nil
 }
 
-func getMutationImpact(
+func (m *MutationOperator) getMutationImpact(
 	chromosome *genetictype.Chromosome,
 	sizeOfMutation int,
 ) (map[int]struct{}, map[int]struct{}, error) {
-	skippedBucketOrdinals, err := getBucketOrdinalsToSkip(sizeOfMutation, chromosome.Len())
+	skippedBucketOrdinals, err := m.getBucketOrdinalsToSkip(sizeOfMutation, chromosome.Len())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -67,7 +68,7 @@ func getMutationImpact(
 	return skippedBuckets, missingItems, nil
 }
 
-func getBucketOrdinalsToSkip(sizeOfMutation int, chromosomeLength int) ([]int, error) {
+func (m *MutationOperator) getBucketOrdinalsToSkip(sizeOfMutation int, chromosomeLength int) ([]int, error) {
 	if chromosomeLength < sizeOfMutation {
 		return nil, fmt.Errorf(
 			"%w: len(chromosome)=%d, sizeOfMutation=%d",
@@ -76,5 +77,5 @@ func getBucketOrdinalsToSkip(sizeOfMutation int, chromosomeLength int) ([]int, e
 			sizeOfMutation,
 		)
 	}
-	return random.Perm(chromosomeLength)[:sizeOfMutation], nil
+	return m.RandomGenerator.Perm(chromosomeLength)[:sizeOfMutation], nil
 }

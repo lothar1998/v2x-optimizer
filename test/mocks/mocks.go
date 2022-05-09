@@ -2,6 +2,7 @@ package mocks
 
 //v2x-optimizer
 //go:generate mockgen --build_flags=-mod=mod -destination=data/decoder.go -package=mocks github.com/lothar1998/v2x-optimizer/pkg/data EncoderDecoder
+//go:generate mockgen --build_flags=-mod=mod -destination=optimizer/genetic/random.go -package=mocks github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic RandomGenerator
 
 //v2x-optimizer-performance
 //go:generate mockgen --build_flags=-mod=mod -destination=performance/executor/process.go -package=mocks github.com/lothar1998/v2x-optimizer/internal/performance/executor Process

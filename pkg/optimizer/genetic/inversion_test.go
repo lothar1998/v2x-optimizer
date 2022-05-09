@@ -17,43 +17,32 @@ func TestDoInversion(t *testing.T) {
 		originalChromosome, inputData := getChromosomeForInversion()
 		chromosome := makeDeepCopyOfChromosome(originalChromosome)
 
-		DoInversion(chromosome)
+		left, right := 1, 3
 
-		begin, end, inversionFound := findChromosomeDiffBoundaries(originalChromosome, chromosome)
-		if inversionFound {
-			assertChromosomeInvertedPart(t, originalChromosome.Slice(begin, end), chromosome.Slice(begin, end))
-		}
+		generator := newGeneratorStub().
+			WithNextInt(4, left).
+			WithNextInt(4, right)
+
+		inversionOperator := InversionOperator{RandomGenerator: generator}
+
+		inversionOperator.DoInversion(chromosome)
 
 		assert.Equal(t, originalChromosome.Len(), chromosome.Len())
 		assertCompletenessOfChromosome(t, chromosome, inputData)
+		assertChromosomeInvertedPart(t, originalChromosome.Slice(left, right), chromosome.Slice(left, right))
 	})
 }
 
 func BenchmarkDoInversion(b *testing.B) {
 	chromosome, _ := getChromosomeForInversion()
 
+	inversionOperator := InversionOperator{}
+
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		DoInversion(chromosome)
+		inversionOperator.DoInversion(chromosome)
 	}
-}
-
-func findChromosomeDiffBoundaries(originalChromosome, chromosome *genetictype.Chromosome) (int, int, bool) {
-	var begin, end int
-	var beginFound bool
-	for i := 0; i < originalChromosome.Len(); i++ {
-		if originalChromosome.At(i).ID() != chromosome.At(i).ID() {
-			if !beginFound {
-				begin = i
-			} else {
-				end = i + 1
-				return begin, end, true
-			}
-			beginFound = true
-		}
-	}
-	return 0, 0, false
 }
 
 func assertChromosomeInvertedPart(t *testing.T, buckets1, buckets2 []*genetictype.Bucket) {

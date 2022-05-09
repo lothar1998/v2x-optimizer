@@ -316,20 +316,27 @@ func Test_getRandomChromosomeSliceBoundaries(t *testing.T) {
 
 	c := genetictype.NewChromosome(10)
 
-	t.Run("should return indexes in scope of chromosome", func(t *testing.T) {
+	t.Run("should return indexes in scope of chromosome - first value lower than second", func(t *testing.T) {
 		t.Parallel()
 
-		left, right := getRandomChromosomeSliceBoundaries(c)
-		assert.Less(t, left, c.Len())
-		assert.GreaterOrEqual(t, left, 0)
-		assert.Less(t, right, c.Len())
-		assert.GreaterOrEqual(t, right, 0)
+		generator := newGeneratorStub().
+			WithNextInt(10, 3).
+			WithNextInt(10, 7)
+
+		left, right := getRandomChromosomeSliceBoundaries(c, generator)
+		assert.Equal(t, 3, left)
+		assert.Equal(t, 7, right)
 	})
 
-	t.Run("should return first value lower or equal to right value", func(t *testing.T) {
+	t.Run("should return indexes in scope of chromosome - second value lower than first", func(t *testing.T) {
 		t.Parallel()
 
-		left, right := getRandomChromosomeSliceBoundaries(c)
-		assert.LessOrEqual(t, left, right)
+		generator := newGeneratorStub().
+			WithNextInt(10, 7).
+			WithNextInt(10, 3)
+
+		left, right := getRandomChromosomeSliceBoundaries(c, generator)
+		assert.Equal(t, 3, left)
+		assert.Equal(t, 7, right)
 	})
 }

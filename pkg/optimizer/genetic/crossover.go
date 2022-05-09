@@ -10,8 +10,9 @@ import (
 var ErrCrossoverFailed = errors.New("unable to perform crossover")
 
 type CrossoverOperator struct {
-	ItemPool      *genetictype.ItemPool
-	BucketFactory *genetictype.BucketFactory
+	ItemPool        *genetictype.ItemPool
+	BucketFactory   *genetictype.BucketFactory
+	RandomGenerator RandomGenerator
 }
 
 func (c *CrossoverOperator) DoCrossover(parent1, parent2 *genetictype.Chromosome) (
@@ -19,8 +20,8 @@ func (c *CrossoverOperator) DoCrossover(parent1, parent2 *genetictype.Chromosome
 	*genetictype.Chromosome,
 	error,
 ) {
-	l1, r1 := getRandomChromosomeSliceBoundaries(parent1)
-	l2, r2 := getRandomChromosomeSliceBoundaries(parent2)
+	l1, r1 := getRandomChromosomeSliceBoundaries(parent1, c.RandomGenerator)
+	l2, r2 := getRandomChromosomeSliceBoundaries(parent2, c.RandomGenerator)
 
 	child1, err := c.doHalfCrossover(parent1, parent2.Slice(l2, r2), l1)
 	if err != nil {
