@@ -1,12 +1,14 @@
-package genetic
+package genoperator
 
-import "github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+import (
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
+)
 
 type InversionOperator struct {
 	RandomGenerator RandomGenerator
 }
 
-func (i *InversionOperator) DoInversion(chromosome *genetictype.Chromosome) {
+func (i *InversionOperator) DoInversion(chromosome *gentype.Chromosome) {
 	left, right := getRandomChromosomeSliceBoundaries(chromosome, i.RandomGenerator)
 	s := chromosome.Slice(left, right)
 

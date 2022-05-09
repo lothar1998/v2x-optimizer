@@ -1,10 +1,10 @@
-package genetic
+package genoperator
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 )
 
 var (
@@ -13,13 +13,13 @@ var (
 )
 
 type MutationOperator struct {
-	ItemPool         *genetictype.ItemPool
-	BucketFactory    *genetictype.BucketFactory
+	ItemPool         *gentype.ItemPool
+	BucketFactory    *gentype.BucketFactory
 	MaxGenesToMutate int
 	RandomGenerator  RandomGenerator
 }
 
-func (m *MutationOperator) DoMutation(chromosome *genetictype.Chromosome) error {
+func (m *MutationOperator) DoMutation(chromosome *gentype.Chromosome) error {
 	sizeOfMutation := m.RandomGenerator.Intn(m.MaxGenesToMutate) + 1
 	skippedBuckets, missingItems, err := m.getMutationImpact(chromosome, sizeOfMutation)
 	if err != nil {
@@ -27,7 +27,7 @@ func (m *MutationOperator) DoMutation(chromosome *genetictype.Chromosome) error 
 	}
 
 	initChildLength := chromosome.Len() - len(skippedBuckets)
-	child := genetictype.NewChromosome(initChildLength)
+	child := gentype.NewChromosome(initChildLength)
 
 	var j int
 	for i := 0; i < chromosome.Len(); i++ {
@@ -45,7 +45,7 @@ func (m *MutationOperator) DoMutation(chromosome *genetictype.Chromosome) error 
 }
 
 func (m *MutationOperator) getMutationImpact(
-	chromosome *genetictype.Chromosome,
+	chromosome *gentype.Chromosome,
 	sizeOfMutation int,
 ) (map[int]struct{}, map[int]struct{}, error) {
 	skippedBucketOrdinals, err := m.getBucketOrdinalsToSkip(sizeOfMutation, chromosome.Len())

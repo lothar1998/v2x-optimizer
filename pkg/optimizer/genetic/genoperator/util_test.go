@@ -1,10 +1,10 @@
-package genetic
+package genoperator
 
 import (
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,8 +24,8 @@ func Test_assignMissingItems(t *testing.T) {
 			},
 		}
 
-		bucketFactory := genetictype.NewBucketFactory(inputData)
-		itemPool := genetictype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
 
 		bucket0 := bucketFactory.CreateBucket(0)
 		_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -56,8 +56,8 @@ func Test_assignMissingItems(t *testing.T) {
 			},
 		}
 
-		bucketFactory := genetictype.NewBucketFactory(inputData)
-		itemPool := genetictype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
 
 		bucket0 := bucketFactory.CreateBucket(0)
 		_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -91,8 +91,8 @@ func Test_reassignMissingItems(t *testing.T) {
 			},
 		}
 
-		bucketFactory := genetictype.NewBucketFactory(inputData)
-		itemPool := genetictype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
 
 		bucket0 := bucketFactory.CreateBucket(0)
 		_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -123,8 +123,8 @@ func Test_reassignMissingItems(t *testing.T) {
 			},
 		}
 
-		bucketFactory := genetictype.NewBucketFactory(inputData)
-		itemPool := genetictype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
 
 		bucket0 := bucketFactory.CreateBucket(0)
 		_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -163,8 +163,8 @@ func Test_reassignMissingItems(t *testing.T) {
 			},
 		}
 
-		bucketFactory := genetictype.NewBucketFactory(inputData)
-		itemPool := genetictype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
 
 		bucket0 := bucketFactory.CreateBucket(0)
 		_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -190,7 +190,7 @@ func Test_reassignMissingItems(t *testing.T) {
 
 		missingItems := map[int]struct{}{1: {}}
 
-		chromosome := genetictype.NewChromosome(0)
+		chromosome := gentype.NewChromosome(0)
 
 		missingItems = reassignMissingItems(chromosome, missingItems, nil)
 
@@ -213,8 +213,8 @@ func Test_doFallbackAssignment(t *testing.T) {
 		},
 	}
 
-	itemPool := genetictype.NewItemPool(inputData)
-	bucketFactory := genetictype.NewBucketFactory(inputData)
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
 
 	bucket0 := bucketFactory.CreateBucket(0)
 	_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -261,8 +261,8 @@ func Test_doFallbackAssignment(t *testing.T) {
 			},
 		}
 
-		itemPool := genetictype.NewItemPool(inputData)
-		bucketFactory := genetictype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
 
 		bucket0 := bucketFactory.CreateBucket(0)
 		_ = bucket0.AddItem(itemPool.Get(0, 0))
@@ -279,7 +279,7 @@ func Test_doFallbackAssignment(t *testing.T) {
 	t.Run("should handle empty chromosome by adding new buckets to it", func(t *testing.T) {
 		t.Parallel()
 
-		chromosome := genetictype.NewChromosome(0)
+		chromosome := gentype.NewChromosome(0)
 		missingItems := map[int]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}}
 
 		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
@@ -297,7 +297,7 @@ func Test_shouldSkipBucket(t *testing.T) {
 	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
 		t.Parallel()
 
-		bucket := genetictype.NewBucket(1, 0)
+		bucket := gentype.NewBucket(1, 0)
 		result := shouldSkipBucket(bucketsToSkip, bucket)
 		assert.True(t, result)
 	})
@@ -305,7 +305,7 @@ func Test_shouldSkipBucket(t *testing.T) {
 	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
 		t.Parallel()
 
-		bucket := genetictype.NewBucket(2, 0)
+		bucket := gentype.NewBucket(2, 0)
 		result := shouldSkipBucket(bucketsToSkip, bucket)
 		assert.False(t, result)
 	})
@@ -314,7 +314,7 @@ func Test_shouldSkipBucket(t *testing.T) {
 func Test_getRandomChromosomeSliceBoundaries(t *testing.T) {
 	t.Parallel()
 
-	c := genetictype.NewChromosome(10)
+	c := gentype.NewChromosome(10)
 
 	t.Run("should return indexes in scope of chromosome - first value lower than second", func(t *testing.T) {
 		t.Parallel()

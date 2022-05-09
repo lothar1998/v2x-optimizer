@@ -1,4 +1,4 @@
-package genetic
+package genoperator
 
 type RandomGenerator interface {
 	Intn(int) int

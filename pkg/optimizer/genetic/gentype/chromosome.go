@@ -1,4 +1,4 @@
-package genetictype
+package gentype
 
 type Chromosome struct {
 	buckets      []*Bucket

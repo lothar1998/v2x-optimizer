@@ -1,23 +1,23 @@
-package genetic
+package genoperator
 
 import (
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 	"github.com/stretchr/testify/assert"
 )
 
-func makeBucket(bucketID int, itemIDToSize map[int]int) *genetictype.Bucket {
-	var items []*genetictype.Item
+func makeBucket(bucketID int, itemIDToSize map[int]int) *gentype.Bucket {
+	var items []*gentype.Item
 
 	sizeSum := 0
 	for id, size := range itemIDToSize {
-		items = append(items, genetictype.NewItem(id, size))
+		items = append(items, gentype.NewItem(id, size))
 		sizeSum += size
 	}
 
-	bucket := genetictype.NewBucket(bucketID, sizeSum)
+	bucket := gentype.NewBucket(bucketID, sizeSum)
 
 	for _, item := range items {
 		_ = bucket.AddItem(item)
@@ -26,28 +26,28 @@ func makeBucket(bucketID int, itemIDToSize map[int]int) *genetictype.Bucket {
 	return bucket
 }
 
-func makeChromosome(buckets ...*genetictype.Bucket) *genetictype.Chromosome {
-	c := genetictype.NewChromosome(0)
+func makeChromosome(buckets ...*gentype.Bucket) *gentype.Chromosome {
+	c := gentype.NewChromosome(0)
 	for _, bucket := range buckets {
 		c.Append(bucket)
 	}
 	return c
 }
 
-func makeDeepCopyOfChromosome(chromosome *genetictype.Chromosome) *genetictype.Chromosome {
-	newChromosome := genetictype.NewChromosome(chromosome.Len())
+func makeDeepCopyOfChromosome(chromosome *gentype.Chromosome) *gentype.Chromosome {
+	newChromosome := gentype.NewChromosome(chromosome.Len())
 	for i := 0; i < newChromosome.Len(); i++ {
 		newChromosome.SetAt(i, chromosome.At(i).DeepCopy())
 	}
 	return newChromosome
 }
 
-func assertCompletenessOfChromosome(t *testing.T, chromosome *genetictype.Chromosome, data *data.Data) {
+func assertCompletenessOfChromosome(t *testing.T, chromosome *gentype.Chromosome, data *data.Data) {
 	assertNoDuplicatedBucketsInChromosome(t, chromosome)
 	assertAllItemsInChromosome(t, chromosome, data)
 }
 
-func assertNoDuplicatedBucketsInChromosome(t *testing.T, chromosome *genetictype.Chromosome) {
+func assertNoDuplicatedBucketsInChromosome(t *testing.T, chromosome *gentype.Chromosome) {
 	bucketIDs := make(map[int]struct{})
 	for i := 0; i < chromosome.Len(); i++ {
 		bucket := chromosome.At(i)
@@ -59,7 +59,7 @@ func assertNoDuplicatedBucketsInChromosome(t *testing.T, chromosome *genetictype
 	}
 }
 
-func assertAllItemsInChromosome(t *testing.T, chromosome *genetictype.Chromosome, data *data.Data) {
+func assertAllItemsInChromosome(t *testing.T, chromosome *gentype.Chromosome, data *data.Data) {
 	itemIDs := make(map[int]struct{})
 
 	for i := 0; i < chromosome.Len(); i++ {

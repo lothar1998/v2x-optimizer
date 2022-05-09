@@ -1,4 +1,4 @@
-package genetictype
+package gentype
 
 import (
 	"sync"

@@ -1,10 +1,10 @@
-package genetic
+package genoperator
 
 import (
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,14 +45,14 @@ func BenchmarkDoInversion(b *testing.B) {
 	}
 }
 
-func assertChromosomeInvertedPart(t *testing.T, buckets1, buckets2 []*genetictype.Bucket) {
+func assertChromosomeInvertedPart(t *testing.T, buckets1, buckets2 []*gentype.Bucket) {
 	assert.Equal(t, len(buckets1), len(buckets2))
 	for i := 0; i < len(buckets1); i++ {
 		assert.Equal(t, buckets1[i], buckets2[len(buckets2)-i-1])
 	}
 }
 
-func getChromosomeForInversion() (*genetictype.Chromosome, *data.Data) {
+func getChromosomeForInversion() (*gentype.Chromosome, *data.Data) {
 	inputData := &data.Data{
 		MRB: []int{14, 15, 8, 10},
 		R: [][]int{
@@ -64,8 +64,8 @@ func getChromosomeForInversion() (*genetictype.Chromosome, *data.Data) {
 		},
 	}
 
-	itemPool := genetictype.NewItemPool(inputData)
-	bucketFactory := genetictype.NewBucketFactory(inputData)
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
 
 	bucket0 := bucketFactory.CreateBucket(0)
 	_ = bucket0.AddItem(itemPool.Get(0, 0))

@@ -1,11 +1,11 @@
-package genetic
+package genoperator
 
 import (
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
 
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,8 +23,8 @@ func TestCrossoverOperator_doHalfCrossover(t *testing.T) {
 		},
 	}
 
-	itemPool := genetictype.NewItemPool(inputData)
-	bucketFactory := genetictype.NewBucketFactory(inputData)
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
 
 	crossoverOperator := CrossoverOperator{ItemPool: itemPool, BucketFactory: bucketFactory}
 
@@ -48,7 +48,7 @@ func TestCrossoverOperator_doHalfCrossover(t *testing.T) {
 		_ = transplantBucket.AddItem(itemPool.Get(2, 1))
 		_ = transplantBucket.AddItem(itemPool.Get(0, 1))
 
-		transplant := []*genetictype.Bucket{transplantBucket}
+		transplant := []*gentype.Bucket{transplantBucket}
 
 		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 0)
 
@@ -64,7 +64,7 @@ func TestCrossoverOperator_doHalfCrossover(t *testing.T) {
 		transplantBucket := bucketFactory.CreateBucket(1)
 		_ = transplantBucket.AddItem(itemPool.Get(2, 1))
 
-		transplant := []*genetictype.Bucket{transplantBucket}
+		transplant := []*gentype.Bucket{transplantBucket}
 
 		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 1)
 
@@ -80,7 +80,7 @@ func TestCrossoverOperator_doHalfCrossover(t *testing.T) {
 		_ = transplantBucket.AddItem(itemPool.Get(2, 1))
 		_ = transplantBucket.AddItem(itemPool.Get(0, 1))
 
-		transplant := []*genetictype.Bucket{transplantBucket}
+		transplant := []*gentype.Bucket{transplantBucket}
 
 		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 3)
 
@@ -102,7 +102,7 @@ func TestCrossoverOperator_doHalfCrossover(t *testing.T) {
 		transplantBucket3 := bucketFactory.CreateBucket(3)
 		_ = transplantBucket3.AddItem(itemPool.Get(0, 3))
 
-		transplant := []*genetictype.Bucket{transplantBucket1, transplantBucket2, transplantBucket3}
+		transplant := []*gentype.Bucket{transplantBucket1, transplantBucket2, transplantBucket3}
 
 		child, err := crossoverOperator.doHalfCrossover(parent, transplant, 0)
 
@@ -135,7 +135,7 @@ func Test_getTransplantImpact(t *testing.T) {
 		bucket4 := makeBucket(4, map[int]int{7: 7, 8: 8})
 		bucket3Transplant := bucket3
 		bucket5 := makeBucket(5, map[int]int{10: 10, 11: 11, 12: 12})
-		transplant := []*genetictype.Bucket{bucket4, bucket3Transplant, bucket5}
+		transplant := []*gentype.Bucket{bucket4, bucket3Transplant, bucket5}
 
 		skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
@@ -154,7 +154,7 @@ func Test_getTransplantImpact(t *testing.T) {
 		bucket4 := makeBucket(4, map[int]int{9: 9, 10: 10})
 		bucket3Transplant := makeBucket(3, map[int]int{11: 11, 6: 6})
 		bucket5 := makeBucket(5, map[int]int{12: 12, 13: 13, 14: 14})
-		transplant := []*genetictype.Bucket{bucket4, bucket3Transplant, bucket5}
+		transplant := []*gentype.Bucket{bucket4, bucket3Transplant, bucket5}
 
 		skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
@@ -172,7 +172,7 @@ func Test_getTransplantImpact(t *testing.T) {
 
 		bucket4 := makeBucket(4, map[int]int{4: 4, 5: 5})
 		bucket5 := makeBucket(5, map[int]int{12: 12, 13: 13, 14: 14})
-		transplant := []*genetictype.Bucket{bucket4, bucket5}
+		transplant := []*gentype.Bucket{bucket4, bucket5}
 
 		skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
@@ -190,7 +190,7 @@ func Test_getTransplantImpact(t *testing.T) {
 
 		bucket4 := makeBucket(4, map[int]int{4: 4})
 		bucket5 := makeBucket(5, map[int]int{12: 12, 13: 13, 14: 14})
-		transplant := []*genetictype.Bucket{bucket4, bucket5}
+		transplant := []*gentype.Bucket{bucket4, bucket5}
 
 		skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
@@ -209,7 +209,7 @@ func Test_getTransplantImpact(t *testing.T) {
 
 		bucket4 := makeBucket(4, map[int]int{9: 9, 10: 10, 11: 11})
 		bucket5 := makeBucket(5, map[int]int{12: 12, 13: 13, 14: 14})
-		transplant := []*genetictype.Bucket{bucket4, bucket5}
+		transplant := []*gentype.Bucket{bucket4, bucket5}
 
 		skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
@@ -220,11 +220,11 @@ func Test_getTransplantImpact(t *testing.T) {
 	t.Run("should return no skipped buckets and no missing items due to empty parent", func(t *testing.T) {
 		t.Parallel()
 
-		parent := genetictype.NewChromosome(0)
+		parent := gentype.NewChromosome(0)
 
 		bucket4 := makeBucket(4, map[int]int{9: 9, 10: 10, 11: 11})
 		bucket5 := makeBucket(5, map[int]int{12: 12, 13: 13, 14: 14})
-		transplant := []*genetictype.Bucket{bucket4, bucket5}
+		transplant := []*gentype.Bucket{bucket4, bucket5}
 
 		skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
@@ -254,7 +254,7 @@ func Test_toTransplantDetails(t *testing.T) {
 
 		bucket1 := makeBucket(10, map[int]int{1: 5, 2: 4})
 		bucket2 := makeBucket(20, map[int]int{3: 1, 4: 2})
-		transplant := []*genetictype.Bucket{bucket1, bucket2}
+		transplant := []*gentype.Bucket{bucket1, bucket2}
 
 		items, buckets := toTransplantDetails(transplant)
 
@@ -282,8 +282,8 @@ func Test_toTransplantDetails(t *testing.T) {
 		t.Parallel()
 
 		bucket1 := makeBucket(10, map[int]int{1: 5, 2: 4})
-		bucket2 := genetictype.NewBucket(20, 3)
-		transplant := []*genetictype.Bucket{bucket1, bucket2}
+		bucket2 := gentype.NewBucket(20, 3)
+		transplant := []*gentype.Bucket{bucket1, bucket2}
 
 		items, buckets := toTransplantDetails(transplant)
 
@@ -307,11 +307,11 @@ func Test_addMissingItemsIfNotInTransplant(t *testing.T) {
 
 		transplantItems := map[int]struct{}{2: {}, 3: {}}
 
-		bucket := genetictype.NewBucket(1, 10)
-		_ = bucket.AddItem(genetictype.NewItem(1, 1))
-		_ = bucket.AddItem(genetictype.NewItem(2, 2))
-		_ = bucket.AddItem(genetictype.NewItem(3, 3))
-		_ = bucket.AddItem(genetictype.NewItem(4, 4))
+		bucket := gentype.NewBucket(1, 10)
+		_ = bucket.AddItem(gentype.NewItem(1, 1))
+		_ = bucket.AddItem(gentype.NewItem(2, 2))
+		_ = bucket.AddItem(gentype.NewItem(3, 3))
+		_ = bucket.AddItem(gentype.NewItem(4, 4))
 
 		addMissingItemsIfNotInTransplant(missingItems, bucket, transplantItems)
 
@@ -327,10 +327,10 @@ func Test_addMissingItemsIfNotInTransplant(t *testing.T) {
 
 		transplantItems := map[int]struct{}{1: {}, 2: {}, 3: {}}
 
-		bucket := genetictype.NewBucket(1, 10)
-		_ = bucket.AddItem(genetictype.NewItem(1, 1))
-		_ = bucket.AddItem(genetictype.NewItem(2, 2))
-		_ = bucket.AddItem(genetictype.NewItem(3, 3))
+		bucket := gentype.NewBucket(1, 10)
+		_ = bucket.AddItem(gentype.NewItem(1, 1))
+		_ = bucket.AddItem(gentype.NewItem(2, 2))
+		_ = bucket.AddItem(gentype.NewItem(3, 3))
 		addMissingItemsIfNotInTransplant(missingItems, bucket, transplantItems)
 
 		assert.Empty(t, missingItems)
@@ -349,8 +349,8 @@ func BenchmarkCrossoverOperator_DoCrossover(b *testing.B) {
 		},
 	}
 
-	itemPool := genetictype.NewItemPool(inputData)
-	bucketFactory := genetictype.NewBucketFactory(inputData)
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
 
 	bucket0p1 := bucketFactory.CreateBucket(0)
 	_ = bucket0p1.AddItem(itemPool.Get(0, 0))

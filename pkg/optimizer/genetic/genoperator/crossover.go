@@ -1,23 +1,23 @@
-package genetic
+package genoperator
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 )
 
 var ErrCrossoverFailed = errors.New("unable to perform crossover")
 
 type CrossoverOperator struct {
-	ItemPool        *genetictype.ItemPool
-	BucketFactory   *genetictype.BucketFactory
+	ItemPool        *gentype.ItemPool
+	BucketFactory   *gentype.BucketFactory
 	RandomGenerator RandomGenerator
 }
 
-func (c *CrossoverOperator) DoCrossover(parent1, parent2 *genetictype.Chromosome) (
-	*genetictype.Chromosome,
-	*genetictype.Chromosome,
+func (c *CrossoverOperator) DoCrossover(parent1, parent2 *gentype.Chromosome) (
+	*gentype.Chromosome,
+	*gentype.Chromosome,
 	error,
 ) {
 	l1, r1 := getRandomChromosomeSliceBoundaries(parent1, c.RandomGenerator)
@@ -36,14 +36,14 @@ func (c *CrossoverOperator) DoCrossover(parent1, parent2 *genetictype.Chromosome
 }
 
 func (c *CrossoverOperator) doHalfCrossover(
-	parent *genetictype.Chromosome,
-	transplant []*genetictype.Bucket,
+	parent *gentype.Chromosome,
+	transplant []*gentype.Bucket,
 	injectionIndex int,
-) (*genetictype.Chromosome, error) {
+) (*gentype.Chromosome, error) {
 	skippedBuckets, missingItems := getTransplantImpact(parent, transplant)
 
 	initChildLength := parent.Len() - len(skippedBuckets) + len(transplant)
-	child := genetictype.NewChromosome(initChildLength)
+	child := gentype.NewChromosome(initChildLength)
 
 	var j int
 	var transplantInjected bool
@@ -80,8 +80,8 @@ func (c *CrossoverOperator) doHalfCrossover(
 }
 
 func getTransplantImpact(
-	parent *genetictype.Chromosome,
-	transplant []*genetictype.Bucket,
+	parent *gentype.Chromosome,
+	transplant []*gentype.Bucket,
 ) (map[int]struct{}, map[int]struct{}) {
 	transplantItems, transplantBuckets := toTransplantDetails(transplant)
 	skippedBuckets := make(map[int]struct{})
@@ -107,7 +107,7 @@ func getTransplantImpact(
 	return skippedBuckets, missingItems
 }
 
-func toTransplantDetails(transplant []*genetictype.Bucket) (items map[int]struct{}, buckets map[int]struct{}) {
+func toTransplantDetails(transplant []*gentype.Bucket) (items map[int]struct{}, buckets map[int]struct{}) {
 	items = make(map[int]struct{})
 	buckets = make(map[int]struct{})
 
@@ -124,7 +124,7 @@ func toTransplantDetails(transplant []*genetictype.Bucket) (items map[int]struct
 
 func addMissingItemsIfNotInTransplant(
 	missingItems map[int]struct{},
-	bucket *genetictype.Bucket,
+	bucket *gentype.Bucket,
 	transplantItems map[int]struct{},
 ) {
 	for itemID := range bucket.Map() {

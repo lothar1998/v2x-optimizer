@@ -1,27 +1,27 @@
-package genetic
+package genoperator
 
 import (
 	"errors"
 
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 )
 
 var ErrFallbackAssignmentFailed = errors.New("fallback assignment cannot assign missing items")
 
 func assignMissingItems(
-	chromosome *genetictype.Chromosome,
+	chromosome *gentype.Chromosome,
 	missingItems map[int]struct{},
-	bucketFactory *genetictype.BucketFactory,
-	itemPool *genetictype.ItemPool,
+	bucketFactory *gentype.BucketFactory,
+	itemPool *gentype.ItemPool,
 ) error {
 	missingItems = reassignMissingItems(chromosome, missingItems, itemPool)
 	return doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
 }
 
 func reassignMissingItems(
-	chromosome *genetictype.Chromosome,
+	chromosome *gentype.Chromosome,
 	missingItems map[int]struct{},
-	itemPool *genetictype.ItemPool,
+	itemPool *gentype.ItemPool,
 ) map[int]struct{} {
 	for i := 0; i < chromosome.Len(); i++ {
 		bucket := chromosome.At(i)
@@ -36,10 +36,10 @@ func reassignMissingItems(
 }
 
 func doFallbackAssignment(
-	chromosome *genetictype.Chromosome,
+	chromosome *gentype.Chromosome,
 	missingItems map[int]struct{},
-	bucketFactory *genetictype.BucketFactory,
-	itemPool *genetictype.ItemPool,
+	bucketFactory *gentype.BucketFactory,
+	itemPool *gentype.ItemPool,
 ) error {
 	if len(missingItems) == 0 {
 		return nil
@@ -74,12 +74,12 @@ func doFallbackAssignment(
 	return nil
 }
 
-func shouldSkipBucket(bucketsToSkip map[int]struct{}, bucket *genetictype.Bucket) bool {
+func shouldSkipBucket(bucketsToSkip map[int]struct{}, bucket *gentype.Bucket) bool {
 	_, ok := bucketsToSkip[bucket.ID()]
 	return ok
 }
 
-func getRandomChromosomeSliceBoundaries(chromosome *genetictype.Chromosome, random RandomGenerator) (int, int) {
+func getRandomChromosomeSliceBoundaries(chromosome *gentype.Chromosome, random RandomGenerator) (int, int) {
 	b1 := random.Intn(chromosome.Len())
 	b2 := random.Intn(chromosome.Len())
 

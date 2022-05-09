@@ -1,11 +1,11 @@
-package genetic
+package genoperator
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/lothar1998/v2x-optimizer/pkg/data"
-	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/genetictype"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,8 +23,8 @@ func TestMutationOperator_DoMutation(t *testing.T) {
 		},
 	}
 
-	itemPool := genetictype.NewItemPool(inputData)
-	bucketFactory := genetictype.NewBucketFactory(inputData)
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
 	bucket0 := bucketFactory.CreateBucket(0)
 	_ = bucket0.AddItem(itemPool.Get(0, 0))
 	_ = bucket0.AddItem(itemPool.Get(1, 0))
@@ -109,7 +109,7 @@ func Test_getMutationImpact(t *testing.T) {
 	bucket0 := makeBucket(0, map[int]int{1: 1, 2: 2, 3: 3})
 	bucket1 := makeBucket(1, map[int]int{4: 4, 5: 5})
 	bucket2 := makeBucket(2, map[int]int{6: 6})
-	buckets := []*genetictype.Bucket{bucket0, bucket1, bucket2}
+	buckets := []*gentype.Bucket{bucket0, bucket1, bucket2}
 	chromosome := makeChromosome(buckets...)
 
 	mutationOperator := MutationOperator{RandomGenerator: commonRandom}
@@ -202,8 +202,8 @@ func BenchmarkMutationOperator_DoMutation(b *testing.B) {
 		},
 	}
 
-	itemPool := genetictype.NewItemPool(inputData)
-	bucketFactory := genetictype.NewBucketFactory(inputData)
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
 	bucket0 := bucketFactory.CreateBucket(0)
 	_ = bucket0.AddItem(itemPool.Get(0, 0))
 	_ = bucket0.AddItem(itemPool.Get(1, 0))
