@@ -62,3 +62,7 @@ func (ip *ItemPool) createAndGetNewItem(key itemPoolKey, itemID, bucketID int) *
 	ip.items[key] = item
 	return item
 }
+
+func (ip *ItemPool) MaxID() int {
+	return len(ip.data.R) - 1
+}

@@ -81,3 +81,20 @@ func TestItemPool_Get(t *testing.T) {
 		assert.Len(t, pool.items, 1)
 	})
 }
+
+func TestItemPool_MaxID(t *testing.T) {
+	t.Parallel()
+
+	inputData := &data.Data{
+		MRB: []int{100, 200},
+		R: [][]int{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+		},
+	}
+
+	pool := NewItemPool(inputData)
+
+	assert.Equal(t, 2, pool.MaxID())
+}
