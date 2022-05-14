@@ -1,0 +1,342 @@
+package genoperator
+
+import (
+	"testing"
+
+	"github.com/lothar1998/v2x-optimizer/pkg/data"
+	"github.com/lothar1998/v2x-optimizer/pkg/optimizer/genetic/gentype"
+	"github.com/stretchr/testify/assert"
+)
+
+func Test_assignMissingItems(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should first reassign missing items and then do fallback assignment on leftovers", func(t *testing.T) {
+		t.Parallel()
+
+		inputData := &data.Data{
+			MRB: []int{14, 15, 8},
+			R: [][]int{
+				{6, 8, 2},
+				{7, 100, 5},
+				{7, 9, 3},
+				{5, 100, 1},
+			},
+		}
+
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
+
+		bucket0 := bucketFactory.CreateBucket(0)
+		_ = bucket0.AddItem(itemPool.Get(0, 0))
+
+		bucket1 := bucketFactory.CreateBucket(1)
+		_ = bucket1.AddItem(itemPool.Get(2, 1))
+
+		chromosome := makeChromosome(bucket0, bucket1)
+
+		missingItems := map[int]struct{}{1: {}, 3: {}}
+
+		err := assignMissingItems(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, chromosome, inputData)
+	})
+
+	t.Run("should return error if assignment is impossible", func(t *testing.T) {
+		t.Parallel()
+
+		inputData := &data.Data{
+			MRB: []int{14, 15, 5},
+			R: [][]int{
+				{6, 8, 2},
+				{7, 100, 7},
+				{7, 9, 3},
+				{5, 100, 7},
+			},
+		}
+
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
+
+		bucket0 := bucketFactory.CreateBucket(0)
+		_ = bucket0.AddItem(itemPool.Get(0, 0))
+
+		bucket1 := bucketFactory.CreateBucket(1)
+		_ = bucket1.AddItem(itemPool.Get(2, 1))
+
+		chromosome := makeChromosome(bucket0, bucket1)
+
+		missingItems := map[int]struct{}{1: {}, 3: {}}
+
+		err := assignMissingItems(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.ErrorIs(t, err, ErrFallbackAssignmentFailed)
+	})
+}
+
+func Test_reassignMissingItems(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should assign all missing items to chromosome", func(t *testing.T) {
+		t.Parallel()
+
+		inputData := &data.Data{
+			MRB: []int{14, 15},
+			R: [][]int{
+				{2, 2},
+				{1, 3},
+				{3, 1},
+				{2, 3},
+			},
+		}
+
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
+
+		bucket0 := bucketFactory.CreateBucket(0)
+		_ = bucket0.AddItem(itemPool.Get(0, 0))
+
+		bucket1 := bucketFactory.CreateBucket(1)
+		_ = bucket1.AddItem(itemPool.Get(2, 1))
+
+		chromosome := makeChromosome(bucket0, bucket1)
+
+		missingItems := map[int]struct{}{1: {}, 3: {}}
+
+		missingItems = reassignMissingItems(chromosome, missingItems, itemPool)
+
+		assert.Empty(t, missingItems)
+		assertCompletenessOfChromosome(t, chromosome, inputData)
+	})
+
+	t.Run("should assign part of missing items to chromosome", func(t *testing.T) {
+		t.Parallel()
+
+		inputData := &data.Data{
+			MRB: []int{14, 15},
+			R: [][]int{
+				{6, 8},
+				{7, 100},
+				{7, 9},
+				{5, 100},
+			},
+		}
+
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
+
+		bucket0 := bucketFactory.CreateBucket(0)
+		_ = bucket0.AddItem(itemPool.Get(0, 0))
+
+		bucket1 := bucketFactory.CreateBucket(1)
+		_ = bucket1.AddItem(itemPool.Get(2, 1))
+
+		chromosome := makeChromosome(bucket0, bucket1)
+
+		missingItems := map[int]struct{}{1: {}, 3: {}}
+
+		missingItems = reassignMissingItems(chromosome, missingItems, itemPool)
+
+		_, consist1 := missingItems[1]
+		_, consist3 := missingItems[3]
+		assert.Len(t, missingItems, 1)
+		assertOneButNotBoth(t, consist1, consist3)
+
+		bucket0Len := len(chromosome.At(0).Map())
+		bucket1Len := len(chromosome.At(1).Map())
+		assertOneButNotBoth(t, bucket0Len == 2, bucket1Len == 2)
+
+		assert.Equal(t, 2, chromosome.Len())
+	})
+
+	t.Run("shouldn't assign any missing item to chromosome", func(t *testing.T) {
+		t.Parallel()
+
+		inputData := &data.Data{
+			MRB: []int{14, 15},
+			R: [][]int{
+				{13, 8},
+				{7, 100},
+				{12, 9},
+				{5, 100},
+			},
+		}
+
+		bucketFactory := gentype.NewBucketFactory(inputData)
+		itemPool := gentype.NewItemPool(inputData)
+
+		bucket0 := bucketFactory.CreateBucket(0)
+		_ = bucket0.AddItem(itemPool.Get(0, 0))
+
+		bucket1 := bucketFactory.CreateBucket(1)
+		_ = bucket1.AddItem(itemPool.Get(2, 1))
+
+		chromosome := makeChromosome(bucket0, bucket1)
+		originalChromosome := makeDeepCopyOfChromosome(chromosome)
+
+		missingItems := map[int]struct{}{1: {}, 3: {}}
+
+		missingItems = reassignMissingItems(chromosome, missingItems, itemPool)
+
+		assert.Len(t, missingItems, 2)
+		assert.Contains(t, missingItems, 1)
+		assert.Contains(t, missingItems, 3)
+		assert.Equal(t, originalChromosome, chromosome)
+	})
+
+	t.Run("should handle empty chromosome by skipping assignment", func(t *testing.T) {
+		t.Parallel()
+
+		missingItems := map[int]struct{}{1: {}}
+
+		chromosome := gentype.NewChromosome(0)
+
+		missingItems = reassignMissingItems(chromosome, missingItems, nil)
+
+		assert.Len(t, missingItems, 1)
+		assert.Contains(t, missingItems, 1)
+	})
+}
+
+func Test_doFallbackAssignment(t *testing.T) {
+	t.Parallel()
+
+	inputData := &data.Data{
+		MRB: []int{14, 15, 8, 10},
+		R: [][]int{
+			{6, 3, 2, 1},
+			{7, 8, 5, 3},
+			{9, 10, 7, 8},
+			{6, 3, 2, 1},
+			{7, 8, 1, 5},
+		},
+	}
+
+	itemPool := gentype.NewItemPool(inputData)
+	bucketFactory := gentype.NewBucketFactory(inputData)
+
+	bucket0 := bucketFactory.CreateBucket(0)
+	_ = bucket0.AddItem(itemPool.Get(0, 0))
+	_ = bucket0.AddItem(itemPool.Get(1, 0))
+
+	bucket2 := bucketFactory.CreateBucket(2)
+	_ = bucket2.AddItem(itemPool.Get(3, 2))
+
+	originalChromosome := makeChromosome(bucket0, bucket2)
+
+	t.Run("should skip assignments if there is no missing items", func(t *testing.T) {
+		t.Parallel()
+
+		chromosome := makeDeepCopyOfChromosome(originalChromosome)
+		missingItems := map[int]struct{}{}
+
+		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.NoError(t, err)
+		assert.Equal(t, originalChromosome, chromosome)
+	})
+
+	t.Run("should skip already used buckets", func(t *testing.T) {
+		t.Parallel()
+
+		chromosome := makeDeepCopyOfChromosome(originalChromosome)
+		missingItems := map[int]struct{}{2: {}, 4: {}}
+
+		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, chromosome, inputData)
+	})
+
+	t.Run("should return error if after all tries there are still missing items", func(t *testing.T) {
+		t.Parallel()
+
+		inputData := &data.Data{
+			MRB: []int{10, 5, 3},
+			R: [][]int{
+				{5, 2, 1},
+				{5, 3, 3},
+				{1, 7, 8},
+			},
+		}
+
+		itemPool := gentype.NewItemPool(inputData)
+		bucketFactory := gentype.NewBucketFactory(inputData)
+
+		bucket0 := bucketFactory.CreateBucket(0)
+		_ = bucket0.AddItem(itemPool.Get(0, 0))
+		_ = bucket0.AddItem(itemPool.Get(1, 0))
+
+		chromosome := makeChromosome(bucket0)
+		missingItems := map[int]struct{}{2: {}}
+
+		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.ErrorIs(t, err, ErrFallbackAssignmentFailed)
+	})
+
+	t.Run("should handle empty chromosome by adding new buckets to it", func(t *testing.T) {
+		t.Parallel()
+
+		chromosome := gentype.NewChromosome(0)
+		missingItems := map[int]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}}
+
+		err := doFallbackAssignment(chromosome, missingItems, bucketFactory, itemPool)
+
+		assert.NoError(t, err)
+		assertCompletenessOfChromosome(t, chromosome, inputData)
+	})
+}
+
+func Test_shouldSkipBucket(t *testing.T) {
+	t.Parallel()
+
+	bucketsToSkip := map[int]struct{}{1: {}}
+
+	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
+		t.Parallel()
+
+		bucket := gentype.NewBucket(1, 0)
+		result := shouldSkipBucket(bucketsToSkip, bucket)
+		assert.True(t, result)
+	})
+
+	t.Run("should return true if bucket id is in ids to skip", func(t *testing.T) {
+		t.Parallel()
+
+		bucket := gentype.NewBucket(2, 0)
+		result := shouldSkipBucket(bucketsToSkip, bucket)
+		assert.False(t, result)
+	})
+}
+
+func Test_getRandomChromosomeSliceBoundaries(t *testing.T) {
+	t.Parallel()
+
+	c := gentype.NewChromosome(10)
+
+	t.Run("should return indexes in scope of chromosome - first value lower than second", func(t *testing.T) {
+		t.Parallel()
+
+		generator := newGeneratorStub().
+			WithNextInt(10, 3).
+			WithNextInt(10, 7)
+
+		left, right := getRandomChromosomeSliceBoundaries(c, generator)
+		assert.Equal(t, 3, left)
+		assert.Equal(t, 7, right)
+	})
+
+	t.Run("should return indexes in scope of chromosome - second value lower than first", func(t *testing.T) {
+		t.Parallel()
+
+		generator := newGeneratorStub().
+			WithNextInt(10, 7).
+			WithNextInt(10, 3)
+
+		left, right := getRandomChromosomeSliceBoundaries(c, generator)
+		assert.Equal(t, 3, left)
+		assert.Equal(t, 7, right)
+	})
+}

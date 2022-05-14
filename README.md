@@ -24,7 +24,7 @@
 
 Things you need to install before running:
 ```
-Go 1.17
+Go 1.18
 ```
 
 
